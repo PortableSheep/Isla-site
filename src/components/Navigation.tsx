@@ -4,6 +4,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { isIslaUser } from '@/lib/islaUser';
+import NotificationBell from './NotificationBell';
 
 export function Navigation() {
   const { user, signOut } = useAuth();
@@ -82,6 +83,7 @@ export function Navigation() {
           <div className="flex items-center gap-4">
             {user && (
               <>
+                {user && <NotificationBell userId={user.id} />}
                 <span className="text-gray-300 text-sm">{user.email}</span>
                 <a
                   href="/settings"
