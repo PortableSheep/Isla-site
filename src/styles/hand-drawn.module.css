@@ -1,9 +1,41 @@
-/* Hand-drawn borders and effects for creature-themed UI */
+/* ============================================================================
+   Hand-drawn borders and effects for creature-themed UI
+   Uses 8px grid system for consistent spacing
+   ============================================================================ */
+
+:root {
+  /* Spacing grid (8px base unit) */
+  --spacing-xs: 8px;
+  --spacing-sm: 16px;
+  --spacing-md: 24px;
+  --spacing-lg: 32px;
+  --spacing-xl: 40px;
+  --spacing-2xl: 48px;
+  --spacing-3xl: 56px;
+  --spacing-4xl: 64px;
+
+  /* Hand-drawn border radius */
+  --radius-sm: 8px 12px 10px 8px;
+  --radius-md: 12px 16px 10px 14px;
+  --radius-lg: 16px 20px 12px 18px;
+
+  /* Shadows for depth */
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 12px 24px rgba(0, 0, 0, 0.15);
+
+  /* Transitions */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.3s ease;
+  --transition-slow: 0.5s ease-out;
+}
 
 .handDrawnBorder {
   position: relative;
   border: 2px solid;
-  border-radius: 12px 18px 8px 14px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  transition: all var(--transition-normal);
 }
 
 .handDrawnBorder::before {
@@ -11,17 +43,23 @@
   position: absolute;
   inset: -1px;
   background: inherit;
-  border-radius: 12px 18px 8px 14px;
+  border-radius: var(--radius-lg);
   pointer-events: none;
   opacity: 0.1;
 }
 
+.handDrawnBorder:hover {
+  box-shadow: var(--shadow-lg);
+}
+
+/* Creature corner decorations - place in card corners for visual interest */
 .creatureCorner {
   position: absolute;
-  width: 40px;
-  height: 40px;
+  width: 48px;
+  height: 48px;
   background: radial-gradient(circle, var(--creature-color, #A855F7) 0%, transparent 70%);
   border-radius: 50%;
+  z-index: 1;
 }
 
 .creatureCornerTL {
@@ -43,6 +81,34 @@
   bottom: -12px;
   right: -12px;
 }
+
+@media (max-width: 640px) {
+  .creatureCorner {
+    width: 36px;
+    height: 36px;
+  }
+
+  .creatureCornerTL {
+    top: -8px;
+    left: -8px;
+  }
+
+  .creatureCornerTR {
+    top: -8px;
+    right: -8px;
+  }
+
+  .creatureCornerBL {
+    bottom: -8px;
+    left: -8px;
+  }
+
+  .creatureCornerBR {
+    bottom: -8px;
+    right: -8px;
+  }
+}
+
 
 /* Playful wiggle animation */
 @keyframes wiggleIn {
@@ -96,21 +162,29 @@
   animation: gentleBounce 0.4s ease-in-out;
 }
 
-/* Hand-drawn card container */
+/* Hand-drawn card container with proper spacing and shadow depth */
 .creatureCard {
   position: relative;
-  border-radius: 16px 20px 12px 18px;
+  border-radius: var(--radius-lg);
   border: 2px solid;
   overflow: hidden;
-  transition: all 0.3s ease;
+  padding: var(--spacing-md);
+  box-shadow: var(--shadow-md);
+  transition: all var(--transition-normal);
 }
 
 .creatureCard:hover {
   transform: translateY(-4px);
-  filter: drop-shadow(0 12px 20px rgba(0, 0, 0, 0.15));
+  box-shadow: var(--shadow-lg);
 }
 
-/* Creature decoration in corners */
+@media (max-width: 768px) {
+  .creatureCard {
+    padding: var(--spacing-sm);
+  }
+}
+
+/* Creature decoration in corners for visual interest */
 .creatureDecoration {
   position: absolute;
   width: 48px;
@@ -121,6 +195,7 @@
   background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
   border-radius: 50%;
   font-size: 28px;
+  z-index: 10;
 }
 
 .decorationTL {
@@ -146,16 +221,17 @@
   transform: scaleX(-1) scaleY(-1);
 }
 
-/* Playful error message styling */
+/* Playful error message styling with improved spacing */
 .errorMessageContainer {
   display: flex;
-  gap: 12px;
+  gap: var(--spacing-xs);
   align-items: flex-start;
-  padding: 12px 16px;
+  padding: var(--spacing-sm) var(--spacing-sm);
   background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(252, 165, 165, 0.1) 100%);
   border: 2px solid #EF4444;
-  border-radius: 8px 14px 10px 12px;
+  border-radius: var(--radius-md);
   animation: wiggleIn 0.4s ease-out;
+  box-shadow: var(--shadow-sm);
 }
 
 .errorIcon {
@@ -190,19 +266,28 @@
   animation: successPop 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
 }
 
-/* Empty state with creature */
+/* Empty state with creature - improved spacing and styling */
 .emptyStateContainer {
   text-align: center;
-  padding: 48px 24px;
+  padding: var(--spacing-2xl) var(--spacing-md);
   border: 2px dashed currentColor;
-  border-radius: 16px 20px 14px 18px;
+  border-radius: var(--radius-lg);
   border-color: rgba(168, 85, 247, 0.3);
+  box-shadow: var(--shadow-sm);
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.05) 0%, rgba(236, 72, 153, 0.05) 100%);
+  margin: var(--spacing-lg) 0;
 }
 
 .emptyStateCreature {
   font-size: 64px;
-  margin-bottom: 16px;
+  margin-bottom: var(--spacing-md);
   animation: float 3s ease-in-out infinite;
+  line-height: 1;
+}
+
+.emptyStateContainer h3,
+.emptyStateContainer p {
+  margin: var(--spacing-sm) 0;
 }
 
 @keyframes float {
@@ -214,30 +299,37 @@
   }
 }
 
-/* Button with creature accent */
+/* Button with creature accent - proper sizing and spacing */
 .creatureButton {
   position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 12px 24px;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-md);
   font-weight: 600;
-  border-radius: 12px 16px 10px 14px;
+  border-radius: var(--radius-md);
   border: none;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all var(--transition-normal);
   min-height: 48px;
   min-width: 48px;
+  box-shadow: var(--shadow-sm);
 }
 
 .creatureButton:hover {
   transform: translateY(-2px);
-  filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.2));
+  box-shadow: var(--shadow-md);
 }
 
 .creatureButton:active {
   transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .creatureButton:hover {
+    transform: none;
+  }
 }
 
 /* Responsive adjustments */
