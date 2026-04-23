@@ -1,0 +1,418 @@
+/* CreatureDisplay.module.css */
+/* Styles for the CreatureDisplay component */
+
+.creature {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  user-select: none;
+  transition: all 0.3s ease;
+}
+
+.creature:hover {
+  transform: scale(1.05);
+}
+
+.placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-align: center;
+  padding: 4px;
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(236, 72, 153, 0.1) 100%);
+  border-radius: 50%;
+  color: #666;
+  box-sizing: border-box;
+}
+
+/* Creature-specific colors */
+.creature_glimmer .placeholder {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.15) 0%, rgba(236, 72, 153, 0.15) 100%);
+  color: #a855f7;
+}
+
+.creature_pixel .placeholder {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(252, 211, 77, 0.15) 100%);
+  color: #3b82f6;
+}
+
+.creature_sparkle .placeholder {
+  background: linear-gradient(135deg, rgba(236, 72, 153, 0.15) 0%, rgba(6, 182, 212, 0.15) 100%);
+  color: #ec4899;
+}
+
+.creature_isla .placeholder {
+  background: linear-gradient(135deg, rgba(252, 211, 77, 0.15) 0%, rgba(245, 158, 11, 0.15) 100%);
+  color: #fcd34d;
+}
+
+.creature_cheery .placeholder {
+  background: linear-gradient(135deg, rgba(251, 146, 60, 0.15) 0%, rgba(251, 191, 36, 0.15) 100%);
+  color: #fb923c;
+}
+
+.creature_wobbly .placeholder {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(147, 197, 253, 0.15) 100%);
+  color: #10b981;
+}
+
+.creature_zing .placeholder {
+  background: linear-gradient(135deg, rgba(234, 179, 8, 0.15) 0%, rgba(239, 68, 68, 0.15) 100%);
+  color: #eab308;
+}
+
+.creature_drift .placeholder {
+  background: linear-gradient(135deg, rgba(147, 197, 253, 0.15) 0%, rgba(243, 244, 246, 0.15) 100%);
+  color: #93c5fd;
+}
+
+.creature_cozy .placeholder {
+  background: linear-gradient(135deg, rgba(146, 64, 14, 0.15) 0%, rgba(210, 105, 30, 0.15) 100%);
+  color: #92400e;
+}
+
+.creature_brain .placeholder {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.15) 0%, rgba(192, 132, 252, 0.15) 100%);
+  color: #a855f7;
+}
+
+.creature_boom .placeholder {
+  background: linear-gradient(135deg, rgba(220, 38, 38, 0.15) 0%, rgba(252, 211, 77, 0.15) 100%);
+  color: #dc2626;
+}
+
+.creature_wave .placeholder {
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.15) 0%, rgba(0, 217, 255, 0.15) 100%);
+  color: #06b6d4;
+}
+
+.creature_guardian .placeholder {
+  background: linear-gradient(135deg, rgba(30, 64, 175, 0.15) 0%, rgba(96, 165, 250, 0.15) 100%);
+  color: #1e40af;
+}
+
+.creature_echo .placeholder {
+  background: linear-gradient(135deg, rgba(209, 213, 219, 0.15) 0%, rgba(107, 114, 128, 0.15) 100%);
+  color: #d1d5db;
+}
+
+.creature_star .placeholder {
+  background: linear-gradient(135deg, rgba(252, 211, 77, 0.15) 0%, rgba(236, 72, 153, 0.15) 100%);
+  color: #fcd34d;
+}
+
+/* State styles */
+.state_happy {
+  filter: brightness(1.1);
+}
+
+.state_thinking {
+  opacity: 0.9;
+}
+
+.state_surprised {
+  filter: brightness(1.2);
+}
+
+.state_neutral {
+  opacity: 1;
+}
+
+.state_excited {
+  filter: saturate(1.2) brightness(1.15);
+}
+
+.state_celebrating {
+  filter: saturate(1.3) brightness(1.2);
+}
+
+.state_confused {
+  opacity: 0.8;
+  filter: hue-rotate(5deg);
+}
+
+/* Error state */
+.error {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+  background-color: #fee2e2;
+  border: 1px solid #fca5a5;
+  border-radius: 6px;
+  color: #dc2626;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+/* Debug info */
+.debugInfo {
+  position: absolute;
+  bottom: -20px;
+  left: 0;
+  right: 0;
+  font-size: 0.625rem;
+  color: #999;
+  text-align: center;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* Preview styles */
+.preview {
+  padding: 24px;
+  background: #f9fafb;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.preview h2 {
+  margin-top: 0;
+  margin-bottom: 8px;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.preview p {
+  margin: 0 0 16px 0;
+  color: #666;
+}
+
+.previewSection {
+  margin-bottom: 32px;
+}
+
+.previewSection h3 {
+  margin: 0 0 12px 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #111;
+}
+
+.stateGrid,
+.animationGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.stateItem,
+.animationItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+  text-align: center;
+}
+
+.stateItem p,
+.animationItem p {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #666;
+  text-transform: capitalize;
+  word-break: break-word;
+}
+
+.infoSection {
+  background: white;
+  padding: 16px;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+}
+
+.infoSection h3 {
+  margin: 0 0 12px 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.infoSection ul {
+  margin: 0;
+  padding-left: 20px;
+  list-style: disc;
+}
+
+.infoSection li {
+  margin-bottom: 8px;
+  color: #666;
+  font-size: 0.875rem;
+}
+
+.infoSection strong {
+  color: #111;
+  font-weight: 600;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .stateGrid,
+  .animationGrid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 12px;
+  }
+
+  .preview {
+    padding: 16px;
+  }
+}
+
+/* Animations - reference to creature-animations.ts definitions */
+@keyframes bounce {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+}
+
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  10% {
+    transform: translateX(-5px);
+  }
+  20% {
+    transform: translateX(5px);
+  }
+  30% {
+    transform: translateX(-5px);
+  }
+  40% {
+    transform: translateX(5px);
+  }
+  50% {
+    transform: translateX(0);
+  }
+}
+
+@keyframes wave {
+  0%,
+  100% {
+    transform: rotate(-10deg) translateX(0);
+  }
+  25% {
+    transform: rotate(15deg) translateX(5px);
+  }
+  50% {
+    transform: rotate(-10deg) translateX(0);
+  }
+  75% {
+    transform: rotate(15deg) translateX(5px);
+  }
+}
+
+@keyframes dance {
+  0%,
+  100% {
+    transform: rotate(0deg) translateY(0);
+  }
+  25% {
+    transform: rotate(-5deg) translateY(-10px);
+  }
+  50% {
+    transform: rotate(0deg) translateY(0);
+  }
+  75% {
+    transform: rotate(5deg) translateY(-10px);
+  }
+}
+
+@keyframes celebrate {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-30px) rotate(10deg);
+  }
+  50% {
+    transform: translateY(0) rotate(0deg);
+  }
+  75% {
+    transform: translateY(-30px) rotate(-10deg);
+  }
+}
+
+@keyframes shimmer {
+  0%,
+  100% {
+    filter: brightness(1) drop-shadow(0 0 0px rgba(255, 255, 255, 0));
+  }
+  50% {
+    filter: brightness(1.2) drop-shadow(0 0 8px rgba(255, 255, 255, 0.8));
+  }
+}
+
+@keyframes glow {
+  0%,
+  100% {
+    filter: brightness(1);
+  }
+  50% {
+    filter: brightness(1.3) blur(1px);
+  }
+}
+
+/* Reduce motion preference */
+@media (prefers-reduced-motion: reduce) {
+  .creature {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .creature:hover {
+    transform: none;
+  }
+}

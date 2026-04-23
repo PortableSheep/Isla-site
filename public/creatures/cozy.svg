@@ -1,0 +1,38 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Cozy the warm creature">
+  <title>Cozy</title>
+  <defs>
+    <style>
+      .cozy-body { fill: #CD853F; stroke: #8B4513; stroke-width: 2; }
+      .cozy-eye { fill: #FFFFFF; stroke: #000000; stroke-width: 1.5; }
+      .cozy-pupil { fill: #000000; }
+      .cozy-mouth { fill: none; stroke: #000000; stroke-width: 2; }
+      .cozy-wrap { fill: #DAA520; stroke: #8B4513; stroke-width: 2; }
+    </style>
+  </defs>
+  
+  <!-- Cozy round body wrapped in blanket -->
+  <circle class="cozy-body" cx="100" cy="115" r="50"/>
+  
+  <!-- Blanket wrap -->
+  <ellipse class="cozy-wrap" cx="100" cy="140" rx="52" ry="35"/>
+  <path class="cozy-wrap" d="M 55 110 Q 50 140 70 160 Q 100 180 130 160 Q 150 140 145 110" stroke="#8B4513" stroke-width="2" fill="none"/>
+  
+  <!-- Small rounded ears -->
+  <circle class="cozy-body" cx="70" cy="70" r="12"/>
+  <circle class="cozy-body" cx="130" cy="70" r="12"/>
+  
+  <!-- Left eye cozy -->
+  <circle class="cozy-eye" cx="85" cy="105" r="11"/>
+  <circle class="cozy-pupil" cx="85" cy="107" r="5"/>
+  
+  <!-- Right eye cozy -->
+  <circle class="cozy-eye" cx="115" cy="105" r="11"/>
+  <circle class="cozy-pupil" cx="115" cy="107" r="5"/>
+  
+  <!-- Content smile -->
+  <path class="cozy-mouth" d="M 90 130 Q 100 140 110 130"/>
+  
+  <!-- Arms nestled in blanket -->
+  <circle class="cozy-wrap" cx="45" cy="125" r="10"/>
+  <circle class="cozy-wrap" cx="155" cy="125" r="10"/>
+</svg>

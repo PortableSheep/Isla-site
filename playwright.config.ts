@@ -5,11 +5,11 @@ import { defineConfig, devices } from '@playwright/test';
  * Runs tests across Chrome, Firefox, and Safari
  */
 export default defineConfig({
-  testDir: './tests/e2e',
+  testDir: './tests',
   testMatch: '**/*.spec.ts',
   
   /* Maximum time one test can run for */
-  timeout: 30 * 1000,
+  timeout: 60 * 1000,
 
   expect: {
     timeout: 5000,

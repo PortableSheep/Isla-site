@@ -172,19 +172,24 @@ export default function WallPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">
-          {familyName} Wall
-        </h1>
-        <p className="text-gray-400">
-          Share updates, memories, and connect with your family
-        </p>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-white dark:from-gray-950 dark:via-purple-950 dark:to-gray-900 py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="mb-8 flex items-start gap-4">
+          <div className="text-4xl">📖</div>
+          <div className="flex-1">
+            <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">
+              {familyName} Wall
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400">
+              Share updates, memories, and connect with your family
+            </p>
+          </div>
+        </div>
 
-      {/* Wall Feed */}
-      <WallFeed familyId={familyId} isModerator={isModerator} />
+        {/* Wall Feed */}
+        <WallFeed familyId={familyId} isModerator={isModerator} />
+      </div>
     </div>
   );
 }

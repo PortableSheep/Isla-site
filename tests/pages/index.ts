@@ -264,3 +264,8 @@ export class FeedPage {
     await this.page.click('[data-testid="confirm-delete-button"]');
   }
 }
+
+
+// Export moderation and audit log pages
+export { ModerationPage } from './moderation.page';
+export { AuditLogPage } from './audit-log.page';

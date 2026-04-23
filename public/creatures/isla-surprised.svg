@@ -1,0 +1,44 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Surprised Isla">
+  <title>Isla - Surprised</title>
+  <defs>
+    <style>
+      .isla-body { fill: #FF6B9D; stroke: #C2185B; stroke-width: 2; }
+      .isla-eye { fill: #2C3E50; }
+      .isla-shine { fill: #FFFFFF; }
+      .isla-mouth { fill: none; stroke: #8B4513; stroke-width: 2.5; }
+    </style>
+  </defs>
+  
+  <!-- Round head -->
+  <circle class="isla-body" cx="100" cy="85" r="50"/>
+  
+  <!-- Crown-like pointed ears springing up -->
+  <polygon class="isla-body" points="70,45 60,10 75,40"/>
+  <polygon class="isla-body" points="130,45 140,10 125,40"/>
+  
+  <!-- Left eye surprised -->
+  <circle class="isla-eye" cx="85" cy="80" r="12"/>
+  <circle class="isla-shine" cx="86" cy="77" r="5"/>
+  
+  <!-- Right eye surprised -->
+  <circle class="isla-eye" cx="115" cy="80" r="12"/>
+  <circle class="isla-shine" cx="116" cy="77" r="5"/>
+  
+  <!-- O-shaped mouth -->
+  <circle cx="100" cy="110" r="8" fill="none" stroke="#8B4513" stroke-width="2"/>
+  
+  <!-- Body/dress -->
+  <ellipse class="isla-body" cx="100" cy="140" rx="35" ry="45"/>
+  
+  <!-- Left arm up -->
+  <ellipse class="isla-body" cx="45" cy="100" rx="12" ry="38" transform="rotate(-40 45 100)"/>
+  <circle class="isla-body" cx="28" cy="80" r="8"/>
+  
+  <!-- Right arm up -->
+  <ellipse class="isla-body" cx="155" cy="100" rx="12" ry="38" transform="rotate(40 155 100)"/>
+  <circle class="isla-body" cx="172" cy="80" r="8"/>
+  
+  <!-- Feet -->
+  <ellipse class="isla-body" cx="80" cy="185" rx="12" ry="8"/>
+  <ellipse class="isla-body" cx="120" cy="185" rx="12" ry="8"/>
+</svg>

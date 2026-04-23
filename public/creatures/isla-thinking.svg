@@ -1,0 +1,49 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Thinking Isla">
+  <title>Isla - Thinking</title>
+  <defs>
+    <style>
+      .isla-body { fill: #FF6B9D; stroke: #C2185B; stroke-width: 2; }
+      .isla-eye { fill: #2C3E50; }
+      .isla-shine { fill: #FFFFFF; }
+      .isla-mouth { fill: none; stroke: #8B4513; stroke-width: 2; }
+      .thinking-dot { fill: #8B4513; }
+    </style>
+  </defs>
+  
+  <!-- Round head -->
+  <circle class="isla-body" cx="100" cy="90" r="50"/>
+  
+  <!-- Crown-like pointed ears -->
+  <polygon class="isla-body" points="70,50 60,20 75,45"/>
+  <polygon class="isla-body" points="130,50 140,20 125,45"/>
+  
+  <!-- Left eye thinking -->
+  <circle class="isla-eye" cx="85" cy="85" r="10"/>
+  <circle class="isla-shine" cx="85" cy="80" r="4"/>
+  
+  <!-- Right eye thinking -->
+  <circle class="isla-eye" cx="115" cy="85" r="10"/>
+  <circle class="isla-shine" cx="115" cy="80" r="4"/>
+  
+  <!-- Thinking mouth -->
+  <path class="isla-mouth" d="M 95 108 Q 100 103 105 108"/>
+  
+  <!-- Body/dress -->
+  <ellipse class="isla-body" cx="100" cy="145" rx="35" ry="45"/>
+  
+  <!-- Left arm thinking -->
+  <ellipse class="isla-body" cx="55" cy="130" rx="12" ry="38"/>
+  <circle class="isla-body" cx="45" cy="175" r="8"/>
+  
+  <!-- Right arm on chin -->
+  <ellipse class="isla-body" cx="145" cy="125" rx="12" ry="38"/>
+  <circle class="isla-body" cx="155" cy="170" r="8"/>
+  
+  <!-- Thought bubbles -->
+  <circle class="thinking-dot" cx="135" cy="45" r="5"/>
+  <circle class="thinking-dot" cx="155" cy="60" r="3"/>
+  
+  <!-- Feet -->
+  <ellipse class="isla-body" cx="80" cy="190" rx="12" ry="8"/>
+  <ellipse class="isla-body" cx="120" cy="190" rx="12" ry="8"/>
+</svg>

@@ -1,0 +1,45 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Surprised Drift">
+  <title>Drift - Surprised</title>
+  <defs>
+    <style>
+      .drift-body { fill: #87CEEB; stroke: #4682B4; stroke-width: 2; }
+      .drift-eye { fill: #FFFFFF; stroke: #000000; stroke-width: 1.5; }
+      .drift-pupil { fill: #000000; }
+      .drift-mouth { fill: none; stroke: #000000; stroke-width: 2.5; }
+      .drift-cloud { fill: #E0F4FF; stroke: #4682B4; stroke-width: 1.5; }
+    </style>
+  </defs>
+  
+  <!-- Fluffy body bouncing -->
+  <ellipse class="drift-body" cx="100" cy="105" rx="50" ry="55"/>
+  <ellipse class="drift-body" cx="75" cy="95" rx="20" ry="25"/>
+  <ellipse class="drift-body" cx="125" cy="95" rx="20" ry="25"/>
+  
+  <!-- Wispy cloud top -->
+  <circle class="drift-cloud" cx="85" cy="55" r="15"/>
+  <circle class="drift-cloud" cx="115" cy="55" r="15"/>
+  <circle class="drift-cloud" cx="100" cy="45" r="12"/>
+  
+  <!-- Left eye surprised -->
+  <circle class="drift-eye" cx="85" cy="98" r="12"/>
+  <circle class="drift-pupil" cx="85" cy="98" r="7"/>
+  
+  <!-- Right eye surprised -->
+  <circle class="drift-eye" cx="115" cy="98" r="12"/>
+  <circle class="drift-pupil" cx="115" cy="98" r="7"/>
+  
+  <!-- O-shaped mouth -->
+  <circle cx="100" cy="130" r="9" fill="none" stroke="#000000" stroke-width="2"/>
+  
+  <!-- Left arm floating up -->
+  <path class="drift-body" d="M 55 105 Q 30 80 28 105" stroke="#4682B4" stroke-width="3" fill="none"/>
+  <circle class="drift-body" cx="24" cy="108" r="8"/>
+  
+  <!-- Right arm floating up -->
+  <path class="drift-body" d="M 145 105 Q 170 80 172 105" stroke="#4682B4" stroke-width="3" fill="none"/>
+  <circle class="drift-body" cx="176" cy="108" r="8"/>
+  
+  <!-- Feet -->
+  <ellipse class="drift-cloud" cx="80" cy="165" rx="14" ry="10"/>
+  <ellipse class="drift-cloud" cx="120" cy="165" rx="14" ry="10"/>
+</svg>

@@ -1,0 +1,33 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Surprised Star">
+  <title>Star - Surprised</title>
+  <defs>
+    <style>
+      .star-body { fill: #FFD700; stroke: #FFA500; stroke-width: 2; }
+      .star-eye { fill: #FFFFFF; stroke: #000000; stroke-width: 1.5; }
+      .star-pupil { fill: #000000; }
+      .star-mouth { fill: none; stroke: #000000; stroke-width: 2.5; }
+      .star-shine { fill: #FFFF99; }
+    </style>
+  </defs>
+  
+  <!-- Main star body jumping -->
+  <polygon class="star-body" points="100,30 118,85 175,85 131,128 150,183 100,140 50,183 69,128 25,85 82,85"/>
+  
+  <!-- Left eye surprised -->
+  <circle class="star-eye" cx="85" cy="80" r="12"/>
+  <circle class="star-pupil" cx="85" cy="80" r="7"/>
+  
+  <!-- Right eye surprised -->
+  <circle class="star-eye" cx="115" cy="80" r="12"/>
+  <circle class="star-pupil" cx="115" cy="80" r="7"/>
+  
+  <!-- O-shaped mouth of surprise -->
+  <circle cx="100" cy="110" r="9" fill="none" stroke="#000000" stroke-width="2"/>
+  
+  <!-- Explosive sparkle shine -->
+  <circle class="star-shine" cx="60" cy="55" r="5"/>
+  <circle class="star-shine" cx="140" cy="50" r="4"/>
+  <circle class="star-shine" cx="170" cy="95" r="3"/>
+  <circle class="star-shine" cx="30" cy="100" r="3"/>
+  <circle class="star-shine" cx="100" cy="160" r="2"/>
+</svg>

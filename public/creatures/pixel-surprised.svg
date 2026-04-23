@@ -1,0 +1,50 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Surprised Pixel">
+  <title>Pixel - Surprised</title>
+  <defs>
+    <style>
+      .pixel-body { fill: #00CED1; stroke: #008B8B; stroke-width: 2; }
+      .pixel-eye { fill: #FFFFFF; stroke: #000000; stroke-width: 1.5; }
+      .pixel-pupil { fill: #000000; }
+      .pixel-mouth { fill: none; stroke: #000000; stroke-width: 2; }
+    </style>
+  </defs>
+  
+  <!-- Cubic body bouncing -->
+  <rect class="pixel-body" x="60" y="65" width="80" height="80" rx="4"/>
+  
+  <!-- Left eye surprised - huge pupil -->
+  <rect class="pixel-eye" x="70" y="80" width="20" height="20" rx="2"/>
+  <rect class="pixel-pupil" x="75" y="85" width="10" height="10"/>
+  
+  <!-- Right eye surprised - huge pupil -->
+  <rect class="pixel-eye" x="110" y="80" width="20" height="20" rx="2"/>
+  <rect class="pixel-pupil" x="115" y="85" width="10" height="10"/>
+  
+  <!-- Antenna left springy -->
+  <path d="M 75 65 Q 70 45 75 30" stroke="#008B8B" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <circle fill="#00CED1" cx="75" cy="25" r="5"/>
+  
+  <!-- Antenna right springy -->
+  <path d="M 125 65 Q 130 45 125 30" stroke="#008B8B" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <circle fill="#00CED1" cx="125" cy="25" r="5"/>
+  
+  <!-- O-shaped mouth of surprise -->
+  <circle cx="100" cy="135" r="8" fill="none" stroke="#000000" stroke-width="2"/>
+  
+  <!-- Left arm up -->
+  <rect class="pixel-body" x="40" y="90" width="15" height="50" rx="2" transform="rotate(-40 47 90)"/>
+  <circle fill="#00CED1" cx="30" cy="70" r="8"/>
+  
+  <!-- Right arm up -->
+  <rect class="pixel-body" x="145" y="90" width="15" height="50" rx="2" transform="rotate(40 152 90)"/>
+  <circle fill="#00CED1" cx="170" cy="70" r="8"/>
+  
+  <!-- Left foot -->
+  <rect class="pixel-body" x="65" y="150" width="20" height="25" rx="2"/>
+  
+  <!-- Right foot -->
+  <rect class="pixel-body" x="115" y="150" width="20" height="25" rx="2"/>
+  
+  <!-- Surprise stars -->
+  <polygon fill="#FFD700" points="140,45 143,55 153,55 145,62 148,72 140,65 132,72 135,62 127,55 137,55"/>
+</svg>

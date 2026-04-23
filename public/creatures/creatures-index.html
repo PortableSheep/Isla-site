@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Isla Creatures - Visual Gallery</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 50px;
+            animation: slideDown 0.6s ease-out;
+        }
+        
+        header h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .creatures-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+        
+        .creature-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: fadeInUp 0.6s ease-out both;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .creature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        .creature-name {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .creature-states {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 100%;
+        }
+        
+        .creature-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .creature-state img {
+            width: 100px;
+            height: 100px;
+            object-fit: contain;
+            transition: transform 0.2s ease;
+        }
+        
+        .creature-state img:hover {
+            transform: scale(1.1);
+        }
+        
+        .creature-state label {
+            font-size: 0.75rem;
+            color: #666;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .color-swatch {
+            width: 100%;
+            height: 30px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 2px solid #ddd;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .creature-description {
+            font-size: 0.9rem;
+            color: #666;
+            text-align: center;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+        
+        .creature-traits {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 15px;
+            width: 100%;
+        }
+        
+        .trait {
+            background: #f0f0f0;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: #555;
+            font-weight: 500;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .stats {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 40px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+        
+        .stats h2 {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+        }
+        
+        .stat-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            text-align: center;
+        }
+        
+        .stat {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 10px;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            display: block;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        footer {
+            text-align: center;
+            color: white;
+            padding: 20px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 15px;
+            margin-top: 40px;
+        }
+        
+        .filter-controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-btn {
+            background: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .filter-btn:hover, .filter-btn.active {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        }
+        
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2rem;
+            }
+            
+            .creatures-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .creature-states {
+                gap: 10px;
+            }
+            
+            .creature-state img {
+                width: 80px;
+                height: 80px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎨 Isla Creatures Gallery</h1>
+            <p>Meet the 15 unique creatures that bring Isla.site to life</p>
+        </header>
+        
+        <div class="stats">
+            <h2>📊 Collection Overview</h2>
+            <div class="stat-row">
+                <div class="stat">
+                    <span class="stat-number">15</span>
+                    <span class="stat-label">Unique Creatures</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number">60</span>
+                    <span class="stat-label">SVG Assets</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number">4</span>
+                    <span class="stat-label">Mood States</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-number">~120KB</span>
+                    <span class="stat-label">Total Size</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="creatures-grid" id="creaturesGrid">
+            <!-- Creatures will be populated here by JavaScript -->
+        </div>
+        
+        <footer>
+            <p>✨ Hand-drawn creatures designed for Isla.site</p>
+            <p style="font-size: 0.9rem; margin-top: 10px; opacity: 0.8;">All SVGs are scalable, optimized, and animation-ready</p>
+        </footer>
+    </div>
+    
+    <script>
+        const creatures = [
+            {
+                id: 'glimmer',
+                name: 'Glimmer',
+                color: '#FFD700',
+                description: 'The sparkly optimist - always encouraging and friendly',
+                traits: ['Cheerful', 'Friendly', 'Encouraging']
+            },
+            {
+                id: 'pixel',
+                name: 'Pixel',
+                color: '#00CED1',
+                description: 'The geometric tech lover - modern and digital',
+                traits: ['Tech', 'Modern', 'Digital']
+            },
+            {
+                id: 'sparkle',
+                name: 'Sparkle',
+                color: '#FF69B4',
+                description: 'The star power - magical and energetic',
+                traits: ['Magical', 'Energetic', 'Special']
+            },
+            {
+                id: 'isla',
+                name: 'Isla',
+                color: '#FF6B9D',
+                description: 'The leader - confident and protective guide',
+                traits: ['Confident', 'Protective', 'Leader']
+            },
+            {
+                id: 'cheery',
+                name: 'Cheery',
+                color: '#FFA500',
+                description: 'The bouncy optimist - always smiling and uplifting',
+                traits: ['Bubbly', 'Positive', 'Uplifting']
+            },
+            {
+                id: 'wobbly',
+                name: 'Wobbly',
+                color: '#9B59B6',
+                description: 'The quirky explorer - playful and lovable',
+                traits: ['Playful', 'Quirky', 'Endearing']
+            },
+            {
+                id: 'zing',
+                name: 'Zing',
+                color: '#FF4500',
+                description: 'The energetic force - powerful and dynamic',
+                traits: ['Energetic', 'Powerful', 'Dynamic']
+            },
+            {
+                id: 'drift',
+                name: 'Drift',
+                color: '#87CEEB',
+                description: 'The dreamy cloud - calm and peaceful',
+                traits: ['Calm', 'Peaceful', 'Dreamy']
+            },
+            {
+                id: 'cozy',
+                name: 'Cozy',
+                color: '#CD853F',
+                description: 'The warm comfort - safe and nurturing',
+                traits: ['Comfortable', 'Safe', 'Nurturing']
+            },
+            {
+                id: 'brain',
+                name: 'Brain',
+                color: '#E6B3FF',
+                description: 'The intelligent thinker - smart and analytical',
+                traits: ['Smart', 'Analytical', 'Intelligent']
+            },
+            {
+                id: 'boom',
+                name: 'Boom',
+                color: '#DC143C',
+                description: 'The powerful protector - strong and confident',
+                traits: ['Strong', 'Powerful', 'Protective']
+            },
+            {
+                id: 'wave',
+                name: 'Wave',
+                color: '#1E90FF',
+                description: 'The friendly waver - welcoming and sociable',
+                traits: ['Friendly', 'Welcoming', 'Sociable']
+            },
+            {
+                id: 'guardian',
+                name: 'Guardian',
+                color: '#32CD32',
+                description: 'The watchful protector - vigilant and noble',
+                traits: ['Vigilant', 'Noble', 'Protective']
+            },
+            {
+                id: 'echo',
+                name: 'Echo',
+                color: '#FF00FF',
+                description: 'The voice of connection - expressive and communicative',
+                traits: ['Expressive', 'Communicative', 'Connective']
+            },
+            {
+                id: 'star',
+                name: 'Star',
+                color: '#FFD700',
+                description: 'The shining beacon - inspiring and bright',
+                traits: ['Inspiring', 'Aspirational', 'Bright']
+            }
+        ];
+        
+        function renderCreature(creature) {
+            return `
+                <div class="creature-card" style="animation-delay: ${creatures.indexOf(creature) * 0.05}s">
+                    <div class="creature-name">${creature.name}</div>
+                    <div class="color-swatch" style="background-color: ${creature.color}"></div>
+                    <div class="creature-states">
+                        <div class="creature-state">
+                            <img src="${creature.id}.svg" alt="${creature.name} neutral" loading="lazy">
+                            <label>Neutral</label>
+                        </div>
+                        <div class="creature-state">
+                            <img src="${creature.id}-happy.svg" alt="${creature.name} happy" loading="lazy">
+                            <label>Happy</label>
+                        </div>
+                        <div class="creature-state">
+                            <img src="${creature.id}-thinking.svg" alt="${creature.name} thinking" loading="lazy">
+                            <label>Thinking</label>
+                        </div>
+                        <div class="creature-state">
+                            <img src="${creature.id}-surprised.svg" alt="${creature.name} surprised" loading="lazy">
+                            <label>Surprised</label>
+                        </div>
+                    </div>
+                    <p class="creature-description">${creature.description}</p>
+                    <div class="creature-traits">
+                        ${creature.traits.map(trait => `<span class="trait">${trait}</span>`).join('')}
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Populate the grid
+        const grid = document.getElementById('creaturesGrid');
+        grid.innerHTML = creatures.map(renderCreature).join('');
+    </script>
+</body>
+</html>

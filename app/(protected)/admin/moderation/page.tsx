@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { ModerationDashboard } from '@/components/moderation';
+import { CreatureDisplay } from '@/components/CreatureDisplay';
 
 export default function ModerationPage() {
   const router = useRouter();
@@ -50,14 +51,25 @@ export default function ModerationPage() {
 
   if (loading || checkingAdmin || !isAdmin) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-950 dark:to-blue-950">
         <div className="text-center">
-          <div className="animate-spin text-4xl mb-4">⏳</div>
-          <p className="text-gray-400">Checking access...</p>
+          <div className="inline-block mb-4">
+            <CreatureDisplay
+              creatureId="drift"
+              state="processing"
+              animation="gentle_bounce"
+              size="large"
+            />
+          </div>
+          <p className="text-gray-600 dark:text-gray-400 font-medium">Verifying access...</p>
         </div>
       </div>
     );
   }
 
-  return <ModerationDashboard />;
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-white dark:from-gray-950 dark:via-blue-950 dark:to-gray-900">
+      <ModerationDashboard />
+    </div>
+  );
 }

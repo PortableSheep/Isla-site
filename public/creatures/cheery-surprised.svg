@@ -1,0 +1,45 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Surprised Cheery">
+  <title>Cheery - Surprised</title>
+  <defs>
+    <style>
+      .cheery-body { fill: #FFA500; stroke: #FF8C00; stroke-width: 2; }
+      .cheery-eye { fill: #FFFFFF; stroke: #000000; stroke-width: 1.5; }
+      .cheery-pupil { fill: #000000; }
+      .cheery-mouth { fill: none; stroke: #000000; stroke-width: 2.5; }
+    </style>
+  </defs>
+  
+  <!-- Main round body bouncing -->
+  <circle class="cheery-body" cx="100" cy="100" r="55"/>
+  
+  <!-- Small ear bumps springing -->
+  <circle class="cheery-body" cx="65" cy="55" r="15"/>
+  <circle class="cheery-body" cx="135" cy="55" r="15"/>
+  
+  <!-- Left eye surprised -->
+  <circle class="cheery-eye" cx="85" cy="95" r="14"/>
+  <circle class="cheery-pupil" cx="85" cy="95" r="7"/>
+  
+  <!-- Right eye surprised -->
+  <circle class="cheery-eye" cx="115" cy="95" r="14"/>
+  <circle class="cheery-pupil" cx="115" cy="95" r="7"/>
+  
+  <!-- O-shaped mouth -->
+  <circle cx="100" cy="135" r="9" fill="none" stroke="#000000" stroke-width="2"/>
+  
+  <!-- Dots -->
+  <circle fill="#FFD700" cx="75" cy="85" r="3"/>
+  <circle fill="#FFD700" cx="125" cy="95" r="3"/>
+  
+  <!-- Left arm up -->
+  <ellipse class="cheery-body" cx="35" cy="90" rx="13" ry="40" transform="rotate(-40 35 90)"/>
+  <circle class="cheery-body" cx="18" cy="70" r="8"/>
+  
+  <!-- Right arm up -->
+  <ellipse class="cheery-body" cx="165" cy="90" rx="13" ry="40" transform="rotate(40 165 90)"/>
+  <circle class="cheery-body" cx="182" cy="70" r="8"/>
+  
+  <!-- Feet -->
+  <ellipse class="cheery-body" cx="80" cy="160" rx="18" ry="10"/>
+  <ellipse class="cheery-body" cx="120" cy="160" rx="18" ry="10"/>
+</svg>

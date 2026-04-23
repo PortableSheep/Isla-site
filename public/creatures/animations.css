@@ -1,0 +1,420 @@
+/**
+ * Isla Creatures - Animation & Utility Styles
+ * Ready-to-use animations and utilities for the creature assets
+ */
+
+/* ==================== BASIC ANIMATIONS ==================== */
+
+/* Bounce Animation */
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-15px); }
+}
+
+/* Float Animation (for dreamy creatures like Drift) */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+}
+
+/* Wiggle Animation (for playful creatures like Wobbly) */
+@keyframes wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-2deg); }
+  75% { transform: rotate(2deg); }
+}
+
+/* Pulse Animation (for energetic creatures like Zing) */
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+/* Spin Animation (for tech creatures like Pixel) */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Shimmer Animation (for magical creatures like Sparkle) */
+@keyframes shimmer {
+  0%, 100% { opacity: 1; filter: brightness(1); }
+  50% { opacity: 0.8; filter: brightness(1.2); }
+}
+
+/* Rock Animation (side-to-side sway) */
+@keyframes rock {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(3deg); }
+}
+
+/* Pop Animation (sudden growth) */
+@keyframes pop {
+  0% { transform: scale(0.8); opacity: 0; }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Fade In Animation */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Slide In Animation */
+@keyframes slideIn {
+  from { transform: translateX(-30px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+/* ==================== CREATURE-SPECIFIC STYLES ==================== */
+
+/* Glimmer - The sparkly optimist */
+.creature-glimmer {
+  animation: bounce 2s ease-in-out infinite;
+}
+
+.creature-glimmer:hover {
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+/* Pixel - The geometric tech */
+.creature-pixel {
+  animation: spin 8s linear infinite;
+}
+
+.creature-pixel:hover {
+  animation: pulse 1s ease-in-out infinite;
+}
+
+/* Sparkle - The star power */
+.creature-sparkle {
+  animation: shimmer 2s ease-in-out infinite;
+}
+
+.creature-sparkle:hover {
+  animation: pop 0.5s ease-out;
+}
+
+/* Isla - The leader */
+.creature-isla {
+  animation: rock 3s ease-in-out infinite;
+}
+
+.creature-isla:hover {
+  animation: bounce 1.5s ease-in-out infinite;
+}
+
+/* Cheery - The bouncy optimist */
+.creature-cheery {
+  animation: bounce 1.5s ease-in-out infinite;
+}
+
+.creature-cheery:hover {
+  animation: bounce 1s ease-in-out infinite;
+}
+
+/* Wobbly - The quirky explorer */
+.creature-wobbly {
+  animation: wiggle 1s ease-in-out infinite;
+}
+
+.creature-wobbly:hover {
+  animation: wiggle 0.5s ease-in-out infinite;
+}
+
+/* Zing - The energetic force */
+.creature-zing {
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+.creature-zing:hover {
+  animation: pulse 0.6s ease-in-out infinite;
+}
+
+/* Drift - The dreamy cloud */
+.creature-drift {
+  animation: float 4s ease-in-out infinite;
+}
+
+.creature-drift:hover {
+  animation: float 2s ease-in-out infinite;
+}
+
+/* Cozy - The warm comfort */
+.creature-cozy {
+  animation: rock 2.5s ease-in-out infinite;
+}
+
+.creature-cozy:hover {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Brain - The intelligent thinker */
+.creature-brain {
+  animation: rock 2s ease-in-out infinite;
+}
+
+.creature-brain:hover {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* Boom - The powerful protector */
+.creature-boom {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.creature-boom:hover {
+  animation: pulse 0.7s ease-in-out infinite;
+}
+
+/* Wave - The friendly waver */
+.creature-wave {
+  animation: rock 2s ease-in-out infinite;
+}
+
+.creature-wave:hover {
+  animation: wiggle 1s ease-in-out infinite;
+}
+
+/* Guardian - The watchful protector */
+.creature-guardian {
+  animation: rock 3s ease-in-out infinite;
+}
+
+.creature-guardian:hover {
+  animation: bounce 2s ease-in-out infinite;
+}
+
+/* Echo - The voice of connection */
+.creature-echo {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.creature-echo:hover {
+  animation: shimmer 1s ease-in-out infinite;
+}
+
+/* Star - The shining beacon */
+.creature-star {
+  animation: shimmer 2s ease-in-out infinite;
+}
+
+.creature-star:hover {
+  animation: spin 2s linear infinite;
+}
+
+/* ==================== UTILITY CLASSES ==================== */
+
+/* Size Classes */
+.creature-size-xs {
+  width: 40px;
+  height: 40px;
+}
+
+.creature-size-sm {
+  width: 60px;
+  height: 60px;
+}
+
+.creature-size-md {
+  width: 100px;
+  height: 100px;
+}
+
+.creature-size-lg {
+  width: 150px;
+  height: 150px;
+}
+
+.creature-size-xl {
+  width: 200px;
+  height: 200px;
+}
+
+/* Display Classes */
+.creature-inline {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.creature-block {
+  display: block;
+}
+
+.creature-flex {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Animation Control Classes */
+.creature-no-animation {
+  animation: none !important;
+}
+
+.creature-animation-pause {
+  animation-play-state: paused !important;
+}
+
+.creature-animation-slow {
+  animation-duration: 3s !important;
+}
+
+.creature-animation-fast {
+  animation-duration: 0.8s !important;
+}
+
+/* Opacity Classes */
+.creature-fade {
+  opacity: 0.7;
+  transition: opacity 0.3s ease;
+}
+
+.creature-fade:hover {
+  opacity: 1;
+}
+
+/* Rotation Classes */
+.creature-rotate-90 {
+  transform: rotate(90deg);
+}
+
+.creature-rotate-180 {
+  transform: rotate(180deg);
+}
+
+.creature-rotate-270 {
+  transform: rotate(270deg);
+}
+
+.creature-flip-horizontal {
+  transform: scaleX(-1);
+}
+
+.creature-flip-vertical {
+  transform: scaleY(-1);
+}
+
+/* ==================== MOOD STATE COMBINATIONS ==================== */
+
+/* Happy creatures (combined with animation) */
+.creature-happy {
+  animation: bounce 1.5s ease-in-out infinite !important;
+}
+
+/* Thinking creatures (calm, focused) */
+.creature-thinking {
+  animation: float 3s ease-in-out infinite !important;
+}
+
+/* Surprised creatures (energetic) */
+.creature-surprised {
+  animation: pulse 1s ease-in-out infinite !important;
+}
+
+/* ==================== RESPONSIVE BEHAVIOR ==================== */
+
+@media (max-width: 768px) {
+  /* Slow down animations on mobile for performance */
+  .creature-size-lg,
+  .creature-size-xl {
+    width: 100px;
+    height: 100px;
+  }
+  
+  /* Reduce animation speed on mobile */
+  .creature-glimmer,
+  .creature-cheery,
+  .creature-bounce {
+    animation-duration: 3s !important;
+  }
+}
+
+/* ==================== LOADING STATES ==================== */
+
+/* Loading spinner */
+.creature-loading {
+  animation: spin 2s linear infinite;
+}
+
+/* Loading pulse */
+.creature-loading-pulse {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* ==================== INTERACTION EFFECTS ==================== */
+
+.creature-interactive {
+  cursor: pointer;
+  transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.creature-interactive:hover {
+  transform: scale(1.05);
+  filter: brightness(1.1);
+}
+
+.creature-interactive:active {
+  transform: scale(0.95);
+  filter: brightness(0.95);
+}
+
+/* ==================== GROUPING CREATURES ==================== */
+
+.creatures-container {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.creatures-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 20px;
+  align-items: center;
+}
+
+/* ==================== STAGGERED ANIMATIONS ==================== */
+
+.creatures-container > * {
+  animation-delay: calc(var(--creature-index, 0) * 0.1s);
+}
+
+/* Use like: <div style="--creature-index: 0;"></div> */
+
+/* ==================== PRINT STYLES ==================== */
+
+@media print {
+  .creature-animated {
+    animation: none !important;
+  }
+  
+  .creature-loading {
+    animation: none !important;
+  }
+}
+
+/* ==================== ACCESSIBILITY ==================== */
+
+/* Respect prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: more) {
+  .creature-fade {
+    opacity: 1;
+  }
+  
+  .creature-interactive:hover {
+    filter: brightness(1.3);
+  }
+}

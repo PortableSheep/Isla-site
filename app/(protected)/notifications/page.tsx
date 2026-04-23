@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Notification } from '@/types/notifications';
 import { Bell, Trash2, CheckCheck, Filter, X } from 'lucide-react';
+import { CreatureDisplay } from '@/components/CreatureDisplay';
+import styles from '@/styles/hand-drawn.module.css';
 
 const NOTIFICATION_TYPES = [
   { value: 'update', label: '📢 Updates' },
@@ -122,21 +124,28 @@ export default function NotificationsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-950 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-yellow-50 via-orange-50 to-white dark:from-gray-950 dark:via-orange-950 dark:to-gray-900 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto">
-        {/* Header */}
+        {/* Header with Zing creature */}
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-              <Bell className="w-8 h-8 text-amber-500" />
-              Notifications
-            </h1>
+          <div className="flex items-start gap-4 mb-6">
+            <div className="hidden sm:block">
+              <CreatureDisplay
+                creatureId="zing"
+                state="alert"
+                animation="pulse"
+                size="medium"
+              />
+            </div>
+            <div className="flex-1">
+              <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-yellow-600 to-orange-600 bg-clip-text text-transparent flex items-center gap-3">
+                Your Notifications
+              </h1>
+              <p className="text-gray-600 dark:text-gray-400 mt-2">
+                {filteredNotifications.length} {filteredNotifications.length === 1 ? 'notification' : 'notifications'}
+              </p>
+            </div>
           </div>
-
-          {/* Stats */}
-          <p className="text-gray-600 dark:text-gray-400">
-            {filteredNotifications.length} {filteredNotifications.length === 1 ? 'notification' : 'notifications'}
-          </p>
         </div>
 
         {/* Actions */}
@@ -163,7 +172,7 @@ export default function NotificationsPage() {
         </div>
 
         {/* Filters */}
-        <div className="mb-6 space-y-4">
+        <div className="mb-6 space-y-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-2">
             <Filter className="w-5 h-5 text-gray-600 dark:text-gray-400" />
             <span className="font-medium text-gray-900 dark:text-white">Filter by type:</span>
@@ -213,14 +222,25 @@ export default function NotificationsPage() {
         <div className="space-y-4">
           {isLoading ? (
             <div className="text-center py-12">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-white"></div>
-              <p className="text-gray-600 dark:text-gray-400 mt-3">Loading...</p>
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-white mb-3"></div>
+              <p className="text-gray-600 dark:text-gray-400">Loading...</p>
             </div>
           ) : filteredNotifications.length === 0 ? (
-            <div className="text-center py-12 bg-gray-50 dark:bg-gray-900 rounded-lg">
-              <Bell className="w-12 h-12 text-gray-400 dark:text-gray-600 mx-auto mb-3 opacity-50" />
+            <div
+              className={`${styles.emptyStateContainer} bg-gradient-to-br from-orange-50 to-yellow-50 dark:from-orange-950/30 dark:to-yellow-950/30`}
+            >
+              <div className={styles.emptyStateCreature}>
+                <CreatureDisplay
+                  creatureId="cozy"
+                  state="stretching"
+                  size="large"
+                />
+              </div>
               <p className="text-gray-600 dark:text-gray-400">
-                {unreadOnly ? 'No unread notifications' : 'No notifications'}
+                {unreadOnly ? 'No unread notifications' : 'No notifications yet'}
+              </p>
+              <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">
+                You&apos;ll see updates, replies, and approvals here.
               </p>
             </div>
           ) : (

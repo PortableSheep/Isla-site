@@ -1,0 +1,44 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Surprised Zing">
+  <title>Zing - Surprised</title>
+  <defs>
+    <style>
+      .zing-body { fill: #FF4500; stroke: #DC143C; stroke-width: 2; }
+      .zing-eye { fill: #FFFFFF; stroke: #000000; stroke-width: 1.5; }
+      .zing-pupil { fill: #000000; }
+      .zing-mouth { fill: none; stroke: #000000; stroke-width: 2.5; }
+    </style>
+  </defs>
+  
+  <!-- Body bouncing with spikes out -->
+  <circle class="zing-body" cx="100" cy="100" r="50"/>
+  
+  <!-- Spikes shooting out everywhere -->
+  <polygon class="zing-body" points="100,45 105,20 95,45"/>
+  <polygon class="zing-body" points="150,80 175,70 150,95"/>
+  <polygon class="zing-body" points="150,135 175,145 150,155"/>
+  <polygon class="zing-body" points="50,135 25,145 50,155"/>
+  <polygon class="zing-body" points="50,80 25,70 50,95"/>
+  
+  <!-- Left eye surprised -->
+  <circle class="zing-eye" cx="85" cy="95" r="12"/>
+  <circle class="zing-pupil" cx="85" cy="95" r="7"/>
+  
+  <!-- Right eye surprised -->
+  <circle class="zing-eye" cx="115" cy="95" r="12"/>
+  <circle class="zing-pupil" cx="115" cy="95" r="7"/>
+  
+  <!-- O-shaped mouth -->
+  <circle cx="100" cy="130" r="9" fill="none" stroke="#000000" stroke-width="2"/>
+  
+  <!-- Left arm up -->
+  <ellipse class="zing-body" cx="35" cy="85" rx="13" ry="38" transform="rotate(-40 35 85)"/>
+  <circle class="zing-body" cx="15" cy="70" r="9"/>
+  
+  <!-- Right arm up -->
+  <ellipse class="zing-body" cx="165" cy="85" rx="13" ry="38" transform="rotate(40 165 85)"/>
+  <circle class="zing-body" cx="185" cy="70" r="9"/>
+  
+  <!-- Feet -->
+  <ellipse class="zing-body" cx="80" cy="155" rx="16" ry="11"/>
+  <ellipse class="zing-body" cx="120" cy="155" rx="16" ry="11"/>
+</svg>

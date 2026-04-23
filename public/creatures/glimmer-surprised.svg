@@ -1,0 +1,49 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Surprised Glimmer">
+  <title>Glimmer - Surprised</title>
+  <defs>
+    <style>
+      .glimmer-body { fill: #FFD700; stroke: #DAA520; stroke-width: 2; }
+      .glimmer-eye { fill: #2C3E50; }
+      .glimmer-eye-shine { fill: #FFFFFF; }
+      .glimmer-mouth { fill: none; stroke: #8B4513; stroke-width: 2.5; }
+    </style>
+  </defs>
+  
+  <!-- Main body bouncing up slightly -->
+  <ellipse class="glimmer-body" cx="100" cy="105" rx="55" ry="65"/>
+  
+  <!-- Left ear -->
+  <ellipse class="glimmer-body" cx="70" cy="50" rx="18" ry="32"/>
+  <ellipse class="glimmer-eye" cx="70" cy="45" rx="8" ry="10"/>
+  
+  <!-- Right ear -->
+  <ellipse class="glimmer-body" cx="130" cy="50" rx="18" ry="32"/>
+  <ellipse class="glimmer-eye" cx="130" cy="45" rx="8" ry="10"/>
+  
+  <!-- Left eye - wide and surprised -->
+  <circle class="glimmer-eye" cx="80" cy="88" r="15"/>
+  <circle class="glimmer-eye-shine" cx="82" cy="84" r="7"/>
+  
+  <!-- Right eye - wide and surprised -->
+  <circle class="glimmer-eye" cx="120" cy="88" r="15"/>
+  <circle class="glimmer-eye-shine" cx="122" cy="84" r="7"/>
+  
+  <!-- Sparkle spots -->
+  <circle fill="#FFE4B5" cx="75" cy="115" r="4"/>
+  <circle fill="#FFE4B5" cx="125" cy="120" r="4"/>
+  
+  <!-- O-shaped mouth of surprise -->
+  <circle class="glimmer-mouth" cx="100" cy="138" r="8" fill="none" stroke="#8B4513" stroke-width="2"/>
+  
+  <!-- Raised arms -->
+  <ellipse class="glimmer-body" cx="45" cy="100" rx="12" ry="35" transform="rotate(-35 45 100)"/>
+  <ellipse class="glimmer-body" cx="155" cy="100" rx="12" ry="35" transform="rotate(35 155 100)"/>
+  
+  <!-- Feet -->
+  <ellipse class="glimmer-body" cx="85" cy="170" rx="15" ry="12"/>
+  <ellipse class="glimmer-body" cx="115" cy="170" rx="15" ry="12"/>
+  
+  <!-- Surprise lines -->
+  <path class="glimmer-mouth" d="M 95 70 L 92 65" stroke="#8B4513" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path class="glimmer-mouth" d="M 105 68 L 108 62" stroke="#8B4513" stroke-width="2" fill="none" stroke-linecap="round"/>
+</svg>

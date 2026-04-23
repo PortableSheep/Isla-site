@@ -1,0 +1,41 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Surprised Guardian">
+  <title>Guardian - Surprised</title>
+  <defs>
+    <style>
+      .guardian-body { fill: #32CD32; stroke: #228B22; stroke-width: 2; }
+      .guardian-eye { fill: #FFFFFF; stroke: #000000; stroke-width: 1.5; }
+      .guardian-pupil { fill: #000000; }
+      .guardian-mouth { fill: none; stroke: #000000; stroke-width: 2.5; }
+      .guardian-shield { fill: #FFD700; stroke: #FFA500; stroke-width: 2; }
+    </style>
+  </defs>
+  
+  <!-- Guardian body bouncing -->
+  <circle class="guardian-body" cx="100" cy="105" r="48"/>
+  
+  <!-- Shield on chest -->
+  <polygon class="guardian-shield" points="100,85 115,100 100,120 85,100"/>
+  
+  <!-- Left eye surprised -->
+  <circle class="guardian-eye" cx="80" cy="98" r="12"/>
+  <circle class="guardian-pupil" cx="80" cy="98" r="7"/>
+  
+  <!-- Right eye surprised -->
+  <circle class="guardian-eye" cx="120" cy="98" r="12"/>
+  <circle class="guardian-pupil" cx="120" cy="98" r="7"/>
+  
+  <!-- O-shaped mouth -->
+  <circle cx="100" cy="130" r="9" fill="none" stroke="#000000" stroke-width="2"/>
+  
+  <!-- Left arm defensive up -->
+  <ellipse class="guardian-body" cx="30" cy="90" rx="13" ry="37" transform="rotate(-40 30 90)"/>
+  <circle class="guardian-body" cx="12" cy="75" r="9"/>
+  
+  <!-- Right arm defensive up -->
+  <ellipse class="guardian-body" cx="170" cy="90" rx="13" ry="37" transform="rotate(40 170 90)"/>
+  <circle class="guardian-body" cx="188" cy="75" r="9"/>
+  
+  <!-- Feet -->
+  <ellipse class="guardian-body" cx="78" cy="155" rx="16" ry="12"/>
+  <ellipse class="guardian-body" cx="122" cy="155" rx="16" ry="12"/>
+</svg>

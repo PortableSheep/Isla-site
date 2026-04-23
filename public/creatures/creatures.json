@@ -1,0 +1,261 @@
+{
+  "version": "1.0.0",
+  "description": "Isla.site Creatures Asset Library",
+  "lastUpdated": "2024",
+  "stats": {
+    "totalCreatures": 15,
+    "totalAssets": 60,
+    "modsPerCreature": 4,
+    "totalSize": "~268KB",
+    "averageAssetSize": "~4.5KB"
+  },
+  "creatures": [
+    {
+      "id": "glimmer",
+      "name": "Glimmer",
+      "color": "#FFD700",
+      "personality": "Cheerful, friendly, encouraging",
+      "uses": ["Welcome screens", "Positive feedback", "Encouragement"],
+      "traits": ["Sparkly", "Optimist", "Enthusiastic"],
+      "assets": [
+        "glimmer.svg",
+        "glimmer-happy.svg",
+        "glimmer-thinking.svg",
+        "glimmer-surprised.svg"
+      ]
+    },
+    {
+      "id": "pixel",
+      "name": "Pixel",
+      "color": "#00CED1",
+      "personality": "Digital, modern, technical",
+      "uses": ["Tech features", "Loading states", "Achievements"],
+      "traits": ["Geometric", "Tech-savvy", "Modern"],
+      "assets": [
+        "pixel.svg",
+        "pixel-happy.svg",
+        "pixel-thinking.svg",
+        "pixel-surprised.svg"
+      ]
+    },
+    {
+      "id": "sparkle",
+      "name": "Sparkle",
+      "color": "#FF69B4",
+      "personality": "Magical, energetic, enthusiastic",
+      "uses": ["Special moments", "Celebrations", "Achievements"],
+      "traits": ["Magical", "Star-shaped", "Energetic"],
+      "assets": [
+        "sparkle.svg",
+        "sparkle-happy.svg",
+        "sparkle-thinking.svg",
+        "sparkle-surprised.svg"
+      ]
+    },
+    {
+      "id": "isla",
+      "name": "Isla",
+      "color": "#FF6B9D",
+      "personality": "Confident, protective, guiding",
+      "uses": ["Main character", "Guides", "Tutorials"],
+      "traits": ["Leader", "Royal", "Protective"],
+      "assets": [
+        "isla.svg",
+        "isla-happy.svg",
+        "isla-thinking.svg",
+        "isla-surprised.svg"
+      ]
+    },
+    {
+      "id": "cheery",
+      "name": "Cheery",
+      "color": "#FFA500",
+      "personality": "Bubbly, always smiling, uplifting",
+      "uses": ["Notifications", "Positive messages", "Encouragement"],
+      "traits": ["Bouncy", "Round", "Always smiling"],
+      "assets": [
+        "cheery.svg",
+        "cheery-happy.svg",
+        "cheery-thinking.svg",
+        "cheery-surprised.svg"
+      ]
+    },
+    {
+      "id": "wobbly",
+      "name": "Wobbly",
+      "color": "#9B59B6",
+      "personality": "Playful, awkward but lovable, endearing",
+      "uses": ["Unexpected moments", "Humor", "Tutorials"],
+      "traits": ["Quirky", "Jiggly", "Adorable"],
+      "assets": [
+        "wobbly.svg",
+        "wobbly-happy.svg",
+        "wobbly-thinking.svg",
+        "wobbly-surprised.svg"
+      ]
+    },
+    {
+      "id": "zing",
+      "name": "Zing",
+      "color": "#FF4500",
+      "personality": "Powerful, action-oriented, dynamic",
+      "uses": ["Action states", "Progress", "Energy"],
+      "traits": ["Spiky", "Energetic", "Powerful"],
+      "assets": [
+        "zing.svg",
+        "zing-happy.svg",
+        "zing-thinking.svg",
+        "zing-surprised.svg"
+      ]
+    },
+    {
+      "id": "drift",
+      "name": "Drift",
+      "color": "#87CEEB",
+      "personality": "Calm, peaceful, thoughtful",
+      "uses": ["Loading screens", "Thinking states", "Rest"],
+      "traits": ["Cloud-like", "Dreamy", "Peaceful"],
+      "assets": [
+        "drift.svg",
+        "drift-happy.svg",
+        "drift-thinking.svg",
+        "drift-surprised.svg"
+      ]
+    },
+    {
+      "id": "cozy",
+      "name": "Cozy",
+      "color": "#CD853F",
+      "personality": "Comfortable, safe, nurturing",
+      "uses": ["Help systems", "Comfort messages", "Support"],
+      "traits": ["Warm", "Wrapped", "Comforting"],
+      "assets": [
+        "cozy.svg",
+        "cozy-happy.svg",
+        "cozy-thinking.svg",
+        "cozy-surprised.svg"
+      ]
+    },
+    {
+      "id": "brain",
+      "name": "Brain",
+      "color": "#E6B3FF",
+      "personality": "Smart, contemplative, analytical",
+      "uses": ["Learning", "Insights", "Problem-solving"],
+      "traits": ["Intelligent", "Wrinkly", "Thoughtful"],
+      "assets": [
+        "brain.svg",
+        "brain-happy.svg",
+        "brain-thinking.svg",
+        "brain-surprised.svg"
+      ]
+    },
+    {
+      "id": "boom",
+      "name": "Boom",
+      "color": "#DC143C",
+      "personality": "Strong, confident, protective",
+      "uses": ["Protection", "Strength", "Achievements"],
+      "traits": ["Muscular", "Powerful", "Protective"],
+      "assets": [
+        "boom.svg",
+        "boom-happy.svg",
+        "boom-thinking.svg",
+        "boom-surprised.svg"
+      ]
+    },
+    {
+      "id": "wave",
+      "name": "Wave",
+      "color": "#1E90FF",
+      "personality": "Friendly, welcoming, sociable",
+      "uses": ["Greetings", "Social features", "Welcomes"],
+      "traits": ["Wavy", "Friendly", "Welcoming"],
+      "assets": [
+        "wave.svg",
+        "wave-happy.svg",
+        "wave-thinking.svg",
+        "wave-surprised.svg"
+      ]
+    },
+    {
+      "id": "guardian",
+      "name": "Guardian",
+      "color": "#32CD32",
+      "personality": "Vigilant, protective, noble",
+      "uses": ["Security", "Monitoring", "Protection"],
+      "traits": ["Shield", "Protector", "Green"],
+      "assets": [
+        "guardian.svg",
+        "guardian-happy.svg",
+        "guardian-thinking.svg",
+        "guardian-surprised.svg"
+      ]
+    },
+    {
+      "id": "echo",
+      "name": "Echo",
+      "color": "#FF00FF",
+      "personality": "Communicative, expressive, connective",
+      "uses": ["Comments", "Messages", "Communication"],
+      "traits": ["Rings", "Expressive", "Communicative"],
+      "assets": [
+        "echo.svg",
+        "echo-happy.svg",
+        "echo-thinking.svg",
+        "echo-surprised.svg"
+      ]
+    },
+    {
+      "id": "star",
+      "name": "Star",
+      "color": "#FFD700",
+      "personality": "Inspiring, aspirational, bright",
+      "uses": ["Goals", "Achievements", "Excellence"],
+      "traits": ["Star-shaped", "Bright", "Inspirational"],
+      "assets": [
+        "star.svg",
+        "star-happy.svg",
+        "star-thinking.svg",
+        "star-surprised.svg"
+      ]
+    }
+  ],
+  "moods": {
+    "neutral": "Default/calm state",
+    "happy": "Joyful/excited state",
+    "thinking": "Contemplative/processing state",
+    "surprised": "Amazed/shocked state"
+  },
+  "usage": {
+    "htmlImg": "<img src=\"/creatures/glimmer.svg\" alt=\"Glimmer\">",
+    "htmlSvg": "<svg><use href=\"/creatures/glimmer.svg\"></use></svg>",
+    "css": "background-image: url('/creatures/glimmer.svg');",
+    "react": "import GlimmerSvg from '@/public/creatures/glimmer.svg'; <img src={GlimmerSvg} />"
+  },
+  "designSpecs": {
+    "viewBox": "0 0 200 200",
+    "canvases": {
+      "full": "200x200px",
+      "badge": "100x100px",
+      "small": "60x60px",
+      "tiny": "40x40px"
+    },
+    "style": "Hand-drawn, slightly irregular lines, organic shapes",
+    "features": [
+      "Big expressive eyes",
+      "Quirky proportions",
+      "Kid-friendly appearance",
+      "Creepy-but-kind aesthetic",
+      "Color-coded by personality",
+      "Animation-ready SVG structure"
+    ]
+  },
+  "accessibility": {
+    "hasAriaLabel": true,
+    "hasTitle": true,
+    "hasRole": true,
+    "contrastLevel": "WCAG AA",
+    "screenReaderFriendly": true
+  }
+}

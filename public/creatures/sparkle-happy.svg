@@ -1,0 +1,45 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Happy Sparkle">
+  <title>Sparkle - Happy</title>
+  <defs>
+    <style>
+      .sparkle-body { fill: #FF69B4; stroke: #FF1493; stroke-width: 2; }
+      .sparkle-eye { fill: #FFFFFF; stroke: #000000; stroke-width: 1.5; }
+      .sparkle-pupil { fill: #000000; }
+      .sparkle-mouth { fill: none; stroke: #000000; stroke-width: 2.5; }
+      .star-shine { fill: #FFD700; }
+      .sparkle-cheek { fill: #FFB6C1; opacity: 0.7; }
+    </style>
+  </defs>
+  
+  <!-- Star-shaped body -->
+  <polygon class="sparkle-body" points="100,30 115,80 170,80 125,120 145,170 100,130 55,170 75,120 30,80 85,80"/>
+  
+  <!-- Left eye happy -->
+  <circle class="sparkle-eye" cx="80" cy="75" r="10"/>
+  <path class="sparkle-pupil" d="M 75 75 L 85 75 L 85 80 L 75 80 Z"/>
+  <circle fill="#FFFFFF" cx="80" cy="77" r="2"/>
+  
+  <!-- Right eye happy -->
+  <circle class="sparkle-eye" cx="120" cy="75" r="10"/>
+  <path class="sparkle-pupil" d="M 115 75 L 125 75 L 125 80 L 115 80 Z"/>
+  <circle fill="#FFFFFF" cx="120" cy="77" r="2"/>
+  
+  <!-- Cheeks -->
+  <circle class="sparkle-cheek" cx="60" cy="90" r="12"/>
+  <circle class="sparkle-cheek" cx="140" cy="90" r="12"/>
+  
+  <!-- Big happy mouth -->
+  <path class="sparkle-mouth" d="M 88 108 Q 100 118 112 108"/>
+  
+  <!-- Sparkles around body -->
+  <polygon class="star-shine" points="150,45 153,53 161,53 154,60 157,68 150,60 143,68 146,60 139,53 147,53"/>
+  <polygon class="star-shine" points="50,55 52,62 60,62 53,67 55,75 50,70 45,75 47,67 40,62 48,62"/>
+  <polygon class="star-shine" points="170,105 172,112 180,112 173,117 175,125 170,120 165,125 167,117 160,112 168,112"/>
+  <polygon class="star-shine" points="30,110 32,117 40,117 33,122 35,130 30,125 25,130 27,122 20,117 28,117"/>
+  
+  <!-- Arm left raised -->
+  <ellipse class="sparkle-body" cx="40" cy="85" rx="12" ry="40" transform="rotate(-35 40 85)"/>
+  
+  <!-- Arm right raised -->
+  <ellipse class="sparkle-body" cx="160" cy="85" rx="12" ry="40" transform="rotate(35 160 85)"/>
+</svg>

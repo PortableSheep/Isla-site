@@ -1,0 +1,1042 @@
+/**
+ * Comprehensive micro-interactions and animations for Isla's creature-themed UI.
+ *
+ * Features:
+ * - All animations respect prefers-reduced-motion
+ * - GPU-accelerated using transform and opacity only
+ * - Designed for 60fps+ performance
+ * - Mobile-friendly with accessibility in mind
+ */
+
+/* ============================================================================
+   CORE ANIMATION UTILITIES & UTILITIES
+   ============================================================================ */
+
+/* Reduced motion baseline - applied when prefers-reduced-motion is enabled */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ============================================================================
+   1. CREATURE BLINK ANIMATION
+   ============================================================================ */
+
+@keyframes blink {
+  0% {
+    opacity: 1;
+  }
+  45% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+  55% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.creature-blink {
+  animation: blink 300ms ease-in-out;
+}
+
+/* Reduced motion version */
+.creature-blink-reduced {
+  /* No animation */
+}
+
+/* ============================================================================
+   2. CREATURE BOUNCE ON INTERACTION
+   ============================================================================ */
+
+@keyframes bounce-once {
+  0% {
+    transform: translateY(0);
+  }
+  25% {
+    transform: translateY(-12px);
+  }
+  50% {
+    transform: translateY(0);
+  }
+  75% {
+    transform: translateY(-6px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.bounce-once {
+  animation: bounce-once 600ms cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.bounce-reduced {
+  /* Graceful fallback - no animation */
+}
+
+/* ============================================================================
+   3. POST CREATION CELEBRATION
+   ============================================================================ */
+
+@keyframes celebration {
+  0% {
+    transform: scale(0.5) translateY(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.15) translateY(-15px);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes celebration-jump {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-25px) rotate(-5deg);
+  }
+  50% {
+    transform: translateY(0) rotate(5deg);
+  }
+  75% {
+    transform: translateY(-25px) rotate(-5deg);
+  }
+}
+
+.celebration-active {
+  animation: celebration-jump 2000ms cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+}
+
+.celebration-reduced {
+  transform: scale(1);
+  opacity: 1;
+}
+
+/* ============================================================================
+   4. NOTIFICATION POP-IN
+   ============================================================================ */
+
+@keyframes notification-slide-in {
+  0% {
+    transform: translateX(400px) translateY(-20px) scale(0.8);
+    opacity: 0;
+  }
+  60% {
+    transform: translateX(-10px) translateY(0) scale(1.05);
+  }
+  100% {
+    transform: translateX(0) translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.notification-slide-in {
+  animation: notification-slide-in 500ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.notification-reduced {
+  transform: translateX(0) translateY(0) scale(1);
+  opacity: 1;
+}
+
+/* ============================================================================
+   5. APPROVAL CELEBRATION
+   ============================================================================ */
+
+@keyframes approval-dance {
+  0% {
+    transform: translateY(0) rotate(0deg);
+  }
+  20% {
+    transform: translateY(-15px) rotate(-8deg);
+  }
+  40% {
+    transform: translateY(0) rotate(8deg);
+  }
+  60% {
+    transform: translateY(-15px) rotate(-8deg);
+  }
+  80% {
+    transform: translateY(0) rotate(8deg);
+  }
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+}
+
+@keyframes approval-dance-parent {
+  0% {
+    transform: scale(1) rotate(0deg);
+  }
+  25% {
+    transform: scale(1.05) rotate(-5deg);
+  }
+  50% {
+    transform: scale(1.1) rotate(5deg);
+  }
+  75% {
+    transform: scale(1.05) rotate(-5deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+.approval-dance {
+  animation: approval-dance 3000ms cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+}
+
+.approval-dance-parent {
+  animation: approval-dance-parent 3000ms cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+}
+
+.approval-reduced {
+  transform: scale(1) rotate(0deg);
+}
+
+/* ============================================================================
+   6. ERROR STATE REACTION
+   ============================================================================ */
+
+@keyframes error-shake {
+  0% {
+    transform: translateX(0);
+  }
+  10% {
+    transform: translateX(-4px);
+  }
+  20% {
+    transform: translateX(4px);
+  }
+  30% {
+    transform: translateX(-4px);
+  }
+  40% {
+    transform: translateX(4px);
+  }
+  50% {
+    transform: translateX(-4px);
+  }
+  60% {
+    transform: translateX(4px);
+  }
+  70% {
+    transform: translateX(-4px);
+  }
+  80% {
+    transform: translateX(4px);
+  }
+  90% {
+    transform: translateX(-2px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.error-shake {
+  animation: error-shake 800ms ease-in-out forwards;
+}
+
+.error-shake-reduced {
+  /* No animation, just static display */
+}
+
+/* ============================================================================
+   7. LOADING SKELETON ANIMATION
+   ============================================================================ */
+
+@keyframes skeleton-breathing {
+  0% {
+    transform: translateY(0) scaleY(1);
+    opacity: 0.6;
+  }
+  50% {
+    transform: translateY(-4px) scaleY(1.02);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(0) scaleY(1);
+    opacity: 0.6;
+  }
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.loading-skeleton {
+  animation: skeleton-breathing 2000ms ease-in-out infinite;
+}
+
+.loading-skeleton-shimmer {
+  animation: skeleton-shimmer 2000ms infinite;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.3) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  background-size: 1000px 100%;
+}
+
+.loading-reduced {
+  opacity: 0.6;
+}
+
+/* ============================================================================
+   8. PAGE TRANSITION
+   ============================================================================ */
+
+@keyframes page-fade-in {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes page-fade-out {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes page-wave-goodbye {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-15deg);
+  }
+  50% {
+    transform: rotate(15deg);
+  }
+  75% {
+    transform: rotate(-15deg);
+  }
+}
+
+.page-transition-in {
+  animation: page-fade-in 300ms ease-out forwards;
+}
+
+.page-transition-out {
+  animation: page-fade-out 200ms ease-in forwards;
+}
+
+.page-wave-goodbye {
+  animation: page-wave-goodbye 800ms ease-in-out forwards;
+}
+
+.page-transition-in-reduced,
+.page-transition-out-reduced {
+  opacity: 1;
+}
+
+/* ============================================================================
+   9. BUTTON HOVER EFFECTS
+   ============================================================================ */
+
+@keyframes button-scale-up {
+  0% {
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(1.05);
+  }
+}
+
+.button-hover-scale {
+  animation: button-scale-up 100ms ease-out forwards;
+  cursor: pointer;
+}
+
+.button-hover-scale:active {
+  transform: scale(0.98);
+}
+
+/* ============================================================================
+   10. FORM INPUT FOCUS
+   ============================================================================ */
+
+@keyframes input-glow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(168, 85, 247, 0.1);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.1);
+  }
+}
+
+.input-focus-glow {
+  animation: input-glow 600ms ease-out forwards;
+  border-color: var(--color-primary, #a855f7);
+}
+
+.input-focus-reduced {
+  border-color: var(--color-primary, #a855f7);
+}
+
+@keyframes creature-pop-in {
+  0% {
+    transform: scale(0) translateY(20px);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.1) translateY(-5px);
+  }
+  100% {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+.creature-pop {
+  animation: creature-pop-in 400ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.creature-pop-reduced {
+  transform: scale(1) translateY(0);
+  opacity: 1;
+}
+
+/* ============================================================================
+   11. EMPTY STATE ENCOURAGEMENT
+   ============================================================================ */
+
+@keyframes empty-state-wake {
+  0% {
+    transform: translateY(0) scaleY(1);
+    opacity: 0.6;
+  }
+  30% {
+    transform: translateY(-8px) scaleY(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translateY(0) scaleY(1.1);
+    opacity: 1;
+  }
+  70% {
+    transform: translateY(-5px) scaleY(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0) scaleY(1);
+    opacity: 1;
+  }
+}
+
+@keyframes empty-state-wave {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-20deg);
+  }
+  50% {
+    transform: rotate(20deg);
+  }
+  75% {
+    transform: rotate(-20deg);
+  }
+}
+
+.empty-state-wake {
+  animation: empty-state-wake 1000ms cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+}
+
+.empty-state-wave {
+  animation: empty-state-wave 800ms ease-in-out forwards;
+  transform-origin: center 20%;
+}
+
+.empty-state-reduced {
+  opacity: 1;
+}
+
+/* ============================================================================
+   12. NOTIFICATION BADGE PULSE
+   ============================================================================ */
+
+@keyframes badge-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes badge-color-pulse {
+  0% {
+    background-color: #ef4444;
+  }
+  50% {
+    background-color: #f87171;
+  }
+  100% {
+    background-color: #ef4444;
+  }
+}
+
+.badge-pulse {
+  animation: badge-pulse 1500ms ease-in-out infinite,
+    badge-color-pulse 1500ms ease-in-out infinite;
+}
+
+.badge-pulse-reduced {
+  /* Static display without animation */
+}
+
+/* ============================================================================
+   13. APPROVAL WORKFLOW PROGRESS
+   ============================================================================ */
+
+@keyframes progress-step-enter {
+  0% {
+    transform: scale(0) rotate(-180deg);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.1) rotate(10deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+@keyframes progress-step-glow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.7);
+  }
+  100% {
+    box-shadow: 0 0 0 10px rgba(168, 85, 247, 0);
+  }
+}
+
+.progress-step {
+  animation: progress-step-enter 600ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards,
+    progress-step-glow 1500ms ease-out forwards;
+}
+
+.progress-reduced {
+  opacity: 1;
+}
+
+/* ============================================================================
+   14. MODAL OPEN/CLOSE
+   ============================================================================ */
+
+@keyframes modal-fade-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes modal-fade-out {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+@keyframes modal-slide-up {
+  0% {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes modal-slide-down {
+  0% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+}
+
+.modal-fade-in {
+  animation: modal-fade-in 300ms cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+.modal-fade-out {
+  animation: modal-fade-out 200ms ease-in forwards;
+}
+
+.modal-slide-up {
+  animation: modal-slide-up 400ms cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+.modal-slide-down {
+  animation: modal-slide-down 300ms ease-in forwards;
+}
+
+.modal-open-reduced,
+.modal-close-reduced {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* ============================================================================
+   15. SWIPE/SCROLL FEEDBACK
+   ============================================================================ */
+
+@keyframes scroll-feedback-up {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes scroll-feedback-down {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(8px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes scroll-feedback-left {
+  0% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(-8px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+@keyframes scroll-feedback-right {
+  0% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(8px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.scroll-feedback-up {
+  animation: scroll-feedback-up 300ms ease-out;
+}
+
+.scroll-feedback-down {
+  animation: scroll-feedback-down 300ms ease-out;
+}
+
+.scroll-feedback-left {
+  animation: scroll-feedback-left 300ms ease-out;
+}
+
+.scroll-feedback-right {
+  animation: scroll-feedback-right 300ms ease-out;
+}
+
+.scroll-feedback-reduced {
+  /* No animation */
+}
+
+/* ============================================================================
+   ADDITIONAL MICRO-INTERACTIONS & UTILITIES
+   ============================================================================ */
+
+/* Confetti particles for celebrations */
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(0) rotate(0deg) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100px) rotate(360deg) scale(0);
+    opacity: 0;
+  }
+}
+
+.confetti-particle {
+  position: fixed;
+  pointer-events: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--confetti-color, #a855f7);
+  animation: confetti-fall var(--duration, 2s) ease-out var(--delay, 0s) forwards;
+}
+
+/* Notification appearance animation */
+@keyframes notification-appear {
+  0% {
+    transform: translateY(-20px) scale(0.9);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.notification-appear {
+  animation: notification-appear 400ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Breathing animation for loading states */
+@keyframes breathing {
+  0% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+}
+
+.breathing-animation {
+  animation: breathing 2000ms ease-in-out infinite;
+}
+
+/* Pulse for emphasis */
+@keyframes pulse-emphasis {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.pulse-emphasis {
+  animation: pulse-emphasis 800ms ease-in-out;
+}
+
+/* Gentle float animation */
+@keyframes gentle-float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+.gentle-float {
+  animation: gentle-float 3000ms ease-in-out infinite;
+}
+
+/* Shake for error feedback (subtle) */
+@keyframes subtle-shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-2px);
+  }
+  75% {
+    transform: translateX(2px);
+  }
+}
+
+.subtle-shake {
+  animation: subtle-shake 400ms ease-in-out;
+}
+
+/* Glow effect for focus states */
+@keyframes glow-effect {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(168, 85, 247, 0.1);
+  }
+}
+
+.glow-effect {
+  animation: glow-effect 2000ms ease-in-out infinite;
+}
+
+/* Slide in from left */
+@keyframes slide-in-left {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.slide-in-left {
+  animation: slide-in-left 400ms cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+/* Slide in from right */
+@keyframes slide-in-right {
+  0% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.slide-in-right {
+  animation: slide-in-right 400ms cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+/* Fade in */
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.fade-in {
+  animation: fade-in 400ms ease-out forwards;
+}
+
+/* Fade out */
+@keyframes fade-out {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.fade-out {
+  animation: fade-out 300ms ease-in forwards;
+}
+
+/* ============================================================================
+   ACCESSIBILITY & PERFORMANCE OPTIMIZATIONS
+   ============================================================================ */
+
+/* Disable animations for users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .celebration-active,
+  .notification-slide-in,
+  .approval-dance,
+  .approval-dance-parent,
+  .error-shake,
+  .loading-skeleton,
+  .loading-skeleton-shimmer,
+  .page-transition-in,
+  .page-transition-out,
+  .page-wave-goodbye,
+  .button-hover-scale,
+  .input-focus-glow,
+  .creature-pop,
+  .empty-state-wake,
+  .empty-state-wave,
+  .badge-pulse,
+  .progress-step,
+  .modal-fade-in,
+  .modal-fade-out,
+  .modal-slide-up,
+  .modal-slide-down,
+  .scroll-feedback-up,
+  .scroll-feedback-down,
+  .scroll-feedback-left,
+  .scroll-feedback-right,
+  .confetti-particle,
+  .notification-appear,
+  .breathing-animation,
+  .pulse-emphasis,
+  .gentle-float,
+  .subtle-shake,
+  .glow-effect,
+  .slide-in-left,
+  .slide-in-right,
+  .fade-in,
+  .fade-out,
+  .creature-blink,
+  .bounce-once {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  /* Ensure elements are visible even without animations */
+  .notification-slide-in,
+  .creature-pop,
+  .page-transition-in,
+  .modal-fade-in,
+  .modal-slide-up,
+  .slide-in-left,
+  .slide-in-right,
+  .fade-in,
+  .empty-state-wake {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Keep final states */
+  .celebration-active,
+  .approval-dance,
+  .approval-dance-parent,
+  .error-shake,
+  .progress-step,
+  .button-hover-scale {
+    transform: none;
+  }
+}
+
+/* ============================================================================
+   MOBILE OPTIMIZATIONS
+   ============================================================================ */
+
+@media (max-width: 640px) {
+  /* Reduce animation durations on mobile for snappier feel */
+  .celebration-active {
+    animation-duration: 1500ms;
+  }
+
+  .notification-slide-in {
+    animation-duration: 400ms;
+  }
+
+  .approval-dance,
+  .approval-dance-parent {
+    animation-duration: 2000ms;
+  }
+
+  /* Reduce gesture animation complexity */
+  .bounce-once {
+    animation-duration: 400ms;
+  }
+
+  /* Modal animations better suited for mobile */
+  .modal-fade-in {
+    animation: modal-slide-up 300ms cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  }
+
+  .modal-fade-out {
+    animation: modal-slide-down 200ms ease-in forwards;
+  }
+}
+
+/* ============================================================================
+   DARK MODE ADJUSTMENTS
+   ============================================================================ */
+
+@media (prefers-color-scheme: dark) {
+  .input-focus-glow {
+    box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.6);
+  }
+
+  .confetti-particle {
+    --confetti-color: #d8b4fe;
+  }
+
+  .glow-effect {
+    box-shadow: 0 0 0 0 rgba(216, 180, 254, 0.7);
+  }
+}
+
+/* ============================================================================
+   HIGH CONTRAST MODE
+   ============================================================================ */
+
+@media (prefers-contrast: more) {
+  .notification-slide-in {
+    /* Ensure visibility in high contrast */
+  }
+
+  .badge-pulse {
+    animation: badge-color-pulse 1000ms ease-in-out infinite;
+  }
+
+  .error-shake {
+    /* Maintain visibility */
+  }
+}
+
+/* ============================================================================
+   FOCUS VISIBLE FOR KEYBOARD NAVIGATION
+   ============================================================================ */
+
+*:focus-visible {
+  outline: 2px solid var(--color-primary, #a855f7);
+  outline-offset: 2px;
+}
+
+button:focus-visible,
+input:focus-visible,
+a:focus-visible {
+  animation: glow-effect 800ms ease-out forwards;
+}

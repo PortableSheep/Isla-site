@@ -1,0 +1,39 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Sparkle the starry creature">
+  <title>Sparkle</title>
+  <defs>
+    <style>
+      .sparkle-body { fill: #FF69B4; stroke: #FF1493; stroke-width: 2; }
+      .sparkle-eye { fill: #FFFFFF; stroke: #000000; stroke-width: 1.5; }
+      .sparkle-pupil { fill: #000000; }
+      .sparkle-mouth { fill: none; stroke: #000000; stroke-width: 2; }
+      .star-shine { fill: #FFD700; }
+    </style>
+  </defs>
+  
+  <!-- Star-shaped body -->
+  <polygon class="sparkle-body" points="100,30 115,80 170,80 125,120 145,170 100,130 55,170 75,120 30,80 85,80"/>
+  
+  <!-- Left eye -->
+  <circle class="sparkle-eye" cx="80" cy="75" r="10"/>
+  <circle class="sparkle-pupil" cx="80" cy="75" r="6"/>
+  <circle class="sparkle-pupil" cx="82" cy="73" r="3"/>
+  
+  <!-- Right eye -->
+  <circle class="sparkle-eye" cx="120" cy="75" r="10"/>
+  <circle class="sparkle-pupil" cx="120" cy="75" r="6"/>
+  <circle class="sparkle-pupil" cx="122" cy="73" r="3"/>
+  
+  <!-- Happy mouth -->
+  <path class="sparkle-mouth" d="M 90 105 Q 100 115 110 105"/>
+  
+  <!-- Sparkles around body -->
+  <polygon class="star-shine" points="150,50 153,58 161,58 154,65 157,73 150,65 143,73 146,65 139,58 147,58"/>
+  <polygon class="star-shine" points="50,60 52,67 60,67 53,72 55,80 50,75 45,80 47,72 40,67 48,67"/>
+  <polygon class="star-shine" points="170,110 172,117 180,117 173,122 175,130 170,125 165,130 167,122 160,117 168,117"/>
+  
+  <!-- Arm left -->
+  <ellipse class="sparkle-body" cx="45" cy="100" rx="12" ry="40"/>
+  
+  <!-- Arm right -->
+  <ellipse class="sparkle-body" cx="155" cy="100" rx="12" ry="40"/>
+</svg>

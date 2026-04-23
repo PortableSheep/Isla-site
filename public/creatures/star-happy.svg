@@ -1,0 +1,32 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Happy Star">
+  <title>Star - Happy</title>
+  <defs>
+    <style>
+      .star-body { fill: #FFD700; stroke: #FFA500; stroke-width: 2; }
+      .star-eye { fill: #FFFFFF; stroke: #000000; stroke-width: 1.5; }
+      .star-pupil { fill: #000000; }
+      .star-mouth { fill: none; stroke: #000000; stroke-width: 2.5; }
+      .star-shine { fill: #FFFF99; }
+    </style>
+  </defs>
+  
+  <!-- Main star body tilted with joy -->
+  <polygon class="star-body" points="100,35 118,90 175,90 131,133 150,188 100,145 50,188 69,133 25,90 82,90"/>
+  
+  <!-- Left eye happy -->
+  <circle class="star-eye" cx="85" cy="85" r="10"/>
+  <path class="star-pupil" d="M 78 89 L 92 89 L 92 95 L 78 95 Z"/>
+  
+  <!-- Right eye happy -->
+  <circle class="star-eye" cx="115" cy="85" r="10"/>
+  <path class="star-pupil" d="M 108 89 L 122 89 L 122 95 L 108 95 Z"/>
+  
+  <!-- Big joyful smile -->
+  <path class="star-mouth" d="M 88 110 Q 100 125 112 110"/>
+  
+  <!-- Extra sparkle shine -->
+  <circle class="star-shine" cx="65" cy="65" r="5"/>
+  <circle class="star-shine" cx="135" cy="60" r="4"/>
+  <circle class="star-shine" cx="100" cy="135" r="3"/>
+  <circle class="star-shine" cx="150" cy="110" r="2"/>
+</svg>
