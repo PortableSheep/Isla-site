@@ -10,7 +10,17 @@
     "db:setup": "ts-node scripts/setup-db.ts",
     "db:seed": "ts-node scripts/seed-demo-data.ts",
     "db:verify-rls": "ts-node scripts/verify-rls.ts",
-    "db:backup": "ts-node scripts/backup-db.ts"
+    "db:backup": "ts-node scripts/backup-db.ts",
+    "verify:deployment": "ts-node scripts/verify-deployment.ts",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:debug": "playwright test --debug",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:report": "playwright show-report",
+    "test:auth": "playwright test tests/e2e/auth.spec.ts",
+    "test:auth:headed": "playwright test tests/e2e/auth.spec.ts --headed",
+    "test:auth:debug": "playwright test tests/e2e/auth.spec.ts --debug",
+    "test:auth:ui": "playwright test tests/e2e/auth.spec.ts --ui"
   },
   "dependencies": {
     "@supabase/auth-helpers-nextjs": "^0.15.0",
@@ -23,10 +33,13 @@
     "react-dom": "19.2.4"
   },
   "devDependencies": {
+    "@faker-js/faker": "^10.4.0",
+    "@playwright/test": "^1.59.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "dotenv": "^17.4.2",
     "eslint": "^9",
     "eslint-config-next": "16.2.4",
     "tailwindcss": "^4",

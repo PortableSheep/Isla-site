@@ -1,0 +1,145 @@
+{
+  "timestamp": "2026-04-23T17:51:07.004Z",
+  "environment": "development",
+  "summary": {
+    "total": 22,
+    "passed": 5,
+    "failed": 16,
+    "skipped": 0
+  },
+  "results": [
+    {
+      "name": "NEXT_PUBLIC_SUPABASE_URL exists",
+      "category": "Environment",
+      "status": "pass",
+      "message": "✓ NEXT_PUBLIC_SUPABASE_URL is set"
+    },
+    {
+      "name": "NEXT_PUBLIC_SUPABASE_URL format valid",
+      "category": "Environment",
+      "status": "pass",
+      "message": "✓ NEXT_PUBLIC_SUPABASE_URL has valid format"
+    },
+    {
+      "name": "NEXT_PUBLIC_SUPABASE_ANON_KEY exists",
+      "category": "Environment",
+      "status": "pass",
+      "message": "✓ NEXT_PUBLIC_SUPABASE_ANON_KEY is set"
+    },
+    {
+      "name": "NEXT_PUBLIC_SUPABASE_ANON_KEY length valid",
+      "category": "Environment",
+      "status": "fail",
+      "message": "✗ NEXT_PUBLIC_SUPABASE_ANON_KEY too short (18)"
+    },
+    {
+      "name": "Database connectivity",
+      "category": "Database Connectivity",
+      "status": "fail",
+      "message": "✗ Database query failed: TypeError: fetch failed"
+    },
+    {
+      "name": "Auth service connectivity",
+      "category": "Database Connectivity",
+      "status": "pass",
+      "message": "✓ Auth service accessible"
+    },
+    {
+      "name": "Real-time subscriptions available",
+      "category": "Database Connectivity",
+      "status": "pass",
+      "message": "✓ Real-time subscriptions configured"
+    },
+    {
+      "name": "Table exists: user_profiles",
+      "category": "Database Schema",
+      "status": "fail",
+      "message": "✗ Error accessing user_profiles: Timeout"
+    },
+    {
+      "name": "Table exists: families",
+      "category": "Database Schema",
+      "status": "fail",
+      "message": "✗ Error accessing families: Timeout"
+    },
+    {
+      "name": "Table exists: posts",
+      "category": "Database Schema",
+      "status": "fail",
+      "message": "✗ Error accessing posts: Timeout"
+    },
+    {
+      "name": "Table exists: notifications",
+      "category": "Database Schema",
+      "status": "fail",
+      "message": "✗ Error accessing notifications: Timeout"
+    },
+    {
+      "name": "Table exists: notification_preferences",
+      "category": "Database Schema",
+      "status": "fail",
+      "message": "✗ Error accessing notification_preferences: Timeout"
+    },
+    {
+      "name": "Table exists: invite_tokens",
+      "category": "Database Schema",
+      "status": "fail",
+      "message": "✗ Error accessing invite_tokens: Timeout"
+    },
+    {
+      "name": "Table exists: child_approvals",
+      "category": "Database Schema",
+      "status": "fail",
+      "message": "✗ Error accessing child_approvals: Timeout"
+    },
+    {
+      "name": "RLS policies",
+      "category": "Database Schema",
+      "status": "warn",
+      "message": "⚠ RLS verification skipped (verify manually in Supabase console)"
+    },
+    {
+      "name": "Health Check",
+      "category": "API Endpoints",
+      "status": "fail",
+      "message": "✗ GET /api/health failed: fetch failed"
+    },
+    {
+      "name": "Get Notifications",
+      "category": "API Endpoints",
+      "status": "fail",
+      "message": "✗ GET /api/notifications failed: fetch failed"
+    },
+    {
+      "name": "Unread Count",
+      "category": "API Endpoints",
+      "status": "fail",
+      "message": "✗ GET /api/notifications/unread-count failed: fetch failed"
+    },
+    {
+      "name": "Create Post",
+      "category": "API Endpoints",
+      "status": "fail",
+      "message": "✗ POST /api/posts/create failed: fetch failed"
+    },
+    {
+      "name": "Get Families",
+      "category": "API Endpoints",
+      "status": "fail",
+      "message": "✗ GET /api/families/my-families failed: fetch failed"
+    },
+    {
+      "name": "Security headers verification",
+      "category": "Security Headers",
+      "status": "fail",
+      "message": "✗ Could not verify headers: fetch failed"
+    },
+    {
+      "name": "API response time",
+      "category": "Performance",
+      "status": "fail",
+      "message": "✗ Could not measure API response time"
+    }
+  ],
+  "performanceMetrics": {}
+}

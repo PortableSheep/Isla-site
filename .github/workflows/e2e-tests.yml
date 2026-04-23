@@ -1,0 +1,151 @@
+name: E2E Tests
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  test:
+    name: Run E2E Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_isla
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Load environment variables
+        run: |
+          cp .env.test .env.test.local || true
+          cat >> .env.test.local << EOF
+          NEXT_PUBLIC_SUPABASE_URL=http://localhost:54321
+          NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRlc3QiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTY0MzAwMDAwMCwiZXhwIjoxOTk5OTk5OTk5fQ.test
+          SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRlc3QiLCJyb2xlIjoic2VydmljZV9yb2xlIiwiaWF0IjoxNjQzMDAwMDAwLCJleHAiOjE5OTk5OTk5OTl9.test
+          BASE_URL=http://localhost:3000
+          CI=true
+          EOF
+
+      - name: Build Next.js app
+        run: npm run build
+
+      - name: Run E2E tests
+        run: npm run test:e2e
+        env:
+          CI: true
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
+
+      - name: Upload test videos
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-videos
+          path: tests/videos/
+          retention-days: 7
+
+      - name: Upload test screenshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-screenshots
+          path: tests/screenshots/
+          retention-days: 7
+
+      - name: Publish test report
+        if: always()
+        uses: daun/playwright-report-action@v3
+        with:
+          report-path: playwright-report
+          report-title: E2E Test Results
+
+      - name: Comment PR with test results
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const testResultPath = 'test-results/results.json';
+
+            if (!fs.existsSync(testResultPath)) {
+              console.log('No test results found');
+              return;
+            }
+
+            const results = JSON.parse(fs.readFileSync(testResultPath, 'utf-8'));
+            const passed = results.stats?.expected || 0;
+            const failed = results.stats?.unexpected || 0;
+            const skipped = results.stats?.skipped || 0;
+
+            const comment = `
+            ## 📊 E2E Test Results
+            
+            - ✅ Passed: ${passed}
+            - ❌ Failed: ${failed}
+            - ⏭️  Skipped: ${skipped}
+            
+            [View full report](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            `;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment,
+            });
+
+  lint-tests:
+    name: Lint Test Files
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check test files syntax
+        run: npx tsc --noEmit tests/**/*.ts
+
+      - name: Lint test files
+        run: npx eslint tests/ --ext .ts --max-warnings 0 || true
