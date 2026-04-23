@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { supabase } from './supabase';
 import { 
   AuditLogInput, 
@@ -20,7 +19,7 @@ export async function logAction(
   subjectType: AuditSubjectType,
   subjectId: string,
   reason?: string,
-  metadata?: Record<string, any>,
+  metadata?: Record<string, unknown>,
   familyId?: string,
   actorRole: ActorRole = 'admin'
 ): Promise<void> {
@@ -39,7 +38,7 @@ export async function logAction(
         family_id: familyId,
         created_at: new Date().toISOString(),
       })
-      .then(({ error }) => {
+      .then(({ error }: { error: any }) => {
         if (error) {
           console.error('Failed to log audit action:', error);
         }

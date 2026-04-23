@@ -24,7 +24,7 @@ export interface AuditLog {
   subject_type: AuditSubjectType;
   subject_id: string;
   reason?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   created_at: string;
   family_id?: string;
 }
@@ -36,7 +36,7 @@ export interface AuditLogInput {
   subject_type: AuditSubjectType;
   subject_id: string;
   reason?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   family_id?: string;
 }
 
