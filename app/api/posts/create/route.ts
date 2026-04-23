@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { createPost } from '@/lib/posts';
+import { createUpdateNotifications } from '@/lib/notifications';
 import { isIslaUser } from '@/lib/islaUser';
 
 export async function POST(request: Request) {
@@ -42,6 +43,13 @@ export async function POST(request: Request) {
         parent_post_id: parent_post_id || null,
         is_update: is_update || false,
       });
+
+      // If this is an update, create notifications for all parents
+      if (is_update) {
+        createUpdateNotifications(post.id, content, user.id).catch((err) => {
+          console.error('Failed to create update notifications:', err);
+        });
+      }
 
       return NextResponse.json(post, { status: 201 });
     }

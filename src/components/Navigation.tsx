@@ -83,6 +83,12 @@ export function Navigation() {
             {user && (
               <>
                 <span className="text-gray-300 text-sm">{user.email}</span>
+                <a
+                  href="/settings"
+                  className="text-gray-300 hover:text-white text-sm transition-colors"
+                >
+                  Settings
+                </a>
                 <button
                   onClick={handleLogout}
                   className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors"

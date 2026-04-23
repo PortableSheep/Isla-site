@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { getThreadReplies, createPost } from '@/lib/posts';
+import { notifyReplyToPost } from '@/lib/notifications';
 
 export async function GET(
   request: NextRequest,
@@ -69,6 +70,11 @@ export async function POST(
       author_id: user.id,
       content,
       parent_post_id: postId,
+    });
+
+    // Trigger reply notification asynchronously (don't block response)
+    notifyReplyToPost(postId, reply.id).catch((err) => {
+      console.error('Error triggering reply notification:', err);
     });
 
     return NextResponse.json(reply, { status: 201 });
