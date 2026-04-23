@@ -1,0 +1,584 @@
+
+> isla-site-temp@0.1.0 lint
+> eslint
+
+
+/Users/portablesheep/repos/Isla-site/app/(protected)/admin/audit-logs/page.tsx
+  18:5  error    Error: Cannot access variable before it is declared
+
+`fetchLogs` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+/Users/portablesheep/repos/Isla-site/app/(protected)/admin/audit-logs/page.tsx:18:5
+  16 |
+  17 |   useEffect(() => {
+> 18 |     fetchLogs(0);
+     |     ^^^^^^^^^ `fetchLogs` accessed before it is declared
+  19 |   }, [filters]);
+  20 |
+  21 |   const fetchLogs = async (offset: number) => {
+
+/Users/portablesheep/repos/Isla-site/app/(protected)/admin/audit-logs/page.tsx:21:3
+  19 |   }, [filters]);
+  20 |
+> 21 |   const fetchLogs = async (offset: number) => {
+     |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 22 |     try {
+     | ^^^^^^^^^
+> 23 |       setIsLoading(true);
+     …
+     | ^^^^^^^^^
+> 75 |     }
+     | ^^^^^^^^^
+> 76 |   };
+     | ^^^^^ `fetchLogs` is declared here
+  77 |
+  78 |   const handlePreviousPage = () => {
+  79 |     const newOffset = Math.max(0, currentPage - 1) * pageSize;  react-hooks/immutability
+  19:6  warning  React Hook useEffect has a missing dependency: 'fetchLogs'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            react-hooks/exhaustive-deps
+
+/Users/portablesheep/repos/Isla-site/app/(protected)/approvals/history.tsx
+  35:41  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/portablesheep/repos/Isla-site/app/(protected)/approvals/page.tsx
+  5:8  warning  'styles' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/portablesheep/repos/Isla-site/app/(protected)/children/page.tsx
+  61:60  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                             react/no-unescaped-entities
+  79:18  error  Do not pass children as props. Instead, nest children between the opening and closing tags  react/no-children-prop
+
+/Users/portablesheep/repos/Isla-site/app/(protected)/compose.tsx
+  69:13  warning  'post' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/portablesheep/repos/Isla-site/app/(protected)/notifications/page.tsx
+   6:10  warning  'Bell' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   @typescript-eslint/no-unused-vars
+   6:44  warning  'X' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      @typescript-eslint/no-unused-vars
+  46:5   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/portablesheep/repos/Isla-site/app/(protected)/notifications/page.tsx:46:5
+  44 |
+  45 |   useEffect(() => {
+> 46 |     fetchNotifications();
+     |     ^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  47 |   }, [selectedType]);
+  48 |
+  49 |   const handleMarkAsRead = async (notificationId: string) => {  react-hooks/set-state-in-effect
+  47:6   warning  React Hook useEffect has a missing dependency: 'fetchNotifications'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              react-hooks/exhaustive-deps
+
+/Users/portablesheep/repos/Isla-site/app/(protected)/wall/[postId]/page.tsx
+  24:7  error    Error: Cannot access variable before it is declared
+
+`loadThreadData` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+/Users/portablesheep/repos/Isla-site/app/(protected)/wall/[postId]/page.tsx:24:7
+  22 |   useEffect(() => {
+  23 |     if (postId) {
+> 24 |       loadThreadData();
+     |       ^^^^^^^^^^^^^^ `loadThreadData` accessed before it is declared
+  25 |     }
+  26 |   }, [postId]);
+  27 |
+
+/Users/portablesheep/repos/Isla-site/app/(protected)/wall/[postId]/page.tsx:28:3
+  26 |   }, [postId]);
+  27 |
+> 28 |   const loadThreadData = async () => {
+     |   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 29 |     try {
+     | ^^^^^^^^^
+> 30 |       setLoading(true);
+     …
+     | ^^^^^^^^^
+> 61 |     }
+     | ^^^^^^^^^
+> 62 |   };
+     | ^^^^^ `loadThreadData` is declared here
+  63 |
+  64 |   const handleSubmitReply = async (e: React.FormEvent) => {
+  65 |     e.preventDefault();  react-hooks/immutability
+  26:6  warning  React Hook useEffect has a missing dependency: 'loadThreadData'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               react-hooks/exhaustive-deps
+
+/Users/portablesheep/repos/Isla-site/app/api/admin/appeals/[appealId]/approve/route.ts
+   1:1   error  Do not use "@ts-nocheck" because it alters compilation errors  @typescript-eslint/ban-ts-comment
+   2:1   error  Do not use "@ts-nocheck" because it alters compilation errors  @typescript-eslint/ban-ts-comment
+  70:24  error  Unexpected any. Specify a different type                       @typescript-eslint/no-explicit-any
+  76:58  error  Unexpected any. Specify a different type                       @typescript-eslint/no-explicit-any
+  99:24  error  Unexpected any. Specify a different type                       @typescript-eslint/no-explicit-any
+
+/Users/portablesheep/repos/Isla-site/app/api/admin/appeals/[appealId]/reject/route.ts
+   1:1   error  Do not use "@ts-nocheck" because it alters compilation errors  @typescript-eslint/ban-ts-comment
+  79:24  error  Unexpected any. Specify a different type                       @typescript-eslint/no-explicit-any
+  85:24  error  Unexpected any. Specify a different type                       @typescript-eslint/no-explicit-any
+  93:24  error  Unexpected any. Specify a different type                       @typescript-eslint/no-explicit-any
+
+/Users/portablesheep/repos/Isla-site/app/api/admin/appeals/route.ts
+   1:1   error    Do not use "@ts-nocheck" because it alters compilation errors  @typescript-eslint/ban-ts-comment
+  26:27  warning  'request' is defined but never used                            @typescript-eslint/no-unused-vars
+
+/Users/portablesheep/repos/Isla-site/app/api/admin/audit-logs/export/route.ts
+  54:20  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/portablesheep/repos/Isla-site/app/api/admin/audit-logs/route.ts
+  56:20  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/portablesheep/repos/Isla-site/app/api/admin/users/[userId]/suspend/route.ts
+  65:55  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/portablesheep/repos/Isla-site/app/api/admin/users/[userId]/unsuspend/route.ts
+  50:55  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/portablesheep/repos/Isla-site/app/api/children/my-children/route.ts
+  5:27  warning  'request' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/portablesheep/repos/Isla-site/app/api/families/my-families/route.ts
+  5:27  warning  'request' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/portablesheep/repos/Isla-site/app/api/notifications/[notifId]/delete/route.ts
+   1:1   error  Do not use "@ts-nocheck" because it alters compilation errors  @typescript-eslint/ban-ts-comment
+  41:26  error  Unexpected any. Specify a different type                       @typescript-eslint/no-explicit-any
+
+/Users/portablesheep/repos/Isla-site/app/api/notifications/[notifId]/read/route.ts
+  40:26  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/portablesheep/repos/Isla-site/app/api/notifications/read-all/route.ts
+  1:1   error    Do not use "@ts-nocheck" because it alters compilation errors  @typescript-eslint/ban-ts-comment
+  5:28  warning  'request' is defined but never used                            @typescript-eslint/no-unused-vars
+
+/Users/portablesheep/repos/Isla-site/app/api/notifications/route.ts
+  1:1  error  Do not use "@ts-nocheck" because it alters compilation errors  @typescript-eslint/ban-ts-comment
+
+/Users/portablesheep/repos/Isla-site/app/api/notifications/unread-count/route.ts
+  1:1   error    Do not use "@ts-nocheck" because it alters compilation errors  @typescript-eslint/ban-ts-comment
+  5:27  warning  'request' is defined but never used                            @typescript-eslint/no-unused-vars
+
+/Users/portablesheep/repos/Isla-site/app/api/posts/[postId]/delete-permanent/route.ts
+  1:1  error  Do not use "@ts-nocheck" because it alters compilation errors  @typescript-eslint/ban-ts-comment
+
+/Users/portablesheep/repos/Isla-site/app/api/posts/[postId]/delete/route.ts
+  1:1  error  Do not use "@ts-nocheck" because it alters compilation errors  @typescript-eslint/ban-ts-comment
+
+/Users/portablesheep/repos/Isla-site/app/api/posts/[postId]/flag/route.ts
+  1:1  error  Do not use "@ts-nocheck" because it alters compilation errors  @typescript-eslint/ban-ts-comment
+
+/Users/portablesheep/repos/Isla-site/app/api/posts/[postId]/hide/route.ts
+  1:1  error  Do not use "@ts-nocheck" because it alters compilation errors  @typescript-eslint/ban-ts-comment
+
+/Users/portablesheep/repos/Isla-site/app/api/posts/[postId]/replies/route.ts
+  1:1  error  Do not use "@ts-nocheck" because it alters compilation errors  @typescript-eslint/ban-ts-comment
+
+/Users/portablesheep/repos/Isla-site/app/api/posts/[postId]/route.ts
+  1:1  error  Do not use "@ts-nocheck" because it alters compilation errors  @typescript-eslint/ban-ts-comment
+
+/Users/portablesheep/repos/Isla-site/app/api/posts/create/route.ts
+  40:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/portablesheep/repos/Isla-site/app/api/posts/family/[familyId]/route.ts
+  1:1  error  Do not use "@ts-nocheck" because it alters compilation errors  @typescript-eslint/ban-ts-comment
+
+/Users/portablesheep/repos/Isla-site/app/api/users/appeal/route.ts
+  67:69  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  86:24  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  95:24  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/portablesheep/repos/Isla-site/app/api/users/notifications/route.ts
+  12:27  warning  'request' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/portablesheep/repos/Isla-site/app/auth/reset-password-confirm.tsx
+  24:7   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/portablesheep/repos/Isla-site/app/auth/reset-password-confirm.tsx:24:7
+  22 |
+  23 |     if (type === 'recovery' && token) {
+> 24 |       setValidToken(true);
+     |       ^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  25 |     } else {
+  26 |       // Check if user has an active session
+  27 |       const checkSession = async () => {  react-hooks/set-state-in-effect
+  37:18  warning  'err' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 @typescript-eslint/no-unused-vars
+
+/Users/portablesheep/repos/Isla-site/app/auth/reset-password.tsx
+  65:15  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+/Users/portablesheep/repos/Isla-site/app/auth/signup-via-invite.tsx
+  5:10  warning  'supabase' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/portablesheep/repos/Isla-site/app/invite/[token]/page.tsx
+   18:10  warning  'error' is assigned a value but never used                                                                                                             @typescript-eslint/no-unused-vars
+  121:13  error    Do not use an `<a>` element to navigate to `/`. Use `<Link />` from `next/link` instead. See: https://nextjs.org/docs/messages/no-html-link-for-pages  @next/next/no-html-link-for-pages
+
+/Users/portablesheep/repos/Isla-site/scripts/backup-db.ts
+  4:10  warning  'execSync' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/portablesheep/repos/Isla-site/scripts/seed-demo-data.ts
+  79:11  warning  'DemoData' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/portablesheep/repos/Isla-site/scripts/setup-db.ts
+   88:23  warning  'policy' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  101:14  warning  'error' is defined but never used            @typescript-eslint/no-unused-vars
+  151:14  warning  'error' is defined but never used            @typescript-eslint/no-unused-vars
+  176:15  warning  'data' is assigned a value but never used    @typescript-eslint/no-unused-vars
+  186:14  warning  'error' is defined but never used            @typescript-eslint/no-unused-vars
+
+/Users/portablesheep/repos/Isla-site/scripts/verify-deployment.ts
+   78:7   warning  'testEmail' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  226:21  warning  'authData' is assigned a value but never used   @typescript-eslint/no-unused-vars
+  235:23  error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  251:19  error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  310:57  error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  310:72  error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  330:19  error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  424:19  error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+  529:19  error    Unexpected any. Specify a different type        @typescript-eslint/no-explicit-any
+
+/Users/portablesheep/repos/Isla-site/scripts/verify-rls.ts
+   61:74  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   64:12  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  102:12  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  140:12  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  174:12  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  213:12  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  251:12  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  285:12  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+  324:12  warning  'error' is defined but never used         @typescript-eslint/no-unused-vars
+
+/Users/portablesheep/repos/Isla-site/src/components/ApprovalDashboard.tsx
+   3:17  warning  'useState' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+  26:59  error    Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   @typescript-eslint/no-explicit-any
+  51:5   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/portablesheep/repos/Isla-site/src/components/ApprovalDashboard.tsx:51:5
+  49 |
+  50 |   useEffect(() => {
+> 51 |     fetchData();
+     |     ^^^^^^^^^ Avoid calling setState() directly within an effect
+  52 |   }, []);
+  53 |
+  54 |   const handleActionComplete = () => {  react-hooks/set-state-in-effect
+
+/Users/portablesheep/repos/Isla-site/src/components/ApprovalHistory.tsx
+  3:17  warning  'useState' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/portablesheep/repos/Isla-site/src/components/AuthForm.tsx
+  209:18  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+/Users/portablesheep/repos/Isla-site/src/components/ChildProfileForm.tsx
+    4:37  warning  'UpdateChildProfileRequest' is defined but never used            @typescript-eslint/no-unused-vars
+  128:16  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+/Users/portablesheep/repos/Isla-site/src/components/ComposerActions.tsx
+  16:3  warning  'isUpdate' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/portablesheep/repos/Isla-site/src/components/Navigation.tsx
+  44:13  error  Do not use an `<a>` element to navigate to `/`. Use `<Link />` from `next/link` instead. See: https://nextjs.org/docs/messages/no-html-link-for-pages       @next/next/no-html-link-for-pages
+  84:18  error  Do not use an `<a>` element to navigate to `/wall/`. Use `<Link />` from `next/link` instead. See: https://nextjs.org/docs/messages/no-html-link-for-pages  @next/next/no-html-link-for-pages
+
+/Users/portablesheep/repos/Isla-site/src/components/NotificationBell.tsx
+   5:10  warning  'supabase' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   @typescript-eslint/no-unused-vars
+  48:5   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/portablesheep/repos/Isla-site/src/components/NotificationBell.tsx:48:5
+  46 |   // Initialize and setup polling
+  47 |   useEffect(() => {
+> 48 |     fetchNotifications();
+     |     ^^^^^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  49 |
+  50 |     // Poll every 30 seconds
+  51 |     const interval = setInterval(fetchNotifications, 30000);  react-hooks/set-state-in-effect
+
+/Users/portablesheep/repos/Isla-site/src/components/NotificationPreferences.tsx
+  25:5   error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/portablesheep/repos/Isla-site/src/components/NotificationPreferences.tsx:25:5
+  23 |
+  24 |   useEffect(() => {
+> 25 |     setPreferences(initialPreferences);
+     |     ^^^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  26 |   }, [initialPreferences]);
+  27 |
+  28 |   if (!preferences) {  react-hooks/set-state-in-effect
+  57:26  error  Unexpected any. Specify a different type                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      @typescript-eslint/no-explicit-any
+
+/Users/portablesheep/repos/Isla-site/src/components/PostComposer.tsx
+  29:7  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/portablesheep/repos/Isla-site/src/components/PostComposer.tsx:29:7
+  27 |     const draft = localStorage.getItem('post_draft');
+  28 |     if (draft) {
+> 29 |       setContent(draft);
+     |       ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  30 |       setCharCount(draft.length);
+  31 |       onContentChange(draft);
+  32 |     }  react-hooks/set-state-in-effect
+
+/Users/portablesheep/repos/Isla-site/src/components/audit/AuditFilters.tsx
+   7:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  41:20  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/portablesheep/repos/Isla-site/src/components/wall/EditUpdateModal.tsx
+  24:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/portablesheep/repos/Isla-site/src/components/wall/EditUpdateModal.tsx:24:5
+  22 |
+  23 |   useEffect(() => {
+> 24 |     setContent(update.content);
+     |     ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  25 |     setError(null);
+  26 |   }, [update, isOpen]);
+  27 |  react-hooks/set-state-in-effect
+
+/Users/portablesheep/repos/Isla-site/src/components/wall/HidePostModal.tsx
+  101:32  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+  101:62  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+/Users/portablesheep/repos/Isla-site/src/components/wall/UpdateBanner.tsx
+  11:47  warning  'onViewAll' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/portablesheep/repos/Isla-site/src/components/wall/WallFeed.tsx
+  29:38  warning  'isModerator' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          @typescript-eslint/no-unused-vars
+  75:5   error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/Users/portablesheep/repos/Isla-site/src/components/wall/WallFeed.tsx:75:5
+  73 |
+  74 |   useEffect(() => {
+> 75 |     fetchPosts();
+     |     ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  76 |   }, [familyId, fetchPosts]);
+  77 |
+  78 |   const handleSubmitPost = async (e: React.FormEvent) => {  react-hooks/set-state-in-effect
+
+/Users/portablesheep/repos/Isla-site/src/lib/accessibility.tsx
+  246:1  warning  Assign object to a variable before exporting as module default  import/no-anonymous-default-export
+
+/Users/portablesheep/repos/Isla-site/src/lib/approvals.ts
+    1:1   error    Do not use "@ts-nocheck" because it alters compilation errors                                          @typescript-eslint/ban-ts-comment
+   39:16  error    Unexpected any. Specify a different type                                                               @typescript-eslint/no-explicit-any
+   51:40  error    Unexpected any. Specify a different type                                                               @typescript-eslint/no-explicit-any
+   55:42  error    Unexpected any. Specify a different type                                                               @typescript-eslint/no-explicit-any
+   80:20  error    Unexpected any. Specify a different type                                                               @typescript-eslint/no-explicit-any
+   83:21  error    Unexpected any. Specify a different type                                                               @typescript-eslint/no-explicit-any
+  119:20  error    Unexpected any. Specify a different type                                                               @typescript-eslint/no-explicit-any
+  126:34  error    Unexpected any. Specify a different type                                                               @typescript-eslint/no-explicit-any
+  135:5   warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  144:13  error    Unexpected any. Specify a different type                                                               @typescript-eslint/no-explicit-any
+  176:20  error    Unexpected any. Specify a different type                                                               @typescript-eslint/no-explicit-any
+  193:5   warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  203:13  error    Unexpected any. Specify a different type                                                               @typescript-eslint/no-explicit-any
+  220:16  error    Unexpected any. Specify a different type                                                               @typescript-eslint/no-explicit-any
+  248:37  error    Unexpected any. Specify a different type                                                               @typescript-eslint/no-explicit-any
+  258:29  error    Unexpected any. Specify a different type                                                               @typescript-eslint/no-explicit-any
+
+/Users/portablesheep/repos/Isla-site/src/lib/auditLog.ts
+    3:3   warning  'AuditLogInput' is defined but never used        @typescript-eslint/no-unused-vars
+   28:18  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+   41:34  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+   56:3   warning  'adminCheck' is assigned a value but never used  @typescript-eslint/no-unused-vars
+   71:30  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  131:48  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  154:48  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  227:30  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+  232:7   warning  'query' is assigned a value but never used       @typescript-eslint/no-unused-vars
+  247:38  error    Unexpected any. Specify a different type         @typescript-eslint/no-explicit-any
+
+/Users/portablesheep/repos/Isla-site/src/lib/childProfiles.ts
+   49:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   67:52  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   85:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  134:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  154:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  169:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  189:52  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  207:19  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/portablesheep/repos/Isla-site/src/lib/inviteFlow.ts
+    1:1   error  Do not use "@ts-nocheck" because it alters compilation errors  @typescript-eslint/ban-ts-comment
+   25:24  error  A `require()` style import is forbidden                        @typescript-eslint/no-require-imports
+   39:20  error  Unexpected any. Specify a different type                       @typescript-eslint/no-explicit-any
+   51:20  error  Unexpected any. Specify a different type                       @typescript-eslint/no-explicit-any
+   53:24  error  Unexpected any. Specify a different type                       @typescript-eslint/no-explicit-any
+   54:26  error  Unexpected any. Specify a different type                       @typescript-eslint/no-explicit-any
+   57:32  error  Unexpected any. Specify a different type                       @typescript-eslint/no-explicit-any
+  209:31  error  Unexpected any. Specify a different type                       @typescript-eslint/no-explicit-any
+
+/Users/portablesheep/repos/Isla-site/src/lib/inviteTokens.ts
+   27:3   warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+   29:31  error    Unexpected any. Specify a different type                                                               @typescript-eslint/no-explicit-any
+  100:3   warning  Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-explicit-any')
+  102:31  error    Unexpected any. Specify a different type                                                               @typescript-eslint/no-explicit-any
+
+/Users/portablesheep/repos/Isla-site/src/lib/micro-interactions.ts
+   51:3   warning  'creatureId' is defined but never used    @typescript-eslint/no-unused-vars
+  100:3   warning  'creatureId' is defined but never used    @typescript-eslint/no-unused-vars
+  548:65  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/portablesheep/repos/Isla-site/src/lib/moderation.ts
+    1:1   error  Do not use "@ts-nocheck" because it alters compilation errors  @typescript-eslint/ban-ts-comment
+   51:31  error  Unexpected any. Specify a different type                       @typescript-eslint/no-explicit-any
+  149:40  error  Unexpected any. Specify a different type                       @typescript-eslint/no-explicit-any
+
+/Users/portablesheep/repos/Isla-site/src/lib/notificationPrefs.ts
+    1:1   error  Do not use "@ts-nocheck" because it alters compilation errors  @typescript-eslint/ban-ts-comment
+   56:44  error  Unexpected any. Specify a different type                       @typescript-eslint/no-explicit-any
+   89:44  error  Unexpected any. Specify a different type                       @typescript-eslint/no-explicit-any
+  107:10  error  Unexpected any. Specify a different type                       @typescript-eslint/no-explicit-any
+  113:44  error  Unexpected any. Specify a different type                       @typescript-eslint/no-explicit-any
+
+/Users/portablesheep/repos/Isla-site/src/lib/notifications.ts
+    1:1   error    Do not use "@ts-nocheck" because it alters compilation errors  @typescript-eslint/ban-ts-comment
+  211:3   warning  'postAuthorId' is defined but never used                       @typescript-eslint/no-unused-vars
+  240:26  error    Unexpected any. Specify a different type                       @typescript-eslint/no-explicit-any
+  241:29  error    Unexpected any. Specify a different type                       @typescript-eslint/no-explicit-any
+  313:46  warning  'profileError' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  361:25  warning  'queueItem' is assigned a value but never used                 @typescript-eslint/no-unused-vars
+  425:33  error    Unexpected any. Specify a different type                       @typescript-eslint/no-explicit-any
+  446:34  error    Unexpected any. Specify a different type                       @typescript-eslint/no-explicit-any
+  459:45  warning  'profileError' is assigned a value but never used              @typescript-eslint/no-unused-vars
+
+/Users/portablesheep/repos/Isla-site/src/lib/posts.ts
+    1:1   error  Do not use "@ts-nocheck" because it alters compilation errors  @typescript-eslint/ban-ts-comment
+  155:21  error  Unexpected any. Specify a different type                       @typescript-eslint/no-explicit-any
+  233:71  error  Unexpected any. Specify a different type                       @typescript-eslint/no-explicit-any
+  245:32  error  Unexpected any. Specify a different type                       @typescript-eslint/no-explicit-any
+  301:19  error  Unexpected any. Specify a different type                       @typescript-eslint/no-explicit-any
+
+/Users/portablesheep/repos/Isla-site/src/lib/suspension.ts
+  41:42  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  65:26  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/portablesheep/repos/Isla-site/src/lib/wallHelpers.ts
+  1:1  error  Do not use "@ts-nocheck" because it alters compilation errors  @typescript-eslint/ban-ts-comment
+
+/Users/portablesheep/repos/Isla-site/src/styles/colors-typography.ts
+  411:70  error    Unexpected any. Specify a different type                        @typescript-eslint/no-explicit-any
+  531:1   warning  Assign object to a variable before exporting as module default  import/no-anonymous-default-export
+
+/Users/portablesheep/repos/Isla-site/tests/e2e/family.spec.ts
+    1:24  warning  'Page' is defined but never used                            @typescript-eslint/no-unused-vars
+    9:7   warning  'TEST_CHILD_2_EMAIL' is assigned a value but never used     @typescript-eslint/no-unused-vars
+   10:7   warning  'TEST_CHILD_2_PASSWORD' is assigned a value but never used  @typescript-eslint/no-unused-vars
+   80:14  warning  'error' is defined but never used                           @typescript-eslint/no-unused-vars
+   89:11  warning  'tokenElement' is assigned a value but never used           @typescript-eslint/no-unused-vars
+  370:11  warning  'testPostContent' is assigned a value but never used        @typescript-eslint/no-unused-vars
+
+/Users/portablesheep/repos/Isla-site/tests/e2e/moderation.spec.ts
+    1:24   warning  'Page' is defined but never used                           @typescript-eslint/no-unused-vars
+    1:30   warning  'BrowserContext' is defined but never used                 @typescript-eslint/no-unused-vars
+    6:10   warning  'createTestParent' is defined but never used               @typescript-eslint/no-unused-vars
+    6:28   warning  'createTestFamily' is defined but never used               @typescript-eslint/no-unused-vars
+    6:46   warning  'createTestPost' is defined but never used                 @typescript-eslint/no-unused-vars
+    6:62   warning  'createTestChild' is defined but never used                @typescript-eslint/no-unused-vars
+   25:7    warning  'TEST_PARENT_EMAIL' is assigned a value but never used     @typescript-eslint/no-unused-vars
+   26:7    warning  'TEST_PARENT_PASSWORD' is assigned a value but never used  @typescript-eslint/no-unused-vars
+   64:88   warning  'context' is defined but never used                        @typescript-eslint/no-unused-vars
+   79:11   warning  'initialFlagCount' is assigned a value but never used      @typescript-eslint/no-unused-vars
+  171:91   warning  'context' is defined but never used                        @typescript-eslint/no-unused-vars
+  262:13   warning  'postId' is assigned a value but never used                @typescript-eslint/no-unused-vars
+  394:104  warning  'context' is defined but never used                        @typescript-eslint/no-unused-vars
+  618:18   warning  'e' is defined but never used                              @typescript-eslint/no-unused-vars
+  770:7    warning  'authPage' is assigned a value but never used              @typescript-eslint/no-unused-vars
+
+/Users/portablesheep/repos/Isla-site/tests/e2e/notifications.spec.ts
+    5:10  warning  'ThreadPage' is defined but never used                         @typescript-eslint/no-unused-vars
+   25:7   warning  'TEST_CHILD_EMAIL' is assigned a value but never used          @typescript-eslint/no-unused-vars
+   26:7   warning  'TEST_CHILD_PASSWORD' is assigned a value but never used       @typescript-eslint/no-unused-vars
+   35:7   warning  'TEST_REPLIES' is assigned a value but never used              @typescript-eslint/no-unused-vars
+  128:5   warning  'context' is defined but never used                            @typescript-eslint/no-unused-vars
+  742:11  error    'initialBadge' is never reassigned. Use 'const' instead        prefer-const
+  743:11  error    'initialBadgeExists' is never reassigned. Use 'const' instead  prefer-const
+
+/Users/portablesheep/repos/Isla-site/tests/e2e/sample.spec.ts
+  28:11  warning  'baseUrl' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  50:11  warning  'baseUrl' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  58:11  warning  'baseUrl' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/portablesheep/repos/Isla-site/tests/fixtures/database.ts
+   37:14  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  214:14  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/portablesheep/repos/Isla-site/tests/global-setup.ts
+   13:28  warning  'config' is defined but never used                     @typescript-eslint/no-unused-vars
+   66:14  warning  'error' is defined but never used                      @typescript-eslint/no-unused-vars
+  133:10  warning  'printConfigurationSummary' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/portablesheep/repos/Isla-site/tests/global-teardown.ts
+  7:31  warning  'config' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/portablesheep/repos/Isla-site/tests/helpers/auth-helpers.ts
+  114:9  warning  'errorMessages' is assigned a value but never used    @typescript-eslint/no-unused-vars
+  115:9  warning  'successMessages' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/Users/portablesheep/repos/Isla-site/tests/helpers/page-utils.ts
+    1:16  warning  'expect' is defined but never used        @typescript-eslint/no-unused-vars
+  217:12  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  240:13  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  282:25  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/Users/portablesheep/repos/Isla-site/tests/pages/audit-log.page.ts
+  1:16  warning  'expect' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/portablesheep/repos/Isla-site/tests/pages/moderation.page.ts
+  1:16  warning  'expect' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/portablesheep/repos/Isla-site/tests/pages/parent-auth.page.ts
+  1:16  warning  'expect' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/portablesheep/repos/Isla-site/tests/unit/micro-interactions.test.ts
+   62:57  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   87:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   95:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  103:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  111:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  141:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  195:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  424:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  562:18  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+✖ 236 problems (142 errors, 94 warnings)
+  2 errors and 4 warnings potentially fixable with the `--fix` option.
+

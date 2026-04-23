@@ -19,12 +19,6 @@ export default function ThreadPage() {
   const [submitLoading, setSubmitLoading] = useState(false);
   const [replyContent, setReplyContent] = useState('');
 
-  useEffect(() => {
-    if (postId) {
-      loadThreadData();
-    }
-  }, [postId]);
-
   const loadThreadData = async () => {
     try {
       setLoading(true);
@@ -60,6 +54,12 @@ export default function ThreadPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (postId) {
+      loadThreadData();
+    }
+  }, [postId]);
 
   const handleSubmitReply = async (e: React.FormEvent) => {
     e.preventDefault();

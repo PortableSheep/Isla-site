@@ -58,7 +58,7 @@ export default function ChildrenPage() {
       <div className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-4xl font-bold text-white mb-2">My Children</h1>
-          <p className="text-gray-400">Manage your children's profiles and access</p>
+          <p className="text-gray-400">Manage your children&apos;s profiles and access</p>
         </div>
         <Link
           href="/children/new"

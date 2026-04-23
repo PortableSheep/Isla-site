@@ -14,10 +14,6 @@ export default function AuditLogsPage() {
 
   const pageSize = 50;
 
-  useEffect(() => {
-    fetchLogs(0);
-  }, [filters]);
-
   const fetchLogs = async (offset: number) => {
     try {
       setIsLoading(true);
@@ -74,6 +70,10 @@ export default function AuditLogsPage() {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchLogs(0);
+  }, [filters]);
 
   const handlePreviousPage = () => {
     const newOffset = Math.max(0, currentPage - 1) * pageSize;

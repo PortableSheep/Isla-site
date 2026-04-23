@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Notification } from '@/types/notifications';
-import { Bell, Trash2, CheckCheck, Filter, X } from 'lucide-react';
+import { Trash2, CheckCheck, Filter, X } from 'lucide-react';
 import { CreatureDisplay } from '@/components/CreatureDisplay';
 import styles from '@/styles/hand-drawn.module.css';
 
@@ -21,7 +21,6 @@ export default function NotificationsPage() {
   const [unreadOnly, setUnreadOnly] = useState(false);
   const router = useRouter();
 
-  // Fetch notifications
   const fetchNotifications = async () => {
     try {
       setIsLoading(true);

@@ -32,7 +32,7 @@ export default function HistoryPage() {
         const { data, error: fetchError } = await supabase
           .from('families')
           .select('id, name')
-          .eq('created_by', user.id) as any;
+          .eq('created_by', user.id) as { data: Family[]; error: Error | null };
 
         if (fetchError) throw fetchError;
 

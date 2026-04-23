@@ -1,0 +1,59 @@
+tests/e2e/accessibility.spec.ts(57,40): error TS2339: Property 'offsetHeight' does not exist on type 'Element'.
+tests/e2e/family.spec.ts(83,39): error TS2339: Property 'evaluateHandle' does not exist on type 'BrowserContext'.
+tests/e2e/family.spec.ts(166,12): error TS2365: Operator '>' cannot be applied to types 'Promise<number>' and 'number'.
+tests/e2e/family.spec.ts(209,12): error TS2365: Operator '>' cannot be applied to types 'Promise<number>' and 'number'.
+tests/e2e/moderation.spec.ts(553,12): error TS2365: Operator '>=' cannot be applied to types 'Promise<number>' and 'number'.
+tests/e2e/notifications.spec.ts(87,24): error TS2339: Property 'openComposer' does not exist on type 'PostComposerPage'.
+tests/e2e/notifications.spec.ts(88,24): error TS2339: Property 'fillPostContent' does not exist on type 'PostComposerPage'.
+tests/e2e/notifications.spec.ts(138,24): error TS2339: Property 'openComposer' does not exist on type 'PostComposerPage'.
+tests/e2e/notifications.spec.ts(139,24): error TS2339: Property 'fillPostContent' does not exist on type 'PostComposerPage'.
+tests/e2e/notifications.spec.ts(246,24): error TS2339: Property 'openComposer' does not exist on type 'PostComposerPage'.
+tests/e2e/notifications.spec.ts(247,24): error TS2339: Property 'fillPostContent' does not exist on type 'PostComposerPage'.
+tests/e2e/notifications.spec.ts(394,26): error TS2339: Property 'openComposer' does not exist on type 'PostComposerPage'.
+tests/e2e/notifications.spec.ts(395,26): error TS2339: Property 'fillPostContent' does not exist on type 'PostComposerPage'.
+tests/e2e/notifications.spec.ts(607,24): error TS2339: Property 'openComposer' does not exist on type 'PostComposerPage'.
+tests/e2e/notifications.spec.ts(608,24): error TS2339: Property 'fillPostContent' does not exist on type 'PostComposerPage'.
+tests/e2e/notifications.spec.ts(673,26): error TS2339: Property 'openComposer' does not exist on type 'PostComposerPage'.
+tests/e2e/notifications.spec.ts(674,26): error TS2339: Property 'fillPostContent' does not exist on type 'PostComposerPage'.
+tests/e2e/notifications.spec.ts(752,23): error TS2339: Property 'openComposer' does not exist on type 'PostComposerPage'.
+tests/e2e/notifications.spec.ts(753,23): error TS2339: Property 'fillPostContent' does not exist on type 'PostComposerPage'.
+tests/e2e/wall.spec.ts(239,53): error TS2304: Cannot find name 'page'.
+tests/e2e/wall.spec.ts(247,28): error TS2304: Cannot find name 'page'.
+tests/e2e/wall.spec.ts(265,34): error TS2304: Cannot find name 'page'.
+tests/e2e/wall.spec.ts(282,11): error TS2304: Cannot find name 'page'.
+tests/e2e/wall.spec.ts(285,12): error TS2304: Cannot find name 'page'.
+tests/e2e/wall.spec.ts(288,30): error TS2304: Cannot find name 'page'.
+tests/e2e/wall.spec.ts(292,33): error TS2304: Cannot find name 'page'.
+tests/e2e/wall.spec.ts(296,34): error TS2304: Cannot find name 'page'.
+tests/e2e/wall.spec.ts(305,30): error TS2304: Cannot find name 'page'.
+tests/e2e/wall.spec.ts(325,31): error TS2304: Cannot find name 'page'.
+tests/e2e/wall.spec.ts(341,38): error TS2304: Cannot find name 'page'.
+tests/e2e/wall.spec.ts(370,30): error TS2304: Cannot find name 'page'.
+tests/e2e/wall.spec.ts(374,9): error TS2448: Block-scoped variable 'posts' used before its declaration.
+tests/e2e/wall.spec.ts(376,33): error TS2304: Cannot find name 'page'.
+tests/e2e/wall.spec.ts(377,29): error TS2448: Block-scoped variable 'posts' used before its declaration.
+tests/e2e/wall.spec.ts(381,25): error TS2304: Cannot find name 'page'.
+tests/e2e/wall.spec.ts(416,23): error TS2304: Cannot find name 'page'.
+tests/e2e/wall.spec.ts(423,25): error TS2304: Cannot find name 'page'.
+tests/e2e/wall.spec.ts(428,28): error TS2304: Cannot find name 'page'.
+tests/e2e/wall.spec.ts(434,15): error TS2304: Cannot find name 'page'.
+tests/e2e/wall.spec.ts(515,23): error TS2304: Cannot find name 'page'.
+tests/e2e/wall.spec.ts(516,60): error TS7006: Parameter 'el' implicitly has an 'any' type.
+tests/e2e/wall.spec.ts(533,28): error TS2304: Cannot find name 'page'.
+tests/e2e/wall.spec.ts(574,11): error TS2304: Cannot find name 'page'.
+tests/e2e/wall.spec.ts(580,25): error TS2304: Cannot find name 'page'.
+tests/e2e/wall.spec.ts(588,22): error TS2304: Cannot find name 'page'.
+tests/performance.spec.ts(135,27): error TS2352: Conversion of type 'Performance' to type 'Record<string, unknown>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Index signature for type 'string' is missing in type 'Performance'.
+tests/performance.spec.ts(352,9): error TS2322: Type 'Record<string, APIMetric>' is not assignable to type 'Record<string, string | number>'.
+  'string' index signatures are incompatible.
+    Type 'APIMetric' is not assignable to type 'string | number'.
+tests/performance.spec.ts(625,13): error TS2322: Type 'boolean' is not assignable to type 'string | number'.
+tests/performance.spec.ts(626,13): error TS2322: Type 'boolean' is not assignable to type 'string | number'.
+tests/unit/micro-interactions.test.ts(11,65): error TS2307: Cannot find module 'vitest' or its corresponding type declarations.
+tests/unit/micro-interactions.test.ts(128,62): error TS7006: Parameter 'done' implicitly has an 'any' type.
+tests/unit/micro-interactions.test.ts(160,49): error TS7006: Parameter 'done' implicitly has an 'any' type.
+tests/unit/micro-interactions.test.ts(237,56): error TS7006: Parameter 'done' implicitly has an 'any' type.
+tests/unit/micro-interactions.test.ts(263,59): error TS7006: Parameter 'done' implicitly has an 'any' type.
+tests/unit/micro-interactions.test.ts(407,66): error TS7006: Parameter 'done' implicitly has an 'any' type.
+tests/unit/micro-interactions.test.ts(474,61): error TS7006: Parameter 'done' implicitly has an 'any' type.

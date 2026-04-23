@@ -84,7 +84,7 @@ describe('Micro-interactions', () => {
 
   describe('Motion Preference', () => {
     it('should detect when prefers-reduced-motion is enabled', () => {
-      (mockWindow.matchMedia as any).mockReturnValue({
+      (mockWindow.matchMedia as unknown as { mockReturnValue: (obj: { matches: boolean }) => void }).mockReturnValue({
         matches: true
       });
 

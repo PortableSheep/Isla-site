@@ -2,7 +2,6 @@
 
 import { ApprovalDashboard } from '@/components/ApprovalDashboard';
 import { CreatureDisplay } from '@/components/CreatureDisplay';
-import styles from '@/styles/hand-drawn.module.css';
 
 export default function ApprovalsPage() {
   return (
