@@ -1,35 +1,31 @@
-<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Thinking Star">
-  <title>Star - Thinking</title>
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Star thinking">
+  <title>Star (thinking)</title>
   <defs>
     <style>
-      .star-body { fill: #FFD700; stroke: #FFA500; stroke-width: 2; }
-      .star-eye { fill: #FFFFFF; stroke: #000000; stroke-width: 1.5; }
-      .star-pupil { fill: #000000; }
-      .star-mouth { fill: none; stroke: #000000; stroke-width: 2; }
-      .star-shine { fill: #FFFF99; }
-      .thinking-dot { fill: #FFA500; }
+      .star-body{fill:#E8B53C;stroke:#1A1623;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+      .star-shadow{fill:#4A3A5C;opacity:.35}
+      .star-seam{fill:none;stroke:#1A1623;stroke-width:1;stroke-dasharray:3 3;opacity:.75}
+      .star-eye{fill:none;stroke:#1A1623;stroke-width:2.5;stroke-linecap:round}
+      .star-spiral{fill:none;stroke:#1A1623;stroke-width:1.6;stroke-linecap:round}
+      .star-brow{fill:none;stroke:#1A1623;stroke-width:2;stroke-linecap:round}
+      .star-mouth{fill:none;stroke:#1A1623;stroke-width:1.5;stroke-linecap:round}
+      .star-leg{fill:none;stroke:#1A1623;stroke-width:2;stroke-linecap:round}
+      .star-foot{fill:#F5F0E6;stroke:#1A1623;stroke-width:1.2;stroke-linejoin:round}
+      .star-dot{fill:#1A1623}
     </style>
   </defs>
-  
-  <!-- Main star body -->
-  <polygon class="star-body" points="100,40 118,95 175,95 131,138 150,193 100,150 50,193 69,138 25,95 82,95"/>
-  
-  <!-- Left eye thinking -->
-  <circle class="star-eye" cx="85" cy="90" r="10"/>
-  <circle class="star-pupil" cx="85" cy="85" r="5"/>
-  
-  <!-- Right eye thinking -->
-  <circle class="star-eye" cx="115" cy="90" r="10"/>
-  <circle class="star-pupil" cx="115" cy="85" r="5"/>
-  
-  <!-- Thinking mouth -->
-  <path class="star-mouth" d="M 95 115 Q 100 110 105 115"/>
-  
-  <!-- Thought bubbles -->
-  <circle class="thinking-dot" cx="140" cy="50" r="5"/>
-  <circle class="thinking-dot" cx="160" cy="65" r="3"/>
-  
-  <!-- Sparkle shine -->
-  <circle class="star-shine" cx="70" cy="70" r="4"/>
-  <circle class="star-shine" cx="130" cy="65" r="3"/>
+  <path class="star-shadow" d="M103 36Q112 62 119 81Q143 78 167 83Q147 100 130 117Q138 142 143 162Q121 150 103 132Q85 152 63 162Q69 138 76 117Q59 100 39 83Q63 78 87 81Q95 60 103 36Z"/>
+  <path class="star-body" d="M100 32Q110 58 116 77Q140 74 164 79Q144 96 127 113Q135 138 140 158Q118 146 100 128Q82 148 60 158Q66 134 73 113Q56 96 36 79Q60 74 84 77Q92 56 100 32Z"/>
+  <path class="star-seam" d="M100 34L140 156L38 80L162 80L60 156Z"/>
+  <path class="star-leg" d="M94 128L88 182"/>
+  <path class="star-leg" d="M106 128L112 182"/>
+  <path class="star-foot" d="M80 182Q88 180 94 183Q92 189 84 189Z"/>
+  <path class="star-foot" d="M106 183Q112 180 120 182Q116 189 108 189Z"/>
+  <circle class="star-dot" cx="138" cy="22" r="1.4"/>
+  <circle class="star-dot" cx="150" cy="14" r="1.6"/>
+  <circle class="star-dot" cx="160" cy="24" r="1.2"/>
+  <path class="star-eye" d="M82 98Q90 104 98 98"/>
+  <path class="star-spiral" d="M110 100q2-2 4 0t-3 5-7-3 4-8 10 3-2 10"/>
+  <path class="star-brow" d="M102 88Q112 84 120 88"/>
+  <path class="star-mouth" d="M94 116L107 114"/>
 </svg>

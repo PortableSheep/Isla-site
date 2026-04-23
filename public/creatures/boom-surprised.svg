@@ -1,48 +1,45 @@
-<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Surprised Boom">
-  <title>Boom - Surprised</title>
-  <defs>
-    <style>
-      .boom-body { fill: #DC143C; stroke: #8B0000; stroke-width: 2; }
-      .boom-eye { fill: #FFFFFF; stroke: #000000; stroke-width: 1.5; }
-      .boom-pupil { fill: #000000; }
-      .boom-mouth { fill: none; stroke: #000000; stroke-width: 2.5; }
-      .boom-power { fill: #FFD700; }
-    </style>
-  </defs>
-  
-  <!-- Body bouncing with energy -->
-  <circle class="boom-body" cx="100" cy="100" r="50"/>
-  
-  <!-- Pecs tensed -->
-  <ellipse fill="#FF6B6B" cx="85" cy="85" rx="12" ry="18"/>
-  <ellipse fill="#FF6B6B" cx="115" cy="85" rx="12" ry="18"/>
-  
-  <!-- Left eye surprised wide -->
-  <circle class="boom-eye" cx="85" cy="95" r="12"/>
-  <circle class="boom-pupil" cx="85" cy="95" r="7"/>
-  
-  <!-- Right eye surprised wide -->
-  <circle class="boom-eye" cx="115" cy="95" r="12"/>
-  <circle class="boom-pupil" cx="115" cy="95" r="7"/>
-  
-  <!-- O-shaped mouth -->
-  <circle cx="100" cy="130" r="9" fill="none" stroke="#000000" stroke-width="2"/>
-  
-  <!-- Explosive power lines -->
-  <line class="boom-power" x1="40" y1="70" x2="25" y2="55" stroke-width="3" stroke-linecap="round"/>
-  <line class="boom-power" x1="160" y1="70" x2="175" y2="55" stroke-width="3" stroke-linecap="round"/>
-  <line class="boom-power" x1="50" y1="130" x2="35" y2="145" stroke-width="2" stroke-linecap="round"/>
-  <line class="boom-power" x1="150" y1="130" x2="165" y2="145" stroke-width="2" stroke-linecap="round"/>
-  
-  <!-- Strong arms up -->
-  <ellipse class="boom-body" cx="30" cy="95" rx="15" ry="38" transform="rotate(-40 30 95)"/>
-  <circle class="boom-body" cx="12" cy="80" r="10"/>
-  
-  <!-- Strong right arm up -->
-  <ellipse class="boom-body" cx="170" cy="95" rx="15" ry="38" transform="rotate(40 170 95)"/>
-  <circle class="boom-body" cx="188" cy="80" r="10"/>
-  
-  <!-- Feet -->
-  <ellipse class="boom-body" cx="78" cy="155" rx="16" ry="12"/>
-  <ellipse class="boom-body" cx="122" cy="155" rx="16" ry="12"/>
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Boom the goblin knight">
+  <title>Boom</title>
+  <!-- palette: bone#F5F0E6 ink#1A1623 dusk#4A3A5C teal-fog#5E8A8C lavender#B8A4C9 blush#D4A5A5 -->
+  <defs><style>.boom-body { fill:#5E8A8C; stroke:#1A1623; stroke-width:2.5;
+               stroke-linejoin:round; stroke-linecap:round; }
+.boom-eye { fill:#F5F0E6; stroke:#1A1623; stroke-width:1.5; }
+.boom-pupil { fill:#1A1623; }
+.boom-mouth { fill:none; stroke:#1A1623; stroke-width:2;
+                stroke-linecap:round; stroke-linejoin:round; }
+.boom-accent { stroke:#1A1623; stroke-width:1.5;
+                 stroke-linecap:round; stroke-linejoin:round; }
+.ink { stroke:#1A1623; fill:none; stroke-linecap:round;
+        stroke-linejoin:round; }
+.shadow { fill:#4A3A5C; opacity:0.35; }
+.sketch { stroke:#1A1623; fill:none; opacity:0.4; stroke-width:1;
+           stroke-linecap:round; }
+.hi { fill:#F5F0E6; }
+
+.boom-body { fill:#4A3A5C; }
+.helmet { fill:#1A1623; stroke:#1A1623; stroke-width:2;
+           stroke-linejoin:round; }
+.plume { fill:#A93A3A; stroke:#1A1623; stroke-width:1.5;
+          stroke-linejoin:round; }
+.pennant { fill:#A93A3A; stroke:#1A1623; stroke-width:1.3;
+            stroke-linejoin:round; }
+.face-skin { fill:#B8A4C9; stroke:#1A1623; stroke-width:1.8; }</style></defs>
+  <path class="shadow" d="M58,124 C54,104 74,100 100,100 C126,100 142,104 142,124 L148,176 Q100,186 54,176 Z"/>
+  <path class="plume" d="M96,22 Q86,10 98,6 Q106,2 110,10 Q118,16 112,26 Q108,34 100,32 Q94,28 96,22 Z"/>
+  <path class="boom-body" d="M56,120 C52,100 72,96 100,96 C128,96 146,100 142,120 L146,172 Q100,182 52,172 Z"/>
+  <path class="ink" stroke-width="1" stroke-dasharray="3 3" d="M56,150 Q100,156 144,150"/>
+  <path class="boom-body" d="M54,130 Q40,146 48,162 Q58,164 62,152 Z"/>
+  <path class="boom-body" d="M146,120 Q164,100 168,80 Q158,72 152,86 Q140,106 140,126 Z"/>
+  <path class="ink" stroke-width="1.6" d="M164,82 L158,46"/>
+  <path class="pennant" d="M158,46 L180,52 L162,60 Z"/>
+  <path class="face-skin" d="M66,92 Q100,108 134,92 Q132,118 100,124 Q68,118 66,92 Z"/>
+  <path class="helmet" d="M44,80 Q42,36 100,32 Q158,36 156,80 Q158,92 144,94 Q100,98 56,94 Q42,92 44,80 Z"/>
+  <path class="ink" stroke="#F5F0E6" stroke-width="1.2" fill="none" opacity="0.6" d="M56,84 Q100,94 144,84"/>
+  <path class="ink" stroke="#F5F0E6" stroke-width="1.4" fill="none" d="M128,44 L134,54 L128,60 L136,70 L130,78"/>
+  <circle class="boom-eye" cx="86" cy="104" r="9"/>
+  <circle class="boom-pupil" cx="86" cy="104" r="2"/>
+  <circle class="boom-eye" cx="114" cy="104" r="9"/>
+  <circle class="boom-pupil" cx="114" cy="104" r="2"/>
+  <ellipse cx="100" cy="119" rx="2.2" ry="3" fill="#1A1623"/>
+  <path d="M74,100 Q76,106 78,100 Q76,96 74,100 Z" fill="#F5F0E6" stroke="#1A1623" stroke-width="1"/>
 </svg>

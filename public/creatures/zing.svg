@@ -1,49 +1,34 @@
-<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Zing the energetic creature">
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Zing the notification bat">
   <title>Zing</title>
   <defs>
     <style>
-      .zing-body { fill: #FF4500; stroke: #DC143C; stroke-width: 2; }
-      .zing-eye { fill: #FFFFFF; stroke: #000000; stroke-width: 1.5; }
-      .zing-pupil { fill: #000000; }
-      .zing-mouth { fill: none; stroke: #000000; stroke-width: 2; }
-      .zing-stripe { fill: none; stroke: #FFD700; stroke-width: 2; }
+      .zing-body{fill:#1A1623;stroke:#1A1623;stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round}
+      .zing-eye{fill:#F5F0E6;stroke:#1A1623;stroke-width:1.5}
+      .zing-pupil{fill:#1A1623}
+      .zing-mouth{fill:#F5F0E6;stroke:#1A1623;stroke-width:1.5;stroke-linejoin:round}
+      .zing-accent{fill:#D9B83A;stroke:#1A1623;stroke-width:1.5;stroke-linejoin:round;stroke-linecap:round}
+      .wing{fill:#4A3A5C;stroke:#1A1623;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+      .belly{fill:#F5F0E6;stroke:#1A1623;stroke-width:1.5;stroke-linejoin:round}
+      .detail{fill:none;stroke:#1A1623;stroke-width:1;stroke-linecap:round}
     </style>
   </defs>
-  
-  <!-- Energetic spiky body -->
-  <circle class="zing-body" cx="100" cy="110" r="50"/>
-  
-  <!-- Spikes all around -->
-  <polygon class="zing-body" points="100,55 105,35 95,55"/>
-  <polygon class="zing-body" points="145,85 165,80 145,95"/>
-  <polygon class="zing-body" points="145,135 165,140 145,150"/>
-  <polygon class="zing-body" points="55,135 35,140 55,150"/>
-  <polygon class="zing-body" points="55,85 35,80 55,95"/>
-  
-  <!-- Left eye energetic -->
-  <circle class="zing-eye" cx="85" cy="100" r="11"/>
-  <circle class="zing-pupil" cx="85" cy="100" r="6"/>
-  
-  <!-- Right eye energetic -->
-  <circle class="zing-eye" cx="115" cy="100" r="11"/>
-  <circle class="zing-pupil" cx="115" cy="100" r="6"/>
-  
-  <!-- Wide smile -->
-  <path class="zing-mouth" d="M 87 128 Q 100 140 113 128"/>
-  
-  <!-- Energy stripes -->
-  <line class="zing-stripe" x1="70" y1="110" x2="60" y2="110"/>
-  <line class="zing-stripe" x1="130" y1="110" x2="140" y2="110"/>
-  
-  <!-- Left arm (bent in action pose) -->
-  <ellipse class="zing-body" cx="45" cy="115" rx="13" ry="38" transform="rotate(-20 45 115)"/>
-  <circle class="zing-body" cx="33" cy="145" r="9"/>
-  
-  <!-- Right arm (bent in action pose) -->
-  <ellipse class="zing-body" cx="155" cy="115" rx="13" ry="38" transform="rotate(20 155 115)"/>
-  <circle class="zing-body" cx="167" cy="145" r="9"/>
-  
-  <!-- Feet -->
-  <ellipse class="zing-body" cx="80" cy="165" rx="16" ry="11"/>
-  <ellipse class="zing-body" cx="120" cy="165" rx="16" ry="11"/>
+  <path d="M78 170 C66 150 70 110 100 98 C132 108 138 150 124 172 C112 178 90 178 78 170 Z" fill="#4A3A5C" opacity="0.35"/>
+  <path class="wing" d="M80 96 C60 80 32 72 14 82 C22 96 18 118 26 132 C42 126 54 134 62 144 C60 130 68 118 76 112 Q80 104 80 96 Z"/>
+  <path class="detail" d="M28 88 C38 102 52 118 66 126" opacity="0.5"/>
+  <path class="wing" d="M120 96 C140 80 168 72 186 82 C178 96 182 118 174 132 C158 126 146 134 138 144 C140 130 132 118 124 112 Q120 104 120 96 Z"/>
+  <path class="detail" d="M172 88 C162 102 148 118 134 126" opacity="0.5"/>
+  <path class="zing-body" d="M78 166 C70 150 72 120 86 102 C96 94 108 94 116 104 C128 122 128 152 120 168 C112 174 88 174 78 166 Z"/>
+  <path class="belly" d="M86 126 C84 144 90 160 100 162 C110 160 116 144 114 126 C108 122 92 122 86 126 Z"/>
+  <path class="zing-accent" d="M100 168 L96 178 L104 176 L98 190 L110 174 L102 174 L106 166 Z"/>
+  <path class="zing-body" d="M86 170 L84 184 L90 182 Z"/>
+  <path class="zing-body" d="M112 170 L114 184 L108 182 Z"/>
+  <circle class="zing-eye" cx="88" cy="120" r="11"/>
+  <circle class="zing-eye" cx="112" cy="120" r="11"/>
+  <circle class="zing-pupil" cx="90" cy="122" r="6.5"/>
+  <circle class="zing-pupil" cx="110" cy="122" r="6.5"/>
+  <circle fill="#F5F0E6" cx="86" cy="118" r="1.8"/>
+  <circle fill="#F5F0E6" cx="108" cy="118" r="1.8"/>
+  <path class="zing-mouth" d="M92 138 C96 144 104 144 108 138 C104 140 96 140 92 138 Z"/>
+  <path fill="#D4A5A5" opacity="0.6" d="M74 132 C74 136 78 138 82 136 C80 130 76 130 74 132 Z"/>
+  <path fill="#D4A5A5" opacity="0.6" d="M126 132 C126 136 122 138 118 136 C120 130 124 130 126 132 Z"/>
 </svg>

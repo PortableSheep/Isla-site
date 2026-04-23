@@ -1,33 +1,29 @@
-<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Surprised Star">
-  <title>Star - Surprised</title>
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Star surprised">
+  <title>Star (surprised)</title>
   <defs>
     <style>
-      .star-body { fill: #FFD700; stroke: #FFA500; stroke-width: 2; }
-      .star-eye { fill: #FFFFFF; stroke: #000000; stroke-width: 1.5; }
-      .star-pupil { fill: #000000; }
-      .star-mouth { fill: none; stroke: #000000; stroke-width: 2.5; }
-      .star-shine { fill: #FFFF99; }
+      .star-body{fill:#E8B53C;stroke:#1A1623;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+      .star-shadow{fill:#4A3A5C;opacity:.35}
+      .star-seam{fill:none;stroke:#1A1623;stroke-width:1;stroke-dasharray:3 3;opacity:.75}
+      .star-eye{fill:#F5F0E6;stroke:#1A1623;stroke-width:1.5}
+      .star-pupil{fill:#1A1623}
+      .star-mouth{fill:#1A1623}
+      .star-leg{fill:none;stroke:#1A1623;stroke-width:2;stroke-linecap:round}
+      .star-foot{fill:#F5F0E6;stroke:#1A1623;stroke-width:1.2;stroke-linejoin:round}
+      .star-spike{stroke:#1A1623;stroke-width:2;stroke-linecap:round}
     </style>
   </defs>
-  
-  <!-- Main star body jumping -->
-  <polygon class="star-body" points="100,30 118,85 175,85 131,128 150,183 100,140 50,183 69,128 25,85 82,85"/>
-  
-  <!-- Left eye surprised -->
-  <circle class="star-eye" cx="85" cy="80" r="12"/>
-  <circle class="star-pupil" cx="85" cy="80" r="7"/>
-  
-  <!-- Right eye surprised -->
-  <circle class="star-eye" cx="115" cy="80" r="12"/>
-  <circle class="star-pupil" cx="115" cy="80" r="7"/>
-  
-  <!-- O-shaped mouth of surprise -->
-  <circle cx="100" cy="110" r="9" fill="none" stroke="#000000" stroke-width="2"/>
-  
-  <!-- Explosive sparkle shine -->
-  <circle class="star-shine" cx="60" cy="55" r="5"/>
-  <circle class="star-shine" cx="140" cy="50" r="4"/>
-  <circle class="star-shine" cx="170" cy="95" r="3"/>
-  <circle class="star-shine" cx="30" cy="100" r="3"/>
-  <circle class="star-shine" cx="100" cy="160" r="2"/>
+  <path class="star-shadow" d="M103 36Q112 62 119 81Q143 78 167 83Q147 100 130 117Q138 142 143 162Q121 150 103 132Q85 152 63 162Q69 138 76 117Q59 100 39 83Q63 78 87 81Q95 60 103 36Z"/>
+  <path class="star-body" d="M100 32Q110 58 116 77Q140 74 164 79Q144 96 127 113Q135 138 140 158Q118 146 100 128Q82 148 60 158Q66 134 73 113Q56 96 36 79Q60 74 84 77Q92 56 100 32Z"/>
+  <path class="star-seam" d="M100 34L140 156L38 80L162 80L60 156Z"/>
+  <path class="star-leg" d="M94 128L88 182"/>
+  <path class="star-leg" d="M106 128L112 182"/>
+  <path class="star-foot" d="M80 182Q88 180 94 183Q92 189 84 189Z"/>
+  <path class="star-foot" d="M106 183Q112 180 120 182Q116 189 108 189Z"/>
+  <path class="star-spike" d="M100 22L100 10M86 24L80 14M114 24L120 14"/>
+  <circle class="star-eye" cx="86" cy="100" r="9"/>
+  <circle class="star-eye" cx="114" cy="100" r="9"/>
+  <circle class="star-pupil" cx="86" cy="100" r="2"/>
+  <circle class="star-pupil" cx="114" cy="100" r="2"/>
+  <ellipse class="star-mouth" cx="100" cy="116" rx="2" ry="2.8"/>
 </svg>

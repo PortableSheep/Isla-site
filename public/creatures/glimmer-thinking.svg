@@ -1,56 +1,50 @@
-<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Thinking Glimmer">
-  <title>Glimmer - Thinking</title>
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Glimmer the moth-lantern guide, thinking">
+  <title>Glimmer (thinking)</title>
   <defs>
     <style>
-      .glimmer-body { fill: #FFD700; stroke: #DAA520; stroke-width: 2; }
-      .glimmer-eye { fill: #2C3E50; }
-      .glimmer-eye-shine { fill: #FFFFFF; }
-      .glimmer-mouth { fill: none; stroke: #8B4513; stroke-width: 2; }
-      .thinking-dot { fill: #8B4513; }
+      .glimmer-body{fill:#4A3A5C;stroke:#1A1623;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+      .lantern{fill:#F5F0E6;stroke:#1A1623;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+      .glimmer-eye{fill:#F5F0E6;stroke:#1A1623;stroke-width:1.5}
+      .glimmer-pupil{fill:#1A1623}
+      .glimmer-mouth{fill:none;stroke:#1A1623;stroke-width:1.5;stroke-linecap:round}
+      .glimmer-accent{fill:#E8B53C;stroke:#1A1623;stroke-width:1;stroke-linejoin:round}
+      .shadow{fill:#4A3A5C;opacity:.35}
+      .thin{fill:none;stroke:#1A1623;stroke-width:1;stroke-linecap:round}
     </style>
   </defs>
-  
-  <!-- Main body -->
-  <ellipse class="glimmer-body" cx="100" cy="110" rx="55" ry="65"/>
-  
-  <!-- Left ear -->
-  <ellipse class="glimmer-body" cx="70" cy="55" rx="18" ry="32"/>
-  <ellipse class="glimmer-eye" cx="70" cy="50" rx="8" ry="10"/>
-  
-  <!-- Right ear -->
-  <ellipse class="glimmer-body" cx="130" cy="55" rx="18" ry="32"/>
-  <ellipse class="glimmer-eye" cx="130" cy="50" rx="8" ry="10"/>
-  
-  <!-- Left eye looking up in thought -->
-  <circle class="glimmer-eye" cx="80" cy="92" r="12"/>
-  <circle class="glimmer-eye-shine" cx="80" cy="85" r="5"/>
-  
-  <!-- Right eye looking up in thought -->
-  <circle class="glimmer-eye" cx="120" cy="92" r="12"/>
-  <circle class="glimmer-eye-shine" cx="120" cy="85" r="5"/>
-  
-  <!-- Hand on chin -->
-  <circle class="glimmer-body" cx="65" cy="135" r="10"/>
-  
-  <!-- Sparkle spots -->
-  <circle fill="#FFE4B5" cx="75" cy="115" r="4"/>
-  <circle fill="#FFE4B5" cx="125" cy="120" r="4"/>
-  
-  <!-- Thinking mouth - slight frown -->
-  <path class="glimmer-mouth" d="M 95 140 Q 100 135 105 140"/>
-  
-  <!-- Thought bubbles -->
-  <circle class="thinking-dot" cx="130" cy="45" r="4"/>
-  <circle class="thinking-dot" cx="145" cy="55" r="3"/>
-  <circle class="thinking-dot" cx="155" cy="70" r="2"/>
-  
-  <!-- Left arm down -->
-  <ellipse class="glimmer-body" cx="50" cy="130" rx="12" ry="35"/>
-  
-  <!-- Right arm -->
-  <ellipse class="glimmer-body" cx="145" cy="120" rx="12" ry="35"/>
-  
-  <!-- Feet -->
-  <ellipse class="glimmer-body" cx="85" cy="175" rx="15" ry="12"/>
-  <ellipse class="glimmer-body" cx="115" cy="175" rx="15" ry="12"/>
+  <path class="shadow" d="M77 44 L131 44 L131 116 L117 128 Q129 152 125 184 Q102 188 82 184 Q79 152 91 128 L77 116 Z"/>
+  <path class="glimmer-body" d="M88 122 Q73 148 80 180 Q100 186 121 180 Q127 148 112 122 Z"/>
+  <path class="thin" opacity=".4" d="M92 140 Q100 172 112 142"/>
+  <path class="thin" stroke-width="1.3" d="M86 134 Q68 148 64 172"/>
+  <path class="thin" stroke-width="1.3" d="M114 134 Q134 146 136 174"/>
+  <path class="glimmer-body" d="M94 110 L106 110 L105 124 L95 124 Z"/>
+  <path class="thin" stroke-width="2" d="M94 28 Q100 17 106 28"/>
+  <path class="lantern" d="M87 38 L93 27 L107 27 L113 38 Z"/>
+  <path class="lantern" d="M73 42 Q71 40 78 40 L122 40 Q129 40 127 44 L127 108 Q129 114 121 114 L79 114 Q71 114 73 108 Z"/>
+  <path class="thin" d="M81 46 L81 108"/>
+  <path class="thin" d="M119 46 L119 108"/>
+  <!-- dimmer flame (pondering) -->
+  <path class="glimmer-accent" opacity=".75" d="M100 54 C94 60 95 66 100 66 C105 66 106 60 100 54 Z"/>
+  <path class="glimmer-accent" opacity=".2" d="M100 48 C88 58 90 72 100 72 C110 72 112 58 100 48 Z"/>
+  <path class="thin" stroke-width="1.5" d="M100 27 Q114 10 130 20 Q148 32 146 52"/>
+  <circle cx="146" cy="54" r="2.6" fill="#1A1623"/>
+  <!-- scribble dots of thought -->
+  <circle cx="150" cy="30" r="1.6" fill="#1A1623"/>
+  <circle cx="158" cy="22" r="2" fill="#1A1623"/>
+  <circle cx="166" cy="14" r="2.4" fill="#1A1623"/>
+  <!-- left eye: spiral/dazed -->
+  <circle class="glimmer-eye" cx="90" cy="86" r="7"/>
+  <circle cx="90" cy="86" r="5" fill="none" stroke="#1A1623" stroke-width="1.3"/>
+  <circle cx="90" cy="86" r="2.2" fill="none" stroke="#1A1623" stroke-width="1.3"/>
+  <!-- right eye: saucer -->
+  <circle class="glimmer-eye" cx="110" cy="86" r="7"/>
+  <circle class="glimmer-pupil" cx="110" cy="87" r="4.5"/>
+  <circle cx="108.2" cy="84" r="1.3" fill="#F5F0E6"/>
+  <!-- furrowed brows -->
+  <path class="thin" stroke-width="1.5" d="M84 76 Q90 74 96 77"/>
+  <path class="thin" stroke-width="1.5" d="M104 77 Q110 74 116 76"/>
+  <!-- stitch X -->
+  <path class="thin" d="M78 80 L82 84 M82 80 L78 84"/>
+  <!-- tight mouth -->
+  <path class="glimmer-mouth" d="M94 103 Q100 105 106 103"/>
 </svg>

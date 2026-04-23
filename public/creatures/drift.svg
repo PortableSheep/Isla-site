@@ -1,45 +1,27 @@
-<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Drift the dreamy creature">
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Drift the calm drape-creature">
   <title>Drift</title>
   <defs>
     <style>
-      .drift-body { fill: #87CEEB; stroke: #4682B4; stroke-width: 2; }
-      .drift-eye { fill: #FFFFFF; stroke: #000000; stroke-width: 1.5; }
-      .drift-pupil { fill: #000000; }
-      .drift-mouth { fill: none; stroke: #000000; stroke-width: 2; }
-      .drift-cloud { fill: #E0F4FF; stroke: #4682B4; stroke-width: 1.5; }
+      .drift-body{fill:#F5F0E6;stroke:#1A1623;stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round}
+      .drift-eye{fill:none;stroke:#1A1623;stroke-width:2.5;stroke-linecap:round}
+      .drift-pupil{fill:#1A1623}
+      .drift-mouth{fill:none;stroke:#1A1623;stroke-width:2;stroke-linecap:round}
+      .drift-accent{fill:#7AA2C4;stroke:#1A1623;stroke-width:1.5;stroke-linejoin:round;stroke-linecap:round}
+      .hem{fill:#5E8A8C;stroke:#1A1623;stroke-width:1.5;stroke-linejoin:round;stroke-linecap:round;opacity:0.75}
+      .detail{fill:none;stroke:#1A1623;stroke-width:1;stroke-linecap:round}
     </style>
   </defs>
-  
-  <!-- Fluffy cloud-like body -->
-  <ellipse class="drift-body" cx="100" cy="115" rx="50" ry="55"/>
-  <ellipse class="drift-body" cx="75" cy="105" rx="20" ry="25"/>
-  <ellipse class="drift-body" cx="125" cy="105" rx="20" ry="25"/>
-  
-  <!-- Wispy cloud top -->
-  <circle class="drift-cloud" cx="85" cy="65" r="15"/>
-  <circle class="drift-cloud" cx="115" cy="65" r="15"/>
-  <circle class="drift-cloud" cx="100" cy="55" r="12"/>
-  
-  <!-- Left eye dreamy -->
-  <circle class="drift-eye" cx="85" cy="105" r="11"/>
-  <circle class="drift-pupil" cx="85" cy="107" r="5"/>
-  
-  <!-- Right eye dreamy -->
-  <circle class="drift-eye" cx="115" cy="105" r="11"/>
-  <circle class="drift-pupil" cx="115" cy="107" r="5"/>
-  
-  <!-- Dreamy smile -->
-  <path class="drift-mouth" d="M 90 130 Q 100 140 110 130"/>
-  
-  <!-- Left wispy arm -->
-  <path class="drift-body" d="M 55 115 Q 35 105 30 125" stroke="#4682B4" stroke-width="3" fill="none"/>
-  <circle class="drift-body" cx="25" cy="130" r="8"/>
-  
-  <!-- Right wispy arm -->
-  <path class="drift-body" d="M 145 115 Q 165 105 170 125" stroke="#4682B4" stroke-width="3" fill="none"/>
-  <circle class="drift-body" cx="175" cy="130" r="8"/>
-  
-  <!-- Feet cloud puffs -->
-  <ellipse class="drift-cloud" cx="80" cy="175" rx="14" ry="10"/>
-  <ellipse class="drift-cloud" cx="120" cy="175" rx="14" ry="10"/>
+  <path d="M74 176 C62 154 62 120 68 94 C74 62 86 34 104 30 C124 34 136 66 140 98 C144 128 142 156 134 176 Z" fill="#4A3A5C" opacity="0.35"/>
+  <path class="drift-body" d="M70 170 C60 148 60 118 66 92 C72 60 82 28 100 26 C120 30 128 62 132 94 C136 122 134 152 128 170 Q122 168 118 174 Q112 166 108 174 Q100 166 96 174 Q90 166 86 174 Q80 166 76 174 Q72 168 70 170 Z"/>
+  <path class="detail" d="M86 60 C82 90 82 130 88 160" opacity="0.4"/>
+  <path class="detail" d="M114 60 C118 90 118 130 112 160" opacity="0.4"/>
+  <path class="hem" d="M66 158 C78 164 92 164 100 162 C110 164 124 164 134 158 C132 166 128 172 128 170 Q122 168 118 174 Q112 166 108 174 Q100 166 96 174 Q90 166 86 174 Q80 166 76 174 Q72 168 70 170 Q68 164 66 158 Z"/>
+  <path class="drift-accent" d="M60 118 C80 112 120 112 140 118 L140 128 C120 122 80 122 60 128 Z"/>
+  <path class="drift-accent" d="M58 120 L50 112 L54 132 Z"/>
+  <path class="drift-accent" d="M142 120 L150 112 L146 132 Z"/>
+  <path class="drift-eye" d="M80 82 Q88 88 96 82"/>
+  <path class="drift-eye" d="M104 82 Q112 88 120 82"/>
+  <circle fill="#D4A5A5" opacity="0.5" cx="78" cy="94" r="4"/>
+  <circle fill="#D4A5A5" opacity="0.5" cx="122" cy="94" r="4"/>
+  <path class="drift-mouth" d="M94 102 Q100 106 106 102"/>
 </svg>

@@ -1,38 +1,35 @@
-<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Surprised Sparkle">
-  <title>Sparkle - Surprised</title>
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Sparkle the ghost child, surprised">
+  <title>Sparkle (surprised)</title>
   <defs>
     <style>
-      .sparkle-body { fill: #FF69B4; stroke: #FF1493; stroke-width: 2; }
-      .sparkle-eye { fill: #FFFFFF; stroke: #000000; stroke-width: 1.5; }
-      .sparkle-pupil { fill: #000000; }
-      .sparkle-mouth { fill: none; stroke: #000000; stroke-width: 2.5; }
-      .star-shine { fill: #FFD700; }
+      .sparkle-body{fill:#F5F0E6;stroke:#1A1623;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+      .sparkle-eye{fill:#F5F0E6;stroke:#1A1623;stroke-width:1.5}
+      .sparkle-pupil{fill:#1A1623}
+      .sparkle-mouth{fill:#1A1623;stroke:#1A1623;stroke-width:1}
+      .sparkle-accent{fill:#D94F8A;stroke:#1A1623;stroke-width:1.5;stroke-linejoin:round}
+      .shadow{fill:#4A3A5C;opacity:.35}
+      .thin{fill:none;stroke:#1A1623;stroke-width:1;stroke-linecap:round}
+      .fold{fill:none;stroke:#B8A4C9;stroke-width:1.5;stroke-linecap:round;opacity:.7}
+      .stitch{fill:none;stroke:#1A1623;stroke-width:0.9;stroke-dasharray:1.8 1.8;stroke-linecap:round}
     </style>
   </defs>
-  
-  <!-- Star-shaped body bouncing -->
-  <polygon class="sparkle-body" points="100,25 115,75 170,75 125,115 145,165 100,125 55,165 75,115 30,75 85,75"/>
-  
-  <!-- Left eye surprised -->
-  <circle class="sparkle-eye" cx="80" cy="72" r="12"/>
-  <circle class="sparkle-pupil" cx="80" cy="72" r="7"/>
-  
-  <!-- Right eye surprised -->
-  <circle class="sparkle-eye" cx="120" cy="72" r="12"/>
-  <circle class="sparkle-pupil" cx="120" cy="72" r="7"/>
-  
-  <!-- O-shaped mouth -->
-  <circle cx="100" cy="110" r="8" fill="none" stroke="#000000" stroke-width="2"/>
-  
-  <!-- Large sparkles around -->
-  <polygon class="star-shine" points="155,40 159,52 171,52 161,62 165,74 155,62 145,74 149,62 139,52 151,52"/>
-  <polygon class="star-shine" points="45,45 49,57 61,57 51,67 55,79 45,67 35,79 39,67 29,57 41,57"/>
-  <polygon class="star-shine" points="180,120 184,132 196,132 186,142 190,154 180,142 170,154 174,142 164,132 176,132"/>
-  <polygon class="star-shine" points="20,125 24,137 36,137 26,147 30,159 20,147 10,159 14,147 4,137 16,137"/>
-  
-  <!-- Arm left up -->
-  <ellipse class="sparkle-body" cx="35" cy="75" rx="12" ry="40" transform="rotate(-40 35 75)"/>
-  
-  <!-- Arm right up -->
-  <ellipse class="sparkle-body" cx="165" cy="75" rx="12" ry="40" transform="rotate(40 165 75)"/>
+  <path class="shadow" d="M60 72 Q50 34 102 32 Q154 34 144 72 L144 158 Q136 186 126 162 Q114 186 102 162 Q90 186 78 162 Q68 186 60 158 Z"/>
+  <path class="sparkle-body" d="M58 70 Q46 30 100 28 Q152 30 142 70 L142 158 Q134 188 124 160 Q112 188 100 160 Q88 188 76 160 Q66 188 58 158 Z"/>
+  <path class="fold" d="M70 90 Q64 130 74 156"/>
+  <path class="fold" d="M130 90 Q136 130 126 156"/>
+  <path class="sparkle-accent" d="M100 96 L105 108 L118 109 L108 117 L112 130 L100 122 L88 130 L92 117 L82 109 L95 108 Z"/>
+  <path class="stitch" d="M100 96 L105 108 L118 109 L108 117 L112 130 L100 122 L88 130 L92 117 L82 109 L95 108 Z"/>
+  <path class="thin" d="M112 130 Q120 144 116 152"/>
+  <circle cx="116" cy="153" r="1.2" fill="#1A1623"/>
+  <!-- startle spikes over head -->
+  <path class="thin" stroke-width="1.5" d="M100 22 L100 14"/>
+  <path class="thin" stroke-width="1.5" d="M84 24 L78 16"/>
+  <path class="thin" stroke-width="1.5" d="M116 24 L122 16"/>
+  <!-- huge sclera, tiny pupils -->
+  <circle class="sparkle-eye" cx="84" cy="68" r="11"/>
+  <circle class="sparkle-eye" cx="116" cy="68" r="11"/>
+  <circle class="sparkle-pupil" cx="84" cy="70" r="2"/>
+  <circle class="sparkle-pupil" cx="116" cy="70" r="2"/>
+  <!-- o mouth -->
+  <ellipse class="sparkle-mouth" cx="100" cy="86" rx="2.6" ry="3.6"/>
 </svg>

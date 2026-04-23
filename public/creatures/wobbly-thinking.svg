@@ -1,48 +1,32 @@
-<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Thinking Wobbly">
-  <title>Wobbly - Thinking</title>
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Wobbly the confused creature, thinking">
+  <title>Wobbly</title>
   <defs>
     <style>
-      .wobbly-body { fill: #9B59B6; stroke: #6C3483; stroke-width: 2; }
-      .wobbly-eye { fill: #FFFFFF; stroke: #000000; stroke-width: 1.5; }
-      .wobbly-pupil { fill: #000000; }
-      .wobbly-mouth { fill: none; stroke: #000000; stroke-width: 2; }
-      .thinking-dot { fill: #000000; }
+      .wobbly-body{fill:#B8A4C9;stroke:#1A1623;stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round}
+      .wobbly-eye{fill:#F5F0E6;stroke:#1A1623;stroke-width:1.5}
+      .wobbly-pupil{fill:#1A1623}
+      .wobbly-mouth{fill:none;stroke:#1A1623;stroke-width:2;stroke-linecap:round}
+      .wobbly-accent{fill:none;stroke:#7E5A94;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+      .seam{fill:none;stroke:#1A1623;stroke-width:1;stroke-dasharray:2 3;stroke-linecap:round}
     </style>
   </defs>
-  
-  <!-- Wobbly main body -->
-  <ellipse class="wobbly-body" cx="100" cy="115" rx="48" ry="60"/>
-  
-  <!-- Wobbly bumps -->
-  <circle class="wobbly-body" cx="70" cy="75" r="12"/>
-  <circle class="wobbly-body" cx="130" cy="75" r="12"/>
-  <circle class="wobbly-body" cx="60" cy="140" r="10"/>
-  <circle class="wobbly-body" cx="140" cy="145" r="10"/>
-  
-  <!-- Left eye thinking -->
-  <circle class="wobbly-eye" cx="85" cy="105" r="11"/>
-  <circle class="wobbly-pupil" cx="85" cy="100" r="5"/>
-  
-  <!-- Right eye thinking -->
-  <circle class="wobbly-eye" cx="115" cy="105" r="11"/>
-  <circle class="wobbly-pupil" cx="115" cy="100" r="5"/>
-  
-  <!-- Thinking mouth -->
-  <path class="wobbly-mouth" d="M 95 135 Q 100 130 105 135"/>
-  
-  <!-- Thought bubbles -->
-  <circle class="thinking-dot" cx="140" cy="55" r="5"/>
-  <circle class="thinking-dot" cx="160" cy="70" r="3"/>
-  
-  <!-- Left arm thinking -->
-  <path class="wobbly-body" d="M 55 115 Q 40 110 35 130 Q 38 150 50 155" fill="#9B59B6" stroke="#6C3483" stroke-width="2"/>
-  <circle class="wobbly-body" cx="30" cy="140" r="9"/>
-  
-  <!-- Right arm -->
-  <path class="wobbly-body" d="M 145 115 Q 160 110 165 130 Q 162 150 150 155" fill="#9B59B6" stroke="#6C3483" stroke-width="2"/>
-  <circle class="wobbly-body" cx="170" cy="140" r="9"/>
-  
-  <!-- Feet -->
-  <ellipse class="wobbly-body" cx="80" cy="175" rx="16" ry="12"/>
-  <ellipse class="wobbly-body" cx="120" cy="175" rx="16" ry="12"/>
+  <g transform="rotate(-7 100 120)">
+    <path d="M82 184 C52 172 58 120 78 94 C92 76 128 78 138 102 C152 134 144 176 124 186 C108 190 92 188 82 184 Z" fill="#4A3A5C" opacity="0.35"/>
+    <path class="wobbly-body" d="M78 182 C50 168 56 116 76 90 C92 72 124 74 134 100 C148 132 140 174 122 184 C108 188 90 186 78 182 Z"/>
+    <path fill="#7E5A94" opacity="0.5" d="M86 160 C72 156 66 140 74 126 C86 112 108 114 118 128 C124 140 116 158 100 164 C94 166 90 164 86 160 Z"/>
+    <path class="seam" d="M74 112 C82 108 98 110 108 104"/>
+    <path class="wobbly-accent" d="M104 66 C112 54 120 48 124 36 C125 26 116 22 110 30 C108 36 112 42 118 40"/>
+    <circle fill="#7E5A94" stroke="#1A1623" stroke-width="1.5" cx="104" cy="72" r="3"/>
+    <circle class="wobbly-eye" cx="82" cy="118" r="12"/>
+    <path fill="none" stroke="#1A1623" stroke-width="2" stroke-linecap="round" d="M82 120 m-6 0 a6 6 0 1 1 12 0 a4 4 0 1 1 -8 0 a2 2 0 1 1 4 0"/>
+    <path fill="none" stroke="#1A1623" stroke-width="2" stroke-linecap="round" d="M108 132 Q118 128 130 132"/>
+    <path fill="none" stroke="#1A1623" stroke-width="1.5" stroke-linecap="round" d="M70 108 Q80 104 92 108"/>
+    <path fill="none" stroke="#1A1623" stroke-width="1.5" stroke-linecap="round" d="M108 120 Q118 116 130 120"/>
+    <path class="wobbly-mouth" d="M88 156 Q100 158 112 154"/>
+    <circle fill="#D4A5A5" opacity="0.5" cx="62" cy="140" r="5"/>
+    <circle fill="#D4A5A5" opacity="0.5" cx="138" cy="154" r="5"/>
+  </g>
+  <circle fill="#1A1623" cx="150" cy="60" r="1.5"/>
+  <circle fill="#1A1623" cx="162" cy="50" r="2"/>
+  <circle fill="#1A1623" cx="174" cy="40" r="2.5"/>
 </svg>

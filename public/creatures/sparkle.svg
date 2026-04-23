@@ -1,39 +1,42 @@
-<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Sparkle the starry creature">
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Sparkle the ghost child">
   <title>Sparkle</title>
   <defs>
     <style>
-      .sparkle-body { fill: #FF69B4; stroke: #FF1493; stroke-width: 2; }
-      .sparkle-eye { fill: #FFFFFF; stroke: #000000; stroke-width: 1.5; }
-      .sparkle-pupil { fill: #000000; }
-      .sparkle-mouth { fill: none; stroke: #000000; stroke-width: 2; }
-      .star-shine { fill: #FFD700; }
+      /* bone #F5F0E6 | ink #1A1623 | dusk #4A3A5C | lavender #B8A4C9 | blush #D4A5A5 | pop hot-pink #D94F8A */
+      .sparkle-body{fill:#F5F0E6;stroke:#1A1623;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+      .sparkle-eye{fill:#F5F0E6;stroke:#1A1623;stroke-width:1.5}
+      .sparkle-pupil{fill:#1A1623}
+      .sparkle-mouth{fill:none;stroke:#1A1623;stroke-width:1.5;stroke-linecap:round}
+      .sparkle-accent{fill:#D94F8A;stroke:#1A1623;stroke-width:1.5;stroke-linejoin:round}
+      .shadow{fill:#4A3A5C;opacity:.35}
+      .thin{fill:none;stroke:#1A1623;stroke-width:1;stroke-linecap:round}
+      .fold{fill:none;stroke:#B8A4C9;stroke-width:1.5;stroke-linecap:round;opacity:.7}
+      .stitch{fill:none;stroke:#1A1623;stroke-width:0.9;stroke-dasharray:1.8 1.8;stroke-linecap:round}
     </style>
   </defs>
-  
-  <!-- Star-shaped body -->
-  <polygon class="sparkle-body" points="100,30 115,80 170,80 125,120 145,170 100,130 55,170 75,120 30,80 85,80"/>
-  
-  <!-- Left eye -->
-  <circle class="sparkle-eye" cx="80" cy="75" r="10"/>
-  <circle class="sparkle-pupil" cx="80" cy="75" r="6"/>
-  <circle class="sparkle-pupil" cx="82" cy="73" r="3"/>
-  
-  <!-- Right eye -->
-  <circle class="sparkle-eye" cx="120" cy="75" r="10"/>
-  <circle class="sparkle-pupil" cx="120" cy="75" r="6"/>
-  <circle class="sparkle-pupil" cx="122" cy="73" r="3"/>
-  
-  <!-- Happy mouth -->
-  <path class="sparkle-mouth" d="M 90 105 Q 100 115 110 105"/>
-  
-  <!-- Sparkles around body -->
-  <polygon class="star-shine" points="150,50 153,58 161,58 154,65 157,73 150,65 143,73 146,65 139,58 147,58"/>
-  <polygon class="star-shine" points="50,60 52,67 60,67 53,72 55,80 50,75 45,80 47,72 40,67 48,67"/>
-  <polygon class="star-shine" points="170,110 172,117 180,117 173,122 175,130 170,125 165,130 167,122 160,117 168,117"/>
-  
-  <!-- Arm left -->
-  <ellipse class="sparkle-body" cx="45" cy="100" rx="12" ry="40"/>
-  
-  <!-- Arm right -->
-  <ellipse class="sparkle-body" cx="155" cy="100" rx="12" ry="40"/>
+  <!-- shadow of drape -->
+  <path class="shadow" d="M60 72 Q50 34 102 32 Q154 34 144 72 L144 158 Q136 186 126 162 Q114 186 102 162 Q90 186 78 162 Q68 186 60 158 Z"/>
+  <!-- drape body -->
+  <path class="sparkle-body" d="M58 70 Q46 30 100 28 Q152 30 142 70 L142 158 Q134 188 124 160 Q112 188 100 160 Q88 188 76 160 Q66 188 58 158 Z"/>
+  <!-- inner drape fold (sketch) -->
+  <path class="fold" d="M70 90 Q64 130 74 156"/>
+  <path class="fold" d="M130 90 Q136 130 126 156"/>
+  <!-- stitched star on chest -->
+  <path class="sparkle-accent" d="M100 96 L105 108 L118 109 L108 117 L112 130 L100 122 L88 130 L92 117 L82 109 L95 108 Z"/>
+  <path class="stitch" d="M100 96 L105 108 L118 109 L108 117 L112 130 L100 122 L88 130 L92 117 L82 109 L95 108 Z"/>
+  <!-- dangling thread -->
+  <path class="thin" d="M112 130 Q118 140 114 148"/>
+  <circle cx="114" cy="149" r="1.2" fill="#1A1623"/>
+  <!-- default: saucer eyes -->
+  <circle class="sparkle-eye" cx="84" cy="68" r="9"/>
+  <circle class="sparkle-eye" cx="116" cy="68" r="9"/>
+  <circle class="sparkle-pupil" cx="84" cy="70" r="6"/>
+  <circle class="sparkle-pupil" cx="116" cy="70" r="6"/>
+  <circle cx="82" cy="66" r="1.7" fill="#F5F0E6"/>
+  <circle cx="114" cy="66" r="1.7" fill="#F5F0E6"/>
+  <!-- calm smile -->
+  <path class="sparkle-mouth" d="M93 84 Q100 89 107 84"/>
+  <!-- blush -->
+  <circle cx="74" cy="80" r="3" fill="#D4A5A5" opacity=".55"/>
+  <circle cx="126" cy="80" r="3" fill="#D4A5A5" opacity=".55"/>
 </svg>

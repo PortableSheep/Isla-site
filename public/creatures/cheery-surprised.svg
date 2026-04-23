@@ -1,45 +1,34 @@
-<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Surprised Cheery">
-  <title>Cheery - Surprised</title>
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Cheery the celebration imp, surprised">
+  <title>Cheery</title>
   <defs>
     <style>
-      .cheery-body { fill: #FFA500; stroke: #FF8C00; stroke-width: 2; }
-      .cheery-eye { fill: #FFFFFF; stroke: #000000; stroke-width: 1.5; }
-      .cheery-pupil { fill: #000000; }
-      .cheery-mouth { fill: none; stroke: #000000; stroke-width: 2.5; }
+      .cheery-body{fill:#4A3A5C;stroke:#1A1623;stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round}
+      .cheery-eye{fill:#F5F0E6;stroke:#1A1623;stroke-width:1.5}
+      .cheery-pupil{fill:#1A1623}
+      .cheery-mouth{fill:#1A1623;stroke:#1A1623;stroke-width:1.5}
+      .cheery-accent{fill:#D97B3A;stroke:#1A1623;stroke-width:1.5;stroke-linejoin:round;stroke-linecap:round}
+      .stitch{fill:none;stroke:#1A1623;stroke-width:1;stroke-dasharray:3 3;stroke-linecap:round}
+      .detail{fill:none;stroke:#1A1623;stroke-width:1;stroke-linecap:round}
     </style>
   </defs>
-  
-  <!-- Main round body bouncing -->
-  <circle class="cheery-body" cx="100" cy="100" r="55"/>
-  
-  <!-- Small ear bumps springing -->
-  <circle class="cheery-body" cx="65" cy="55" r="15"/>
-  <circle class="cheery-body" cx="135" cy="55" r="15"/>
-  
-  <!-- Left eye surprised -->
-  <circle class="cheery-eye" cx="85" cy="95" r="14"/>
-  <circle class="cheery-pupil" cx="85" cy="95" r="7"/>
-  
-  <!-- Right eye surprised -->
-  <circle class="cheery-eye" cx="115" cy="95" r="14"/>
-  <circle class="cheery-pupil" cx="115" cy="95" r="7"/>
-  
-  <!-- O-shaped mouth -->
-  <circle cx="100" cy="135" r="9" fill="none" stroke="#000000" stroke-width="2"/>
-  
-  <!-- Dots -->
-  <circle fill="#FFD700" cx="75" cy="85" r="3"/>
-  <circle fill="#FFD700" cx="125" cy="95" r="3"/>
-  
-  <!-- Left arm up -->
-  <ellipse class="cheery-body" cx="35" cy="90" rx="13" ry="40" transform="rotate(-40 35 90)"/>
-  <circle class="cheery-body" cx="18" cy="70" r="8"/>
-  
-  <!-- Right arm up -->
-  <ellipse class="cheery-body" cx="165" cy="90" rx="13" ry="40" transform="rotate(40 165 90)"/>
-  <circle class="cheery-body" cx="182" cy="70" r="8"/>
-  
-  <!-- Feet -->
-  <ellipse class="cheery-body" cx="80" cy="160" rx="18" ry="10"/>
-  <ellipse class="cheery-body" cx="120" cy="160" rx="18" ry="10"/>
+  <path d="M60 184 C52 142 60 96 104 92 C148 96 158 138 150 180 C136 186 118 184 100 184 C82 185 70 188 60 184 Z" fill="#4A3A5C" opacity="0.35"/>
+  <path class="cheery-body" d="M56 178 C48 138 58 92 100 86 C146 90 154 134 146 176 C134 184 116 180 100 181 C82 182 68 184 56 178 Z"/>
+  <path class="detail" d="M76 98 C72 132 74 164 80 178" opacity="0.45"/>
+  <path class="detail" d="M124 98 C128 132 126 164 120 178" opacity="0.45"/>
+  <path class="stitch" d="M62 150 C86 158 118 158 142 148"/>
+  <path class="cheery-body" d="M60 110 C40 94 28 72 26 50 C32 42 44 48 48 62 C52 80 60 94 68 106 Z"/>
+  <path class="cheery-body" d="M140 110 C160 92 176 70 180 48 C174 40 162 46 158 60 C154 80 146 94 134 106 Z"/>
+  <g transform="rotate(-10 100 70)">
+    <path class="cheery-accent" d="M70 74 C86 70 114 70 130 74 L126 78 C112 76 88 76 74 78 Z"/>
+    <path class="cheery-accent" d="M82 40 C94 38 108 38 118 40 L120 74 C108 72 92 72 80 74 Z"/>
+    <path fill="#1A1623" d="M82 64 C94 62 108 62 120 64 L120 70 C108 68 92 68 80 70 Z"/>
+  </g>
+  <circle fill="#D4A5A5" opacity="0.5" cx="64" cy="136" r="5"/>
+  <circle fill="#D4A5A5" opacity="0.5" cx="138" cy="138" r="5"/>
+  <circle class="cheery-eye" cx="84" cy="120" r="13"/>
+  <circle class="cheery-eye" cx="118" cy="122" r="14"/>
+  <circle class="cheery-pupil" cx="85" cy="120" r="2.5"/>
+  <circle class="cheery-pupil" cx="119" cy="122" r="2.8"/>
+  <ellipse class="cheery-mouth" cx="100" cy="150" rx="5" ry="7"/>
+  <path fill="none" stroke="#1A1623" stroke-width="1.5" stroke-linecap="round" d="M48 50 L42 42 M62 38 L60 28 M76 34 L78 24"/>
 </svg>

@@ -1,446 +1,306 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Isla Creatures - Visual Gallery</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 40px 20px;
-        }
-        
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-        
-        header {
-            text-align: center;
-            color: white;
-            margin-bottom: 50px;
-            animation: slideDown 0.6s ease-out;
-        }
-        
-        header h1 {
-            font-size: 3rem;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
-        
-        header p {
-            font-size: 1.2rem;
-            opacity: 0.9;
-        }
-        
-        .creatures-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 30px;
-            margin-bottom: 50px;
-        }
-        
-        .creature-card {
-            background: white;
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            animation: fadeInUp 0.6s ease-out both;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        
-        .creature-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-        }
-        
-        .creature-name {
-            font-size: 1.5rem;
-            font-weight: bold;
-            margin-bottom: 20px;
-            color: #333;
-        }
-        
-        .creature-states {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            justify-content: center;
-            width: 100%;
-        }
-        
-        .creature-state {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .creature-state img {
-            width: 100px;
-            height: 100px;
-            object-fit: contain;
-            transition: transform 0.2s ease;
-        }
-        
-        .creature-state img:hover {
-            transform: scale(1.1);
-        }
-        
-        .creature-state label {
-            font-size: 0.75rem;
-            color: #666;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        .color-swatch {
-            width: 100%;
-            height: 30px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            border: 2px solid #ddd;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        
-        .creature-description {
-            font-size: 0.9rem;
-            color: #666;
-            text-align: center;
-            margin-bottom: 15px;
-            line-height: 1.5;
-        }
-        
-        .creature-traits {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            justify-content: center;
-            margin-top: 15px;
-            width: 100%;
-        }
-        
-        .trait {
-            background: #f0f0f0;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            color: #555;
-            font-weight: 500;
-        }
-        
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        .stats {
-            background: rgba(255,255,255,0.1);
-            color: white;
-            padding: 20px;
-            border-radius: 15px;
-            margin-bottom: 40px;
-            text-align: center;
-            backdrop-filter: blur(10px);
-        }
-        
-        .stats h2 {
-            font-size: 1.3rem;
-            margin-bottom: 15px;
-        }
-        
-        .stat-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 20px;
-            text-align: center;
-        }
-        
-        .stat {
-            background: rgba(255,255,255,0.1);
-            padding: 15px;
-            border-radius: 10px;
-        }
-        
-        .stat-number {
-            font-size: 2rem;
-            font-weight: bold;
-            display: block;
-        }
-        
-        .stat-label {
-            font-size: 0.9rem;
-            opacity: 0.9;
-        }
-        
-        footer {
-            text-align: center;
-            color: white;
-            padding: 20px;
-            background: rgba(0,0,0,0.2);
-            border-radius: 15px;
-            margin-top: 40px;
-        }
-        
-        .filter-controls {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-        }
-        
-        .filter-btn {
-            background: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 25px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-        
-        .filter-btn:hover, .filter-btn.active {
-            background: #667eea;
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
-        }
-        
-        @media (max-width: 768px) {
-            header h1 {
-                font-size: 2rem;
-            }
-            
-            .creatures-grid {
-                grid-template-columns: 1fr;
-                gap: 20px;
-            }
-            
-            .creature-states {
-                gap: 10px;
-            }
-            
-            .creature-state img {
-                width: 80px;
-                height: 80px;
-            }
-        }
-    </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Isla.site · Creature Gallery (Burton-Sweet Redesign)</title>
+<style>
+  :root {
+    --bone: #F5F0E6;
+    --ink: #1A1623;
+    --dusk: #4A3A5C;
+    --teal-fog: #5E8A8C;
+    --lavender: #B8A4C9;
+    --blush: #D4A5A5;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 32px 24px 64px;
+    background: radial-gradient(ellipse at top, #26203A 0%, #120E1E 100%);
+    color: var(--bone);
+    font-family: "Iowan Old Style", Georgia, "Times New Roman", serif;
+    min-height: 100vh;
+  }
+  header {
+    max-width: 1200px;
+    margin: 0 auto 40px;
+    text-align: center;
+  }
+  h1 {
+    font-size: 2.4rem;
+    margin: 0 0 8px;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+  }
+  h1 em { font-style: italic; color: var(--lavender); }
+  .sub {
+    color: var(--lavender);
+    opacity: 0.8;
+    font-size: 0.95rem;
+    max-width: 640px;
+    margin: 0 auto;
+    line-height: 1.5;
+  }
+  .legend {
+    max-width: 1200px;
+    margin: 0 auto 40px;
+    display: flex;
+    gap: 24px;
+    justify-content: center;
+    flex-wrap: wrap;
+    font-size: 0.8rem;
+    color: var(--lavender);
+  }
+  .legend .swatch {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 1px solid var(--ink);
+    vertical-align: middle;
+    margin-right: 6px;
+    border-radius: 2px;
+  }
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    gap: 28px;
+  }
+  .creature-row {
+    background: rgba(245, 240, 230, 0.03);
+    border: 1px solid rgba(184, 164, 201, 0.2);
+    border-radius: 12px;
+    padding: 20px 24px;
+  }
+  .creature-row h2 {
+    margin: 0 0 4px;
+    font-size: 1.4rem;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+  }
+  .creature-row .role {
+    color: var(--lavender);
+    opacity: 0.75;
+    font-size: 0.85rem;
+    margin-bottom: 16px;
+    font-style: italic;
+  }
+  .states {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+  }
+  .state {
+    background: var(--bone);
+    border: 2px solid var(--ink);
+    border-radius: 10px;
+    padding: 8px;
+    text-align: center;
+    position: relative;
+  }
+  .state svg {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  .state .label {
+    font-size: 0.75rem;
+    color: var(--ink);
+    font-weight: 600;
+    margin-top: 4px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  footer {
+    max-width: 1200px;
+    margin: 48px auto 0;
+    text-align: center;
+    color: var(--lavender);
+    opacity: 0.6;
+    font-size: 0.8rem;
+  }
+  @media (max-width: 700px) {
+    .states { grid-template-columns: repeat(2, 1fr); }
+    h1 { font-size: 1.8rem; }
+  }
+</style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>🎨 Isla Creatures Gallery</h1>
-            <p>Meet the 15 unique creatures that bring Isla.site to life</p>
-        </header>
-        
-        <div class="stats">
-            <h2>📊 Collection Overview</h2>
-            <div class="stat-row">
-                <div class="stat">
-                    <span class="stat-number">15</span>
-                    <span class="stat-label">Unique Creatures</span>
-                </div>
-                <div class="stat">
-                    <span class="stat-number">60</span>
-                    <span class="stat-label">SVG Assets</span>
-                </div>
-                <div class="stat">
-                    <span class="stat-number">4</span>
-                    <span class="stat-label">Mood States</span>
-                </div>
-                <div class="stat">
-                    <span class="stat-number">~120KB</span>
-                    <span class="stat-label">Total Size</span>
-                </div>
-            </div>
-        </div>
-        
-        <div class="creatures-grid" id="creaturesGrid">
-            <!-- Creatures will be populated here by JavaScript -->
-        </div>
-        
-        <footer>
-            <p>✨ Hand-drawn creatures designed for Isla.site</p>
-            <p style="font-size: 0.9rem; margin-top: 10px; opacity: 0.8;">All SVGs are scalable, optimized, and animation-ready</p>
-        </footer>
-    </div>
-    
-    <script>
-        const creatures = [
-            {
-                id: 'glimmer',
-                name: 'Glimmer',
-                color: '#FFD700',
-                description: 'The sparkly optimist - always encouraging and friendly',
-                traits: ['Cheerful', 'Friendly', 'Encouraging']
-            },
-            {
-                id: 'pixel',
-                name: 'Pixel',
-                color: '#00CED1',
-                description: 'The geometric tech lover - modern and digital',
-                traits: ['Tech', 'Modern', 'Digital']
-            },
-            {
-                id: 'sparkle',
-                name: 'Sparkle',
-                color: '#FF69B4',
-                description: 'The star power - magical and energetic',
-                traits: ['Magical', 'Energetic', 'Special']
-            },
-            {
-                id: 'isla',
-                name: 'Isla',
-                color: '#FF6B9D',
-                description: 'The leader - confident and protective guide',
-                traits: ['Confident', 'Protective', 'Leader']
-            },
-            {
-                id: 'cheery',
-                name: 'Cheery',
-                color: '#FFA500',
-                description: 'The bouncy optimist - always smiling and uplifting',
-                traits: ['Bubbly', 'Positive', 'Uplifting']
-            },
-            {
-                id: 'wobbly',
-                name: 'Wobbly',
-                color: '#9B59B6',
-                description: 'The quirky explorer - playful and lovable',
-                traits: ['Playful', 'Quirky', 'Endearing']
-            },
-            {
-                id: 'zing',
-                name: 'Zing',
-                color: '#FF4500',
-                description: 'The energetic force - powerful and dynamic',
-                traits: ['Energetic', 'Powerful', 'Dynamic']
-            },
-            {
-                id: 'drift',
-                name: 'Drift',
-                color: '#87CEEB',
-                description: 'The dreamy cloud - calm and peaceful',
-                traits: ['Calm', 'Peaceful', 'Dreamy']
-            },
-            {
-                id: 'cozy',
-                name: 'Cozy',
-                color: '#CD853F',
-                description: 'The warm comfort - safe and nurturing',
-                traits: ['Comfortable', 'Safe', 'Nurturing']
-            },
-            {
-                id: 'brain',
-                name: 'Brain',
-                color: '#E6B3FF',
-                description: 'The intelligent thinker - smart and analytical',
-                traits: ['Smart', 'Analytical', 'Intelligent']
-            },
-            {
-                id: 'boom',
-                name: 'Boom',
-                color: '#DC143C',
-                description: 'The powerful protector - strong and confident',
-                traits: ['Strong', 'Powerful', 'Protective']
-            },
-            {
-                id: 'wave',
-                name: 'Wave',
-                color: '#1E90FF',
-                description: 'The friendly waver - welcoming and sociable',
-                traits: ['Friendly', 'Welcoming', 'Sociable']
-            },
-            {
-                id: 'guardian',
-                name: 'Guardian',
-                color: '#32CD32',
-                description: 'The watchful protector - vigilant and noble',
-                traits: ['Vigilant', 'Noble', 'Protective']
-            },
-            {
-                id: 'echo',
-                name: 'Echo',
-                color: '#FF00FF',
-                description: 'The voice of connection - expressive and communicative',
-                traits: ['Expressive', 'Communicative', 'Connective']
-            },
-            {
-                id: 'star',
-                name: 'Star',
-                color: '#FFD700',
-                description: 'The shining beacon - inspiring and bright',
-                traits: ['Inspiring', 'Aspirational', 'Bright']
-            }
-        ];
-        
-        function renderCreature(creature) {
-            return `
-                <div class="creature-card" style="animation-delay: ${creatures.indexOf(creature) * 0.05}s">
-                    <div class="creature-name">${creature.name}</div>
-                    <div class="color-swatch" style="background-color: ${creature.color}"></div>
-                    <div class="creature-states">
-                        <div class="creature-state">
-                            <img src="${creature.id}.svg" alt="${creature.name} neutral" loading="lazy">
-                            <label>Neutral</label>
-                        </div>
-                        <div class="creature-state">
-                            <img src="${creature.id}-happy.svg" alt="${creature.name} happy" loading="lazy">
-                            <label>Happy</label>
-                        </div>
-                        <div class="creature-state">
-                            <img src="${creature.id}-thinking.svg" alt="${creature.name} thinking" loading="lazy">
-                            <label>Thinking</label>
-                        </div>
-                        <div class="creature-state">
-                            <img src="${creature.id}-surprised.svg" alt="${creature.name} surprised" loading="lazy">
-                            <label>Surprised</label>
-                        </div>
-                    </div>
-                    <p class="creature-description">${creature.description}</p>
-                    <div class="creature-traits">
-                        ${creature.traits.map(trait => `<span class="trait">${trait}</span>`).join('')}
-                    </div>
-                </div>
-            `;
-        }
-        
-        // Populate the grid
-        const grid = document.getElementById('creaturesGrid');
-        grid.innerHTML = creatures.map(renderCreature).join('');
-    </script>
+<header>
+  <h1>Isla.site · <em>The Creature Gallery</em></h1>
+  <p class="sub">
+    Fifteen hand-inked creatures, redrawn in the Burton-sweet tradition.
+    Spindly limbs, stitched seams, saucer eyes, and one pop of color each.
+    Creepy-but-kind, built for huggable moments across the app.
+  </p>
+</header>
+
+<div class="legend">
+  <span><span class="swatch" style="background:#F5F0E6"></span>bone</span>
+  <span><span class="swatch" style="background:#1A1623"></span>ink</span>
+  <span><span class="swatch" style="background:#4A3A5C"></span>dusk</span>
+  <span><span class="swatch" style="background:#5E8A8C"></span>teal-fog</span>
+  <span><span class="swatch" style="background:#B8A4C9"></span>lavender</span>
+  <span><span class="swatch" style="background:#D4A5A5"></span>blush</span>
+</div>
+
+<main>
+<!-- creature rows injected below -->
+<div class="creature-row" id="glimmer">
+  <h2>Glimmer</h2><div class="role">The Guide · moth-lantern · gold pop</div>
+  <div class="states">
+    <div class="state"><object data="glimmer.svg" type="image/svg+xml"></object><div class="label">default</div></div>
+    <div class="state"><object data="glimmer-happy.svg" type="image/svg+xml"></object><div class="label">happy</div></div>
+    <div class="state"><object data="glimmer-thinking.svg" type="image/svg+xml"></object><div class="label">thinking</div></div>
+    <div class="state"><object data="glimmer-surprised.svg" type="image/svg+xml"></object><div class="label">surprised</div></div>
+  </div>
+</div>
+
+<div class="creature-row" id="pixel">
+  <h2>Pixel</h2><div class="role">The Parent · patchwork bear · teal pop</div>
+  <div class="states">
+    <div class="state"><object data="pixel.svg" type="image/svg+xml"></object><div class="label">default</div></div>
+    <div class="state"><object data="pixel-happy.svg" type="image/svg+xml"></object><div class="label">happy</div></div>
+    <div class="state"><object data="pixel-thinking.svg" type="image/svg+xml"></object><div class="label">thinking</div></div>
+    <div class="state"><object data="pixel-surprised.svg" type="image/svg+xml"></object><div class="label">surprised</div></div>
+  </div>
+</div>
+
+<div class="creature-row" id="sparkle">
+  <h2>Sparkle</h2><div class="role">The Child · wispy ghost-child with stitched star · hot-pink pop</div>
+  <div class="states">
+    <div class="state"><object data="sparkle.svg" type="image/svg+xml"></object><div class="label">default</div></div>
+    <div class="state"><object data="sparkle-happy.svg" type="image/svg+xml"></object><div class="label">happy</div></div>
+    <div class="state"><object data="sparkle-thinking.svg" type="image/svg+xml"></object><div class="label">thinking</div></div>
+    <div class="state"><object data="sparkle-surprised.svg" type="image/svg+xml"></object><div class="label">surprised</div></div>
+  </div>
+</div>
+
+<div class="creature-row" id="isla">
+  <h2>Isla</h2><div class="role">The Boss · regal rag-doll with crooked crown · deep-rose pop</div>
+  <div class="states">
+    <div class="state"><object data="isla.svg" type="image/svg+xml"></object><div class="label">default</div></div>
+    <div class="state"><object data="isla-happy.svg" type="image/svg+xml"></object><div class="label">happy</div></div>
+    <div class="state"><object data="isla-thinking.svg" type="image/svg+xml"></object><div class="label">thinking</div></div>
+    <div class="state"><object data="isla-surprised.svg" type="image/svg+xml"></object><div class="label">surprised</div></div>
+  </div>
+</div>
+
+<div class="creature-row" id="cheery">
+  <h2>Cheery</h2><div class="role">The Celebration · pumpkin imp with tilted top hat · sunset-orange pop</div>
+  <div class="states">
+    <div class="state"><object data="cheery.svg" type="image/svg+xml"></object><div class="label">default</div></div>
+    <div class="state"><object data="cheery-happy.svg" type="image/svg+xml"></object><div class="label">happy</div></div>
+    <div class="state"><object data="cheery-thinking.svg" type="image/svg+xml"></object><div class="label">thinking</div></div>
+    <div class="state"><object data="cheery-surprised.svg" type="image/svg+xml"></object><div class="label">surprised</div></div>
+  </div>
+</div>
+
+<div class="creature-row" id="wobbly">
+  <h2>Wobbly</h2><div class="role">The Error · off-balance jelly blob with question-mark antenna · violet pop</div>
+  <div class="states">
+    <div class="state"><object data="wobbly.svg" type="image/svg+xml"></object><div class="label">default</div></div>
+    <div class="state"><object data="wobbly-happy.svg" type="image/svg+xml"></object><div class="label">happy</div></div>
+    <div class="state"><object data="wobbly-thinking.svg" type="image/svg+xml"></object><div class="label">thinking</div></div>
+    <div class="state"><object data="wobbly-surprised.svg" type="image/svg+xml"></object><div class="label">surprised</div></div>
+  </div>
+</div>
+
+<div class="creature-row" id="zing">
+  <h2>Zing</h2><div class="role">The Notification · bat-winged pipsqueak with lightning tail · yellow pop</div>
+  <div class="states">
+    <div class="state"><object data="zing.svg" type="image/svg+xml"></object><div class="label">default</div></div>
+    <div class="state"><object data="zing-happy.svg" type="image/svg+xml"></object><div class="label">happy</div></div>
+    <div class="state"><object data="zing-thinking.svg" type="image/svg+xml"></object><div class="label">thinking</div></div>
+    <div class="state"><object data="zing-surprised.svg" type="image/svg+xml"></object><div class="label">surprised</div></div>
+  </div>
+</div>
+
+<div class="creature-row" id="drift">
+  <h2>Drift</h2><div class="role">The Calm · ghostly drape dissolving to mist · sky-blue sash pop</div>
+  <div class="states">
+    <div class="state"><object data="drift.svg" type="image/svg+xml"></object><div class="label">default</div></div>
+    <div class="state"><object data="drift-happy.svg" type="image/svg+xml"></object><div class="label">happy</div></div>
+    <div class="state"><object data="drift-thinking.svg" type="image/svg+xml"></object><div class="label">thinking</div></div>
+    <div class="state"><object data="drift-surprised.svg" type="image/svg+xml"></object><div class="label">surprised</div></div>
+  </div>
+</div>
+
+<div class="creature-row" id="cozy">
+  <h2>Cozy</h2><div class="role">The Comfort · mossy rock with knit scarf and mushroom · warm-brown pop</div>
+  <div class="states">
+    <div class="state"><object data="cozy.svg" type="image/svg+xml"></object><div class="label">default</div></div>
+    <div class="state"><object data="cozy-happy.svg" type="image/svg+xml"></object><div class="label">happy</div></div>
+    <div class="state"><object data="cozy-thinking.svg" type="image/svg+xml"></object><div class="label">thinking</div></div>
+    <div class="state"><object data="cozy-surprised.svg" type="image/svg+xml"></object><div class="label">surprised</div></div>
+  </div>
+</div>
+
+<div class="creature-row" id="brain">
+  <h2>Brain</h2><div class="role">The Scholar · big-dome thinker with monocle and scribble-smoke · lavender pop</div>
+  <div class="states">
+    <div class="state"><object data="brain.svg" type="image/svg+xml"></object><div class="label">default</div></div>
+    <div class="state"><object data="brain-happy.svg" type="image/svg+xml"></object><div class="label">happy</div></div>
+    <div class="state"><object data="brain-thinking.svg" type="image/svg+xml"></object><div class="label">thinking</div></div>
+    <div class="state"><object data="brain-surprised.svg" type="image/svg+xml"></object><div class="label">surprised</div></div>
+  </div>
+</div>
+
+<div class="creature-row" id="boom">
+  <h2>Boom</h2><div class="role">The Victory · goblin-knight with cracked helmet and pennant · crimson pop</div>
+  <div class="states">
+    <div class="state"><object data="boom.svg" type="image/svg+xml"></object><div class="label">default</div></div>
+    <div class="state"><object data="boom-happy.svg" type="image/svg+xml"></object><div class="label">happy</div></div>
+    <div class="state"><object data="boom-thinking.svg" type="image/svg+xml"></object><div class="label">thinking</div></div>
+    <div class="state"><object data="boom-surprised.svg" type="image/svg+xml"></object><div class="label">surprised</div></div>
+  </div>
+</div>
+
+<div class="creature-row" id="wave">
+  <h2>Wave</h2><div class="role">The Greeting · stitched sock-puppet with raised arm · dodger-blue pop</div>
+  <div class="states">
+    <div class="state"><object data="wave.svg" type="image/svg+xml"></object><div class="label">default</div></div>
+    <div class="state"><object data="wave-happy.svg" type="image/svg+xml"></object><div class="label">happy</div></div>
+    <div class="state"><object data="wave-thinking.svg" type="image/svg+xml"></object><div class="label">thinking</div></div>
+    <div class="state"><object data="wave-surprised.svg" type="image/svg+xml"></object><div class="label">surprised</div></div>
+  </div>
+</div>
+
+<div class="creature-row" id="guardian">
+  <h2>Guardian</h2><div class="role">The Watcher · cloaked cyclops with lime clasp · lime pop</div>
+  <div class="states">
+    <div class="state"><object data="guardian.svg" type="image/svg+xml"></object><div class="label">default</div></div>
+    <div class="state"><object data="guardian-happy.svg" type="image/svg+xml"></object><div class="label">happy</div></div>
+    <div class="state"><object data="guardian-thinking.svg" type="image/svg+xml"></object><div class="label">thinking</div></div>
+    <div class="state"><object data="guardian-surprised.svg" type="image/svg+xml"></object><div class="label">surprised</div></div>
+  </div>
+</div>
+
+<div class="creature-row" id="echo">
+  <h2>Echo</h2><div class="role">The Voice · bell-shaped with speech-ribbon · magenta pop</div>
+  <div class="states">
+    <div class="state"><object data="echo.svg" type="image/svg+xml"></object><div class="label">default</div></div>
+    <div class="state"><object data="echo-happy.svg" type="image/svg+xml"></object><div class="label">happy</div></div>
+    <div class="state"><object data="echo-thinking.svg" type="image/svg+xml"></object><div class="label">thinking</div></div>
+    <div class="state"><object data="echo-surprised.svg" type="image/svg+xml"></object><div class="label">surprised</div></div>
+  </div>
+</div>
+
+<div class="creature-row" id="star">
+  <h2>Star</h2><div class="role">The Achievement · stitched five-point star with dangling legs · gold pop</div>
+  <div class="states">
+    <div class="state"><object data="star.svg" type="image/svg+xml"></object><div class="label">default</div></div>
+    <div class="state"><object data="star-happy.svg" type="image/svg+xml"></object><div class="label">happy</div></div>
+    <div class="state"><object data="star-thinking.svg" type="image/svg+xml"></object><div class="label">thinking</div></div>
+    <div class="state"><object data="star-surprised.svg" type="image/svg+xml"></object><div class="label">surprised</div></div>
+  </div>
+</div>
+
+</main>
+
+<footer>
+  60 SVGs · 15 creatures · 4 emotional states each · hand-inked in the Burton-sweet tradition
+</footer>
 </body>
 </html>
