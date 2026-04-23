@@ -2,10 +2,26 @@
 
 import { useAuth } from '@/lib/AuthContext';
 import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { isIslaUser } from '@/lib/islaUser';
 
 export function Navigation() {
   const { user, signOut } = useAuth();
   const router = useRouter();
+  const [isIsla, setIsIsla] = useState(false);
+  const [checkingIsla, setCheckingIsla] = useState(true);
+
+  useEffect(() => {
+    const checkIsla = async () => {
+      if (user) {
+        const isIslaCheck = await isIslaUser(user.id);
+        setIsIsla(isIslaCheck);
+      }
+      setCheckingIsla(false);
+    };
+
+    checkIsla();
+  }, [user]);
 
   const handleLogout = async () => {
     try {
@@ -26,6 +42,15 @@ export function Navigation() {
             </a>
             {user && (
               <div className="flex items-center gap-6">
+                {!checkingIsla && isIsla && (
+                  <a
+                    href="/compose"
+                    className="text-purple-400 hover:text-purple-300 text-sm font-medium transition-colors flex items-center gap-1"
+                  >
+                    <span>✨</span>
+                    Compose
+                  </a>
+                )}
                 <a
                   href="/dashboard"
                   className="text-gray-300 hover:text-white text-sm transition-colors"
@@ -44,6 +69,12 @@ export function Navigation() {
                 >
                   History
                 </a>
+                 <a
+                   href="/wall"
+                   className="text-gray-300 hover:text-white text-sm transition-colors"
+                 >
+                   Wall
+                 </a>
               </div>
             )}
           </div>
