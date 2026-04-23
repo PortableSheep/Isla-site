@@ -63,7 +63,7 @@ export class ThreadPage {
   }
 
   async getAllReplies(): Promise<string[]> {
-    const replies = this.page.locator('[data-testid="reply"], .reply, .comment').all();
+    const replies = await this.page.locator('[data-testid="reply"], .reply, .comment').all();
     const replyTexts: string[] = [];
 
     for (const reply of replies) {

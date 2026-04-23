@@ -34,11 +34,18 @@ export function Navigation() {
   };
 
   return (
-    <nav className="bg-gray-900 border-b border-gray-800">
+    <nav 
+      className="bg-gray-900 border-b border-gray-800"
+      aria-label="Main navigation"
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center gap-8">
-            <a href="/" className="text-white font-bold text-lg">
+            <a 
+              href="/" 
+              className="text-white font-bold text-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500"
+              aria-label="Isla.site home"
+            >
               Isla.site
             </a>
             {user && (
@@ -46,33 +53,38 @@ export function Navigation() {
                 {!checkingIsla && isIsla && (
                   <a
                     href="/compose"
-                    className="text-purple-400 hover:text-purple-300 text-sm font-medium transition-colors flex items-center gap-1"
+                    className="text-purple-400 hover:text-purple-300 text-sm font-medium transition-colors flex items-center gap-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 rounded px-2 py-1"
+                    aria-label="Compose new message"
                   >
-                    <span>✨</span>
+                    <span aria-hidden="true">✨</span>
                     Compose
                   </a>
                 )}
                 <a
                   href="/dashboard"
-                  className="text-gray-300 hover:text-white text-sm transition-colors"
+                  className="text-gray-300 hover:text-white text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 rounded px-2 py-1"
+                  aria-label="Go to dashboard"
                 >
                   Dashboard
                 </a>
                 <a
                   href="/approvals"
-                  className="text-gray-300 hover:text-white text-sm transition-colors"
+                  className="text-gray-300 hover:text-white text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 rounded px-2 py-1"
+                  aria-label="View approvals"
                 >
                   Approvals
                 </a>
                 <a
                   href="/approvals/history"
-                  className="text-gray-300 hover:text-white text-sm transition-colors"
+                  className="text-gray-300 hover:text-white text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 rounded px-2 py-1"
+                  aria-label="View approval history"
                 >
                   History
                 </a>
                  <a
                    href="/wall"
-                   className="text-gray-300 hover:text-white text-sm transition-colors"
+                   className="text-gray-300 hover:text-white text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 rounded px-2 py-1"
+                   aria-label="Go to message wall"
                  >
                    Wall
                  </a>
@@ -84,16 +96,23 @@ export function Navigation() {
             {user && (
               <>
                 {user && <NotificationBell userId={user.id} />}
-                <span className="text-gray-300 text-sm">{user.email}</span>
+                <span 
+                  className="text-gray-300 text-sm"
+                  aria-label={`Logged in as ${user.email}`}
+                >
+                  {user.email}
+                </span>
                 <a
                   href="/settings"
-                  className="text-gray-300 hover:text-white text-sm transition-colors"
+                  className="text-gray-300 hover:text-white text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 rounded px-2 py-1"
+                  aria-label="Go to settings"
                 >
                   Settings
                 </a>
                 <button
                   onClick={handleLogout}
-                  className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors"
+                  className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
+                  aria-label="Log out from Isla.site"
                 >
                   Logout
                 </button>

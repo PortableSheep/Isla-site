@@ -27,7 +27,7 @@ async function createBackup(): Promise<{
 }> {
   console.log("📦 Creating database backup...\n");
 
-  const projectId = extractProjectId(supabaseUrl);
+  const projectId = extractProjectId(supabaseUrl!);
   const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
   const backupDir = path.join(__dirname, "../backups");
   const sqlFilePath = path.join(

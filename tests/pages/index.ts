@@ -269,3 +269,4 @@ export class FeedPage {
 // Export moderation and audit log pages
 export { ModerationPage } from './moderation.page';
 export { AuditLogPage } from './audit-log.page';
+export { SettingsPage } from './settings.page';

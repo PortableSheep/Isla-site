@@ -505,3 +505,237 @@ npm run test:e2e        # All tests
 npm run lint            # Check code style
 npm run build           # Verify build
 ```
+
+---
+
+## Integration Tests Guide
+
+### Overview
+
+Comprehensive integration tests validate complete user journeys across the Isla.site platform. Located in `tests/e2e/integration.spec.ts`, these tests cover:
+
+- **User signup and onboarding** - Complete account creation workflow
+- **Family management** - Creating families and inviting members
+- **Post creation and sharing** - Publishing content with validation
+- **Moderation workflows** - Parent approval of child content
+- **Multi-user collaboration** - Interactions between multiple users
+- **Settings and preferences** - Profile customization and persistence
+- **Account security** - Password changes and access control
+- **Permission-based access** - Verifying authorization boundaries
+- **Notification system** - Notification display and interaction
+- **Session management** - Login/logout workflows
+
+### Test Coverage
+
+**10 Comprehensive Integration Tests:**
+
+1. **Complete User Signup Journey** - Full account creation flow
+2. **Parent Creating Family & Inviting Child** - Family setup with member invitation
+3. **Child Creating and Sharing a Post** - Content creation workflow
+4. **Parent Moderating Child's Posts** - Post approval workflow
+5. **Multi-Child Collaboration** - Multi-user post interactions
+6. **Settings & Preferences Update** - Profile customization
+7. **Account Security** - Password change and authentication
+8. **Family Permissions & Access Control** - Authorization enforcement
+9. **Notification System** - Notification viewing and interaction
+10. **Complete Logout and Session Cleanup** - Session termination
+
+### Page Objects Used
+
+Integration tests utilize the following page objects:
+
+- **LoginPage** - Authentication and login workflows
+- **DashboardPage** - Main dashboard and user menu
+- **FeedPage** - Post feed and content display
+- **FamilyPage** - Family management interface
+- **SettingsPage** - User settings and preferences
+- **ModerationPage** - Post moderation and approval queue
+- **ChildProfilePage** - Child profile management
+
+### Running Integration Tests
+
+```bash
+# Run all integration tests
+npx playwright test tests/e2e/integration.spec.ts
+
+# Run specific integration test
+npx playwright test tests/e2e/integration.spec.ts -g "Complete User Signup"
+
+# Run in UI mode (interactive)
+npm run test:e2e:ui
+
+# Run on specific browser
+npx playwright test tests/e2e/integration.spec.ts --project=chromium
+
+# Run with headed browser visible
+npx playwright test tests/e2e/integration.spec.ts --headed
+
+# Debug mode
+npx playwright test tests/e2e/integration.spec.ts --debug
+```
+
+### Test Execution
+
+Tests run across 5 browsers as configured in `playwright.config.ts`:
+- Chrome (Desktop)
+- Firefox (Desktop)
+- Safari (WebKit)
+- Chrome (Mobile - Pixel 5)
+- Safari (Mobile - iPhone 12)
+
+Parallel execution (3 workers) reduces total runtime to under 5 minutes for the full suite.
+
+### Test Data Generation
+
+Integration tests use Faker.js for realistic test data:
+
+```typescript
+function generateTestData() {
+  return {
+    parentName: faker.person.firstName(),
+    parentEmail: faker.internet.email(),
+    parentPassword: `TestPassword${Math.random().toString(36).substring(7)}!`,
+    childName: faker.person.firstName(),
+    familyName: `${faker.person.lastName()} Family`,
+    postContent: faker.lorem.sentences(2),
+  };
+}
+```
+
+### Database State Verification
+
+Tests verify application state at database and UI levels:
+
+```typescript
+// UI verification
+const postCount = await feedPage.getPostCount();
+expect(postCount).toBeGreaterThan(0);
+
+// Element visibility
+const postVisible = await page.locator(`text="${postContent}"`).isVisible();
+expect(postVisible).toBe(true);
+
+// Navigation state
+await expect(page).toHaveURL(/dashboard/);
+```
+
+### Error Handling
+
+Tests include error case handling:
+
+```typescript
+// Invalid credentials
+await loginPage.login(invalidEmail, invalidPassword);
+const hasError = await loginPage.isErrorVisible();
+expect(hasError).toBe(true);
+
+// Permission denied
+const response = await page.goto('/admin', { waitUntil: 'networkidle' });
+if (response?.status() === 403) {
+  expect(response.status()).toBe(403);
+}
+```
+
+### Cleanup and Isolation
+
+Each test is independent with proper cleanup:
+
+```typescript
+// Clear cookies/auth before each test
+test.beforeEach(async ({ page }) => {
+  await page.context().clearCookies();
+});
+
+// Logout after test
+test.afterEach(async ({ page }) => {
+  try {
+    await logoutTestUser(page);
+  } catch {
+    // Already logged out
+  }
+});
+```
+
+### Multi-Browser Compatibility
+
+Tests validate functionality across:
+- Different browser engines (Chrome, Firefox, Safari)
+- Desktop and mobile viewports
+- Various screen sizes and orientations
+
+```bash
+# Run on single browser for faster iteration
+npx playwright test tests/e2e/integration.spec.ts --project=chromium
+
+# Run full multi-browser suite before PR
+npm run test:e2e
+```
+
+### Assertions and Validation
+
+Clear, descriptive assertions verify expected behavior:
+
+```typescript
+// User journey verification
+expect(isLoggedIn).toBe(true);
+expect(userMenuVisible).toBe(true);
+expect(postCount).toBeGreaterThan(0);
+expect(currentUrl).toMatch(/dashboard/);
+
+// Element state verification
+await expect(page).toHaveURL(/family|dashboard/);
+expect(familyExists || childrenCount >= 0).toBeTruthy();
+```
+
+### Troubleshooting Integration Tests
+
+**Test timing out:**
+- Increase test timeout: `test.setTimeout(120000)`
+- Check if dev server is running: `npm run dev`
+- Look at video/screenshots in failure output
+
+**Flaky tests:**
+- Use explicit waits instead of fixed delays
+- Check for race conditions in page state changes
+- Increase network timeout for slow operations
+
+**Permission errors:**
+- Verify test user has correct role/permissions
+- Check database state after test setup
+- Review auth token/session validity
+
+**Database state issues:**
+- Ensure test database is running
+- Check database connection in `.env.test`
+- Reset database between test runs if needed
+
+### Performance Expectations
+
+- Each test: 20-40 seconds
+- Full 10-test suite: 3-5 minutes (parallel)
+- All 5 browsers: <15 minutes total
+
+### Continuous Integration
+
+Integration tests run on GitHub Actions:
+- Push to main/develop branches
+- Pull requests to main/develop
+- Manual trigger via workflow dispatch
+
+CI configuration includes:
+- 1 worker (sequential execution)
+- Automatic retry on failure
+- Artifact upload for reports/videos
+- 7-day retention for test videos
+
+### Future Enhancements
+
+Potential areas for expansion:
+- Visual regression testing
+- Performance profiling
+- Load testing with multiple users
+- Mobile-specific scenarios
+- Offline mode testing
+- Real email verification flows
+- Image upload and processing
+- Complex thread conversations

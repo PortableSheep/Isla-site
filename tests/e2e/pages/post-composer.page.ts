@@ -111,7 +111,7 @@ export class PostComposerPage {
     if (await closeBtn.isVisible()) {
       await closeBtn.click();
     } else {
-      await this.page.press('Escape');
+      await this.page.keyboard.press('Escape');
     }
   }
 

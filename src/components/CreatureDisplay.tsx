@@ -6,8 +6,8 @@
  */
 
 import React, { useMemo } from 'react';
-import { getCreature, type CreatureState } from '@/lib/creatures';
-import { getAnimationStyle, type AnimationType } from '@/lib/creature-animations';
+import { getCreature, type CreatureState, type AnimationType } from '@/lib/creatures';
+import { getAnimationStyle } from '@/lib/creature-animations';
 import styles from './CreatureDisplay.module.css';
 
 interface CreatureDisplayProps {

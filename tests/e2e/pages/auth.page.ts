@@ -50,6 +50,9 @@ export class AuthPage {
     this.signInLink = page.locator('a:has-text("Sign in")');
     this.createAccountLink = page.locator('a:has-text("Create one")');
     this.forgotPasswordLink = page.locator('a:has-text("Forgot password")');
+
+    // Password reset page
+    this.resetPasswordEmailInput = page.locator('input[type="email"]').first();
   }
 
   async navigateToSignUp() {

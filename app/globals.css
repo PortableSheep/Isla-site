@@ -294,6 +294,14 @@ select:focus {
   outline: none;
   border-color: var(--color-primary);
   box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1), 0 0 0 4px var(--color-primary);
+}
+
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 2px;
 }
 
 input:hover,
@@ -631,6 +639,82 @@ tr:hover {
 
 .animate-bounce {
   animation: bounce 1s infinite;
+}
+
+/* ============================================================================
+    ACCESSIBLE FOCUS INDICATORS
+    ============================================================================ */
+
+/* Universal focus-visible style for all interactive elements */
+*:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Ensure focus is always visible */
+*:focus {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* High contrast focus indicator for dark mode */
+@media (prefers-color-scheme: dark) {
+  *:focus-visible {
+    outline: 3px solid var(--color-primary-light);
+    box-shadow: 0 0 0 1px var(--background);
+  }
+  
+  *:focus {
+    outline: 3px solid var(--color-primary-light);
+    box-shadow: 0 0 0 1px var(--background);
+  }
+}
+
+/* ============================================================================
+    PREFERS-REDUCED-MOTION SUPPORT
+    ============================================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  /* Disable transformative animations */
+  .animate-fade-in,
+  .animate-slide-in-up,
+  .animate-slide-in-down,
+  .animate-bounce {
+    animation: none !important;
+  }
+
+  /* Preserve static visibility */
+  .animate-fade-in {
+    opacity: 1;
+  }
+
+  .animate-slide-in-up,
+  .animate-slide-in-down {
+    transform: translateY(0);
+  }
+
+  /* Keep button transforms subtle */
+  button:hover:not(:disabled) {
+    transform: none !important;
+  }
+
+  /* Keep card transforms subtle */
+  .card:hover {
+    transform: none !important;
+  }
 }
 
 /* ============================================================================

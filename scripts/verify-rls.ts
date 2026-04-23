@@ -58,7 +58,7 @@ async function testFamilyDataIsolation(): Promise<void> {
       recordResult(
         "Family Isolation",
         false,
-        "Unexpected response when accessing other family: " + error.message
+        "Unexpected response when accessing other family: " + ((error as any).message || String(error))
       );
     }
   } catch (error) {

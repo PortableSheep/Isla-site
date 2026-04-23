@@ -241,8 +241,7 @@ export async function mockApiEndpoint(
   status: number = 200,
 ): Promise<void> {
   await page.route(urlPattern, (route) => {
-    route.abort('blockedbyclient');
-    route.response({
+    route.fulfill({
       status,
       contentType: 'application/json',
       body: JSON.stringify(response),
