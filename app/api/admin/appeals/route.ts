@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
-import { hidePost } from '@/lib/moderation';
 
 // Check if user is admin
 async function isAdmin(userId: string): Promise<boolean> {
@@ -23,10 +22,7 @@ async function isAdmin(userId: string): Promise<boolean> {
   }
 }
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ postId: string }> }
-) {
+export async function GET(request: NextRequest) {
   try {
     // Get current user
     const {
@@ -44,27 +40,29 @@ export async function POST(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const { postId } = await params;
-    const body = await request.json().catch(() => ({}));
-    const reason = body.reason || 'No reason provided';
+    // Get pending appeals
+    const { data: appeals, error: fetchError } = await supabase
+      .from('suspension_appeals')
+      .select(
+        `
+        *,
+        user_profiles:user_id(user_id, suspended_reason, suspension_reason_text)
+      `
+      )
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false });
 
-    // Verify post exists
-    const { data: post, error: postError } = await supabase
-      .from('posts')
-      .select('id')
-      .eq('id', postId)
-      .single();
-
-    if (postError || !post) {
-      return NextResponse.json({ error: 'Post not found' }, { status: 404 });
+    if (fetchError) {
+      console.error('Error fetching appeals:', fetchError);
+      return NextResponse.json(
+        { error: 'Failed to fetch appeals' },
+        { status: 500 }
+      );
     }
 
-    // Hide the post and log the action
-    await hidePost(postId, reason, user.id);
-
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ appeals });
   } catch (error) {
-    console.error('Error hiding post:', error);
+    console.error('Error in GET /api/admin/appeals:', error);
     const message = error instanceof Error ? error.message : 'Internal server error';
     return NextResponse.json({ error: message }, { status: 500 });
   }

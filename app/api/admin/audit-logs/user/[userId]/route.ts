@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
-import { hidePost } from '@/lib/moderation';
+import { getUserActivity } from '@/lib/auditLog';
 
 // Check if user is admin
 async function isAdmin(userId: string): Promise<boolean> {
@@ -23,9 +23,9 @@ async function isAdmin(userId: string): Promise<boolean> {
   }
 }
 
-export async function POST(
+export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ postId: string }> }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
     // Get current user
@@ -44,27 +44,24 @@ export async function POST(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const { postId } = await params;
-    const body = await request.json().catch(() => ({}));
-    const reason = body.reason || 'No reason provided';
+    const { userId } = await params;
 
-    // Verify post exists
-    const { data: post, error: postError } = await supabase
-      .from('posts')
-      .select('id')
-      .eq('id', postId)
+    // Verify user exists
+    const { data: userProfile, error: userError } = await supabase
+      .from('user_profiles')
+      .select('user_id')
+      .eq('user_id', userId)
       .single();
 
-    if (postError || !post) {
-      return NextResponse.json({ error: 'Post not found' }, { status: 404 });
+    if (userError || !userProfile) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // Hide the post and log the action
-    await hidePost(postId, reason, user.id);
+    const logs = await getUserActivity(userId);
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ logs });
   } catch (error) {
-    console.error('Error hiding post:', error);
+    console.error('Error fetching user activity:', error);
     const message = error instanceof Error ? error.message : 'Internal server error';
     return NextResponse.json({ error: message }, { status: 500 });
   }

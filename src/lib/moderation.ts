@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { supabase } from './supabase';
 import { FlagStatus, FlaggedPostData, ModerationStats, ModFlag } from '@/types/moderation';
+import { logAction } from './auditLog';
 
 // Get flagged posts with optional filtering
 export async function getFlaggedPosts(
@@ -222,15 +223,20 @@ export async function countPendingFlags(): Promise<number> {
 }
 
 // Hide a post (admin action)
-export async function hidePost(postId: string): Promise<void> {
+export async function hidePost(postId: string, reason?: string, actorId?: string): Promise<void> {
   try {
     const { error } = await supabase
       .from('posts')
-      .update({ hidden: true })
+      .update({ hidden: true, hidden_at: new Date().toISOString() })
       .eq('id', postId);
 
     if (error) {
       throw new Error(`Failed to hide post: ${error.message}`);
+    }
+
+    // Log action asynchronously
+    if (actorId) {
+      logAction('post_hidden', actorId, 'post', postId, reason);
     }
   } catch (error) {
     console.error('Error hiding post:', error);
@@ -239,7 +245,7 @@ export async function hidePost(postId: string): Promise<void> {
 }
 
 // Delete a post (admin action - soft delete)
-export async function deletePost(postId: string): Promise<void> {
+export async function deletePost(postId: string, reason?: string, actorId?: string): Promise<void> {
   try {
     const { error } = await supabase
       .from('posts')
@@ -248,6 +254,11 @@ export async function deletePost(postId: string): Promise<void> {
 
     if (error) {
       throw new Error(`Failed to delete post: ${error.message}`);
+    }
+
+    // Log action asynchronously
+    if (actorId) {
+      logAction('post_deleted', actorId, 'post', postId, reason);
     }
   } catch (error) {
     console.error('Error deleting post:', error);

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
-import { hidePost } from '@/lib/moderation';
+import { getPostAuditTrail } from '@/lib/auditLog';
 
 // Check if user is admin
 async function isAdmin(userId: string): Promise<boolean> {
@@ -23,7 +23,7 @@ async function isAdmin(userId: string): Promise<boolean> {
   }
 }
 
-export async function POST(
+export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ postId: string }> }
 ) {
@@ -45,8 +45,6 @@ export async function POST(
     }
 
     const { postId } = await params;
-    const body = await request.json().catch(() => ({}));
-    const reason = body.reason || 'No reason provided';
 
     // Verify post exists
     const { data: post, error: postError } = await supabase
@@ -59,12 +57,11 @@ export async function POST(
       return NextResponse.json({ error: 'Post not found' }, { status: 404 });
     }
 
-    // Hide the post and log the action
-    await hidePost(postId, reason, user.id);
+    const logs = await getPostAuditTrail(postId);
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ logs });
   } catch (error) {
-    console.error('Error hiding post:', error);
+    console.error('Error fetching post audit trail:', error);
     const message = error instanceof Error ? error.message : 'Internal server error';
     return NextResponse.json({ error: message }, { status: 500 });
   }

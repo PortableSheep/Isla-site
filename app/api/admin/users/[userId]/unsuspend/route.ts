@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
-import { hidePost } from '@/lib/moderation';
+import { logAction } from '@/lib/auditLog';
 
 // Check if user is admin
 async function isAdmin(userId: string): Promise<boolean> {
@@ -25,7 +25,7 @@ async function isAdmin(userId: string): Promise<boolean> {
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ postId: string }> }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
     // Get current user
@@ -44,27 +44,43 @@ export async function POST(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const { postId } = await params;
-    const body = await request.json().catch(() => ({}));
-    const reason = body.reason || 'No reason provided';
+    const { userId } = await params;
 
-    // Verify post exists
-    const { data: post, error: postError } = await supabase
-      .from('posts')
-      .select('id')
-      .eq('id', postId)
-      .single();
+    // Clear suspension from user profile
+    const { error: updateError } = await (supabase as any)
+      .from('user_profiles')
+      .update({
+        suspended: false,
+        suspended_at: null,
+        suspended_by: null,
+        suspension_reason: null,
+        suspension_reason_text: null,
+        suspension_duration_days: null,
+        suspension_expires_at: null,
+        appeal_status: 'none',
+      })
+      .eq('user_id', userId);
 
-    if (postError || !post) {
-      return NextResponse.json({ error: 'Post not found' }, { status: 404 });
+    if (updateError) {
+      console.error('Error unsuspending user:', updateError);
+      return NextResponse.json(
+        { error: 'Failed to unsuspend user' },
+        { status: 500 }
+      );
     }
 
-    // Hide the post and log the action
-    await hidePost(postId, reason, user.id);
+    // Log to audit trail
+    logAction(
+      'user_unsuspended',
+      user.id,
+      'user',
+      userId,
+      'User suspension lifted'
+    );
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error hiding post:', error);
+    console.error('Error unsuspending user:', error);
     const message = error instanceof Error ? error.message : 'Internal server error';
     return NextResponse.json({ error: message }, { status: 500 });
   }

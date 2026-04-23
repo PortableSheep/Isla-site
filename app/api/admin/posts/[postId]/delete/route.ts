@@ -45,6 +45,8 @@ export async function POST(
     }
 
     const { postId } = await params;
+    const body = await request.json().catch(() => ({}));
+    const reason = body.reason || 'No reason provided';
 
     // Verify post exists
     const { data: post, error: postError } = await supabase
@@ -57,8 +59,8 @@ export async function POST(
       return NextResponse.json({ error: 'Post not found' }, { status: 404 });
     }
 
-    // Delete the post (soft delete)
-    await deletePost(postId);
+    // Delete the post (soft delete) and log the action
+    await deletePost(postId, reason, user.id);
 
     return NextResponse.json({ success: true });
   } catch (error) {
