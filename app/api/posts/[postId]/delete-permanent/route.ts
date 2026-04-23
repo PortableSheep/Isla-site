@@ -1,9 +1,9 @@
 // @ts-nocheck
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
-import { hidePost, unhidePost } from '@/lib/posts';
+import { permanentlyDeletePost } from '@/lib/posts';
 
-export async function POST(
+export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ postId: string }> }
 ) {
@@ -17,14 +17,26 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { postId } = await params;
-    const body = await request.json();
-    const { hidden, reason, reason_text } = body;
+    // Check if user is admin
+    const userProfile = await supabase
+      .from('user_profiles')
+      .select('role')
+      .eq('user_id', user.id)
+      .single();
 
-    // Verify admin status
+    if (userProfile.error || userProfile.data?.role !== 'admin') {
+      return NextResponse.json(
+        { error: 'Only admins can permanently delete posts' },
+        { status: 403 }
+      );
+    }
+
+    const { postId } = await params;
+
+    // Get the post first to verify it exists
     const post = await supabase
       .from('posts')
-      .select('family_id')
+      .select('id')
       .eq('id', postId)
       .single();
 
@@ -32,30 +44,11 @@ export async function POST(
       return NextResponse.json({ error: 'Post not found' }, { status: 404 });
     }
 
-    const family = await supabase
-      .from('families')
-      .select('created_by')
-      .eq('id', post.data.family_id)
-      .single();
+    await permanentlyDeletePost(postId);
 
-    if (family.error || family.data?.created_by !== user.id) {
-      return NextResponse.json(
-        { error: 'Only family admins can hide posts' },
-        { status: 403 }
-      );
-    }
-
-    if (hidden) {
-      await hidePost(postId, reason, reason_text);
-    } else {
-      await unhidePost(postId);
-    }
-
-    return NextResponse.json({
-      message: hidden ? 'Post hidden' : 'Post unhidden',
-    });
+    return NextResponse.json({ message: 'Post permanently deleted' });
   } catch (error) {
-    console.error('Error hiding post:', error);
+    console.error('Error permanently deleting post:', error);
     const message = error instanceof Error ? error.message : 'Internal server error';
     return NextResponse.json({ error: message }, { status: 500 });
   }

@@ -7,7 +7,14 @@ export interface Post {
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
+  deleted_reason?: string | null;
+  deleted_reason_text?: string | null;
+  deleted_by?: string | null;
   hidden: boolean;
+  hidden_reason?: string | null;
+  hidden_reason_text?: string | null;
+  hidden_by?: string | null;
+  hidden_at?: string | null;
   flagged: boolean;
   flag_count: number;
   is_update: boolean;
@@ -20,6 +27,15 @@ export interface PostFlag {
   reason: string;
   created_at: string;
   status: 'pending' | 'reviewed' | 'dismissed';
+}
+
+export interface AuditLog {
+  id: string;
+  action: 'delete' | 'hide' | 'unhide' | 'report' | 'permanent_delete';
+  actor_id: string;
+  post_id?: string | null;
+  reason?: string | null;
+  created_at: string;
 }
 
 export interface PostCreateInput {

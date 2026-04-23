@@ -145,23 +145,41 @@ export async function updatePost(postId: string, input: PostUpdateInput): Promis
   return data as Post;
 }
 
-// Soft delete a post (mark as deleted)
-export async function deletePost(postId: string): Promise<void> {
+// Soft delete a post with reason tracking (mark as deleted)
+export async function deletePost(postId: string, reason?: string, reasonText?: string): Promise<void> {
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError || !user) {
     throw new Error('Unauthorized');
   }
 
+  const deleteData: any = {
+    deleted_at: new Date().toISOString(),
+    deleted_by: user.id,
+  };
+
+  if (reason) {
+    deleteData.deleted_reason = reason;
+  }
+  if (reasonText) {
+    deleteData.deleted_reason_text = reasonText;
+  }
+
   const { error } = await supabase
     .from('posts')
-    .update({
-      deleted_at: new Date().toISOString(),
-    })
+    .update(deleteData)
     .eq('id', postId);
 
   if (error) {
     throw new Error(`Failed to delete post: ${error.message}`);
   }
+
+  // Log the action
+  await createAuditLog({
+    action: 'delete',
+    actor_id: user.id,
+    post_id: postId,
+    reason: reason || 'Manual deletion',
+  });
 }
 
 // Hard delete a post (admin only)
@@ -179,6 +197,52 @@ export async function permanentlyDeletePost(postId: string): Promise<void> {
   if (error) {
     throw new Error(`Failed to permanently delete post: ${error.message}`);
   }
+
+  // Log the action
+  await createAuditLog({
+    action: 'permanent_delete',
+    actor_id: user.id,
+    post_id: postId,
+    reason: 'Permanent hard delete',
+  });
+}
+
+// Create an audit log entry
+export async function createAuditLog(data: {
+  action: 'delete' | 'hide' | 'unhide' | 'report' | 'permanent_delete';
+  actor_id: string;
+  post_id?: string | null;
+  reason?: string | null;
+}): Promise<void> {
+  const { error } = await supabase
+    .from('audit_logs')
+    .insert({
+      action: data.action,
+      actor_id: data.actor_id,
+      post_id: data.post_id || null,
+      reason: data.reason || null,
+    });
+
+  if (error) {
+    console.error('Failed to create audit log:', error);
+    // Don't throw - audit logging shouldn't fail the main operation
+  }
+}
+
+// Get audit logs for a post
+export async function getPostAuditLogs(postId: string): Promise<Array<any>> {
+  const { data, error } = await supabase
+    .from('audit_logs')
+    .select()
+    .eq('post_id', postId)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Failed to fetch audit logs:', error);
+    return [];
+  }
+
+  return (data || []) as Array<any>;
 }
 
 // Flag a post for moderation
@@ -227,23 +291,42 @@ export async function flagPost(
   return data as PostFlag;
 }
 
-// Hide a post (moderator action)
-export async function hidePost(postId: string, reason?: string): Promise<void> {
+// Hide a post (moderator action) with reason tracking
+export async function hidePost(postId: string, reason?: string, reasonText?: string): Promise<void> {
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError || !user) {
     throw new Error('Unauthorized');
   }
 
+  const hideData: any = {
+    hidden: true,
+    hidden_at: new Date().toISOString(),
+    hidden_by: user.id,
+  };
+
+  if (reason) {
+    hideData.hidden_reason = reason;
+  }
+  if (reasonText) {
+    hideData.hidden_reason_text = reasonText;
+  }
+
   const { error } = await supabase
     .from('posts')
-    .update({
-      hidden: true,
-    })
+    .update(hideData)
     .eq('id', postId);
 
   if (error) {
     throw new Error(`Failed to hide post: ${error.message}`);
   }
+
+  // Log the action
+  await createAuditLog({
+    action: 'hide',
+    actor_id: user.id,
+    post_id: postId,
+    reason: reason || 'Manual hide',
+  });
 }
 
 // Unhide a post (moderator action)
@@ -257,12 +340,24 @@ export async function unhidePost(postId: string): Promise<void> {
     .from('posts')
     .update({
       hidden: false,
+      hidden_reason: null,
+      hidden_reason_text: null,
+      hidden_by: null,
+      hidden_at: null,
     })
     .eq('id', postId);
 
   if (error) {
     throw new Error(`Failed to unhide post: ${error.message}`);
   }
+
+  // Log the action
+  await createAuditLog({
+    action: 'unhide',
+    actor_id: user.id,
+    post_id: postId,
+    reason: 'Post unhidden',
+  });
 }
 
 // Get flags for a post

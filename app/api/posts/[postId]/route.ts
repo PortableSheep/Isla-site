@@ -94,7 +94,7 @@ export async function DELETE(
     // Verify ownership or admin status
     const post = await supabase
       .from('posts')
-      .select('author_id, family_id')
+      .select('author_id, family_id, is_update')
       .eq('id', postId)
       .single();
 
@@ -103,16 +103,25 @@ export async function DELETE(
     }
 
     const isOwner = post.data.author_id === user.id;
-    const family = await supabase
-      .from('families')
-      .select('created_by')
-      .eq('id', post.data.family_id)
-      .single();
 
-    const isAdmin = family.data?.created_by === user.id;
+    // For updates, check if user is Isla
+    if (post.data.is_update) {
+      if (!isOwner) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+      }
+    } else {
+      // For regular posts, check owner or family admin
+      const family = await supabase
+        .from('families')
+        .select('created_by')
+        .eq('id', post.data.family_id)
+        .single();
 
-    if (!isOwner && !isAdmin) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+      const isAdmin = family.data?.created_by === user.id;
+
+      if (!isOwner && !isAdmin) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+      }
     }
 
     await deletePost(postId);

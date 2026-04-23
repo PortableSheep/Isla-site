@@ -16,6 +16,8 @@ interface PostCardProps {
   replyCount?: number;
   onReplyClick?: () => void;
   onFlagSuccess?: () => void;
+  onDeleteSuccess?: () => void;
+  onHideSuccess?: () => void;
 }
 
 const PostCardComponent = ({
@@ -27,6 +29,8 @@ const PostCardComponent = ({
   replyCount = 0,
   onReplyClick,
   onFlagSuccess,
+  onDeleteSuccess,
+  onHideSuccess,
 }: PostCardProps) => {
   const authorName = authorEmail.split('@')[0];
 
@@ -67,11 +71,14 @@ const PostCardComponent = ({
       {/* Post Actions */}
       <PostActions
         postId={post.id}
+        postContent={post.content}
         isAuthor={isAuthor}
         isModerator={isModerator}
         replyCount={replyCount}
         onReplyClick={post.is_update ? undefined : onReplyClick}
         onFlagSuccess={onFlagSuccess}
+        onDeleteSuccess={onDeleteSuccess}
+        onHideSuccess={onHideSuccess}
       />
     </div>
   );
