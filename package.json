@@ -6,7 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:setup": "ts-node scripts/setup-db.ts",
+    "db:seed": "ts-node scripts/seed-demo-data.ts",
+    "db:verify-rls": "ts-node scripts/verify-rls.ts",
+    "db:backup": "ts-node scripts/backup-db.ts"
   },
   "dependencies": {
     "@supabase/auth-helpers-nextjs": "^0.15.0",
@@ -26,6 +30,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.4",
     "tailwindcss": "^4",
+    "ts-node": "^10.9.2",
     "typescript": "^5"
   }
 }
