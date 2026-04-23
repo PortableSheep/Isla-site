@@ -20,10 +20,32 @@ export function Navigation() {
     <nav className="bg-gray-900 border-b border-gray-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          <div className="flex items-center">
+          <div className="flex items-center gap-8">
             <a href="/" className="text-white font-bold text-lg">
               Isla.site
             </a>
+            {user && (
+              <div className="flex items-center gap-6">
+                <a
+                  href="/dashboard"
+                  className="text-gray-300 hover:text-white text-sm transition-colors"
+                >
+                  Dashboard
+                </a>
+                <a
+                  href="/approvals"
+                  className="text-gray-300 hover:text-white text-sm transition-colors"
+                >
+                  Approvals
+                </a>
+                <a
+                  href="/approvals/history"
+                  className="text-gray-300 hover:text-white text-sm transition-colors"
+                >
+                  History
+                </a>
+              </div>
+            )}
           </div>
 
           <div className="flex items-center gap-4">
