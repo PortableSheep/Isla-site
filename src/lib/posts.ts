@@ -411,3 +411,53 @@ export async function flagReply(replyId: string, reason: string): Promise<PostFl
 
   return await flagPost(replyId, reason, user.id);
 }
+
+// Get all updates (Isla-wide announcements)
+export async function getUpdates(limit: number = 50, offset: number = 0): Promise<Post[]> {
+  const { data, error } = await supabase
+    .from('posts')
+    .select()
+    .eq('is_update', true)
+    .is('deleted_at', null)
+    .eq('hidden', false)
+    .order('created_at', { ascending: false })
+    .range(offset, offset + limit - 1);
+
+  if (error) {
+    throw new Error(`Failed to fetch updates: ${error.message}`);
+  }
+
+  return (data || []) as Post[];
+}
+
+// Get a single update
+export async function getUpdate(updateId: string): Promise<Post | null> {
+  const post = await getPost(updateId);
+  if (!post || !post.is_update) {
+    return null;
+  }
+  return post;
+}
+
+// Search updates by content
+export async function searchUpdates(query: string, limit: number = 50): Promise<Post[]> {
+  if (!query || query.trim().length === 0) {
+    return getUpdates(limit);
+  }
+
+  const { data, error } = await supabase
+    .from('posts')
+    .select()
+    .eq('is_update', true)
+    .is('deleted_at', null)
+    .eq('hidden', false)
+    .ilike('content', `%${query}%`)
+    .order('created_at', { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    throw new Error(`Failed to search updates: ${error.message}`);
+  }
+
+  return (data || []) as Post[];
+}

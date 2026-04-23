@@ -70,7 +70,7 @@ const PostCardComponent = ({
         isAuthor={isAuthor}
         isModerator={isModerator}
         replyCount={replyCount}
-        onReplyClick={onReplyClick}
+        onReplyClick={post.is_update ? undefined : onReplyClick}
         onFlagSuccess={onFlagSuccess}
       />
     </div>
