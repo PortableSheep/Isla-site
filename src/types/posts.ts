@@ -18,6 +18,12 @@ export interface Post {
   flagged: boolean;
   flag_count: number;
   is_update: boolean;
+  moderation_status?: 'pending' | 'approved' | 'rejected';
+  approved_by?: string | null;
+  approved_at?: string | null;
+  rejected_by?: string | null;
+  rejected_at?: string | null;
+  rejected_reason?: string | null;
 }
 
 export interface PostFlag {

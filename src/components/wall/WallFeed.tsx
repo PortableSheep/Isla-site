@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { getPostsByFamily, getUpdates } from '@/lib/posts';
 import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
+import { ReactionBar } from './ReactionBar';
 
 interface Post {
   id: string;
@@ -19,6 +20,8 @@ interface Post {
   flagged: boolean;
   flag_count: number;
   is_update: boolean;
+  moderation_status?: 'pending' | 'approved' | 'rejected';
+  rejected_reason?: string | null;
 }
 
 interface WallFeedProps {
@@ -206,6 +209,18 @@ export function WallFeed({ familyId, isModerator }: WallFeedProps) {
                 key={post.id}
                 className="bg-gray-900/50 border border-gray-700 rounded-lg p-6 hover:border-gray-600 transition"
               >
+                {post.moderation_status === 'pending' && (
+                  <div className="mb-3 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-yellow-900/30 border border-yellow-700/50 text-yellow-300 text-xs font-medium">
+                    <span>⏳</span>
+                    Waiting for approval — only you can see this
+                  </div>
+                )}
+                {post.moderation_status === 'rejected' && (
+                  <div className="mb-3 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-900/30 border border-red-700/50 text-red-300 text-xs font-medium">
+                    <span>🚫</span>
+                    Rejected{post.rejected_reason ? `: ${post.rejected_reason}` : ''}
+                  </div>
+                )}
                 <p className="text-white mb-2 line-clamp-3">{post.content}</p>
                 <div className="flex justify-between items-center text-xs text-gray-500 mb-4">
                   <span>
@@ -215,6 +230,11 @@ export function WallFeed({ familyId, isModerator }: WallFeedProps) {
                     <span className="text-yellow-600">🚩 Flagged</span>
                   )}
                 </div>
+
+                {post.moderation_status !== 'pending' &&
+                  post.moderation_status !== 'rejected' && (
+                    <ReactionBar postId={post.id} />
+                  )}
 
                 {/* Reply Link */}
                 <Link

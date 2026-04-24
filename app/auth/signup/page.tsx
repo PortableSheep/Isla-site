@@ -12,10 +12,10 @@ export default function SignUpPage() {
           <CreatureDisplay creatureId="wave" state="happy" size="medium" />
         </div>
         <h1 className="text-3xl sm:text-4xl font-bold tracking-tight iz-gradient-text">
-          Join Isla Zone
+          Sign up for Isla&apos;s wall
         </h1>
         <p className="mt-3 text-slate-400">
-          Create an account to share family moments
+          Create an account to post, comment, and react on Isla&apos;s wall.
         </p>
       </div>
 
@@ -31,7 +31,9 @@ export default function SignUpPage() {
       </p>
 
       <p className="mt-4 text-center text-xs text-slate-500">
-        A parent will need to approve your profile before you access the family wall.
+        Every post and comment is reviewed by Isla&apos;s dad before it appears on
+        the wall. You&apos;ll always see your own posts with a &ldquo;waiting for
+        approval&rdquo; badge until they&apos;re approved.
       </p>
     </div>
   );

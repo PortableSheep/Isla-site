@@ -170,6 +170,9 @@ export default function DashboardPage() {
               Admin
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Link href="/admin/wall-moderation" className="iz-btn-primary py-3 text-center">
+                🛡️ Wall moderation
+              </Link>
               <Link href="/approvals" className="iz-btn-ghost py-3 text-center">
                 Approvals {pendingCount > 0 && `(${pendingCount})`}
               </Link>
