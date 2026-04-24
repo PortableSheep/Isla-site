@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 type PickerItem = {
   id: string;
@@ -95,8 +96,13 @@ export function GifPicker({
   }, [open, onClose]);
 
   if (!open) return null;
+  if (typeof document === 'undefined') return null;
 
-  return (
+  // Render through a portal so the fixed-position overlay isn't trapped
+  // inside an ancestor that has a transform / filter / will-change
+  // (CreatureDisplay's animations create such contexts, which was letting
+  // the drift mascot render on top of the modal).
+  return createPortal(
     <div
       role="dialog"
       aria-modal="true"
@@ -197,7 +203,8 @@ export function GifPicker({
           Powered by GIPHY · Filtered for kids · Dad still reviews every post
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
