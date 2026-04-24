@@ -1,6 +1,7 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { extractMedia, Linkified, MediaEmbeds } from '@/components/wall/media';
 
 type ModItem = {
   id: string;
@@ -52,6 +53,18 @@ function SpamTag({ score, reasons }: { score: number | null; reasons: string[] |
     >
       Spam {score}
     </span>
+  );
+}
+
+function ModBody({ content }: { content: string }) {
+  const { embeds, consumed } = useMemo(() => extractMedia(content), [content]);
+  return (
+    <div className="mt-3">
+      <p className="whitespace-pre-wrap text-[14px] text-slate-100">
+        <Linkified text={content} hideUrls={consumed} />
+      </p>
+      <MediaEmbeds embeds={embeds} />
+    </div>
   );
 }
 
@@ -202,7 +215,7 @@ export function WallModerationDashboard() {
                 </span>
               )}
             </div>
-            <p className="mt-3 whitespace-pre-wrap text-[14px] text-slate-100">{it.content}</p>
+            <ModBody content={it.content} />
 
             <div className="mt-3 flex flex-wrap gap-2">
               {it.moderation_status !== 'approved' && (

@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { CreatureDisplay } from '@/components/CreatureDisplay';
+import { extractMedia, Linkified, MediaEmbeds } from '@/components/wall/media';
+import { GifPicker } from '@/components/wall/GifPicker';
 
 type Comment = {
   id: string;
@@ -54,212 +56,45 @@ function formatTime(iso: string): string {
 }
 
 // Match youtube.com/watch?v=ID, youtu.be/ID, youtube.com/shorts/ID, youtube.com/embed/ID
-const YT_REGEX =
-  /https?:\/\/(?:www\.|m\.)?(?:youtube\.com\/(?:watch\?[^\s]*v=|shorts\/|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{11})(?:[^\s]*)?/gi;
-
-const IMG_REGEX =
-  /https?:\/\/[^\s<]+?\.(?:gif|png|jpe?g|webp)(?:\?[^\s<]*)?/gi;
-const TENOR_VIEW_REGEX = /https?:\/\/(?:www\.)?tenor\.com\/view\/[^\s<]*?-(\d+)/gi;
-const GIPHY_VIEW_REGEX = /https?:\/\/(?:www\.)?giphy\.com\/(?:gifs|clips)\/[^\s<]*?-([A-Za-z0-9]+)(?=[^\w]|$)/gi;
-
-type MediaEmbed =
-  | { kind: 'image'; url: string }
-  | { kind: 'youtube'; id: string }
-  | { kind: 'tenor'; id: string }
-  | { kind: 'giphy'; id: string };
-
-function extractMedia(text: string): { embeds: MediaEmbed[]; consumed: Set<string> } {
-  const embeds: MediaEmbed[] = [];
-  const consumed = new Set<string>();
-  const seen = new Set<string>();
-
-  for (const m of text.matchAll(IMG_REGEX)) {
-    const url = m[0];
-    if (seen.has(url)) continue;
-    seen.add(url);
-    consumed.add(url);
-    embeds.push({ kind: 'image', url });
-  }
-  for (const m of text.matchAll(YT_REGEX)) {
-    const id = m[1];
-    if (!id || seen.has('yt:' + id)) continue;
-    seen.add('yt:' + id);
-    consumed.add(m[0]);
-    embeds.push({ kind: 'youtube', id });
-  }
-  for (const m of text.matchAll(TENOR_VIEW_REGEX)) {
-    const id = m[1];
-    if (!id || seen.has('tenor:' + id)) continue;
-    seen.add('tenor:' + id);
-    consumed.add(m[0]);
-    embeds.push({ kind: 'tenor', id });
-  }
-  for (const m of text.matchAll(GIPHY_VIEW_REGEX)) {
-    const id = m[1];
-    if (!id || seen.has('giphy:' + id)) continue;
-    seen.add('giphy:' + id);
-    consumed.add(m[0]);
-    embeds.push({ kind: 'giphy', id });
-  }
-
-  return { embeds, consumed };
-}
-
-const URL_REGEX = /(https?:\/\/[^\s<]+)/g;
-
-function Linkified({ text, hideUrls }: { text: string; hideUrls?: Set<string> }) {
-  const parts: (string | { href: string })[] = [];
-  let last = 0;
-  for (const m of text.matchAll(URL_REGEX)) {
-    const start = m.index ?? 0;
-    if (start > last) parts.push(text.slice(last, start));
-    if (hideUrls?.has(m[0])) {
-      // swallow the URL entirely — media embed replaces it
-    } else {
-      parts.push({ href: m[0] });
-    }
-    last = start + m[0].length;
-  }
-  if (last < text.length) parts.push(text.slice(last));
-  return (
-    <>
-      {parts.map((p, i) =>
-        typeof p === 'string' ? (
-          <span key={i}>{p}</span>
-        ) : (
-          <a
-            key={i}
-            href={p.href}
-            target="_blank"
-            rel="noopener noreferrer nofollow"
-            className="text-fuchsia-300 underline decoration-dotted underline-offset-2 hover:text-fuchsia-200"
-          >
-            {p.href}
-          </a>
-        )
-      )}
-    </>
-  );
-}
-
-function MediaEmbeds({ embeds }: { embeds: MediaEmbed[] }) {
-  if (embeds.length === 0) return null;
-  return (
-    <div className="mt-3 flex flex-col gap-3">
-      {embeds.slice(0, 4).map((e, i) => {
-        if (e.kind === 'image') {
-          return (
-            <a
-              key={i}
-              href={e.url}
-              target="_blank"
-              rel="noopener noreferrer nofollow"
-              className="block overflow-hidden rounded-xl border border-white/10 bg-black/30"
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={e.url}
-                alt="Shared image"
-                loading="lazy"
-                className="max-h-[480px] w-full object-contain"
-              />
-            </a>
-          );
-        }
-        if (e.kind === 'youtube') {
-          return (
-            <div
-              key={i}
-              className="relative w-full overflow-hidden rounded-xl border border-white/10"
-              style={{ paddingBottom: '56.25%' }}
-            >
-              <iframe
-                src={`https://www.youtube-nocookie.com/embed/${e.id}`}
-                title="YouTube video"
-                loading="lazy"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                referrerPolicy="strict-origin-when-cross-origin"
-                allowFullScreen
-                className="absolute inset-0 h-full w-full"
-              />
-            </div>
-          );
-        }
-        if (e.kind === 'tenor') {
-          return (
-            <div
-              key={i}
-              className="overflow-hidden rounded-xl border border-white/10 bg-black/30"
-            >
-              <iframe
-                src={`https://tenor.com/embed/${e.id}`}
-                title="Tenor GIF"
-                loading="lazy"
-                referrerPolicy="strict-origin-when-cross-origin"
-                className="h-[320px] w-full"
-              />
-            </div>
-          );
-        }
-        // giphy
-        return (
-          <div
-            key={i}
-            className="overflow-hidden rounded-xl border border-white/10 bg-black/30"
-          >
-            <iframe
-              src={`https://giphy.com/embed/${e.id}`}
-              title="Giphy"
-              loading="lazy"
-              referrerPolicy="strict-origin-when-cross-origin"
-              allowFullScreen
-              className="h-[320px] w-full"
-            />
-          </div>
-        );
-      })}
-    </div>
-  );
-}
+// (media helpers moved to ./media.tsx)
 
 function PostBody({ post }: { post: Post }) {
   const { embeds, consumed } = useMemo(() => extractMedia(post.content), [post.content]);
-  const approved = post.moderation_status === 'approved';
+  const showEmbeds = post.moderation_status === 'approved' || post.is_mine;
   return (
     <>
       <p className="mt-3 whitespace-pre-wrap text-[15px] leading-relaxed text-slate-100">
-        <Linkified text={post.content} hideUrls={approved ? consumed : undefined} />
+        <Linkified text={post.content} hideUrls={showEmbeds ? consumed : undefined} />
       </p>
-      {approved && <MediaEmbeds embeds={embeds} />}
+      {showEmbeds && <MediaEmbeds embeds={embeds} />}
     </>
   );
 }
 
 function CommentBody({ comment }: { comment: Comment }) {
   const { embeds, consumed } = useMemo(() => extractMedia(comment.content), [comment.content]);
-  const approved = comment.moderation_status === 'approved';
+  const showEmbeds = comment.moderation_status === 'approved' || comment.is_mine;
   return (
     <>
       <p className="mt-1 whitespace-pre-wrap text-sm text-slate-100">
-        <Linkified text={comment.content} hideUrls={approved ? consumed : undefined} />
+        <Linkified text={comment.content} hideUrls={showEmbeds ? consumed : undefined} />
       </p>
-      {approved && <MediaEmbeds embeds={embeds} />}
+      {showEmbeds && <MediaEmbeds embeds={embeds} />}
     </>
   );
 }
 
-function MediaHelperBar() {
+function MediaHelperBar({ onPickGif }: { onPickGif: () => void }) {
   return (
     <div className="flex flex-wrap items-center gap-2 rounded-lg border border-dashed border-white/10 bg-black/20 px-3 py-2 text-xs text-slate-400">
       <span className="text-slate-300">Add a GIF or meme:</span>
-      <a
-        href="https://tenor.com/search/gifs"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="rounded-md border border-white/10 bg-white/5 px-2 py-1 text-slate-200 transition hover:border-fuchsia-400/40 hover:text-fuchsia-200"
+      <button
+        type="button"
+        onClick={onPickGif}
+        className="rounded-md border border-fuchsia-400/40 bg-fuchsia-500/10 px-2 py-1 text-fuchsia-200 transition hover:border-fuchsia-400/70 hover:bg-fuchsia-500/20"
       >
-        🔎 Find a GIF (Tenor)
-      </a>
+        🔎 Search GIFs
+      </button>
       <a
         href="https://giphy.com/search/funny"
         target="_blank"
@@ -277,7 +112,7 @@ function MediaHelperBar() {
         📺 YouTube
       </a>
       <span className="basis-full text-[11px] text-slate-500">
-        Copy the link and paste it in the box — it&apos;ll show up right on the wall.
+        Pick a GIF above, or paste any GIF / meme / YouTube link — it&apos;ll show up right on the wall.
       </span>
     </div>
   );
@@ -339,6 +174,8 @@ function CommentBlock({
   const [content, setContent] = useState('');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [gifOpen, setGifOpen] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   if (post.moderation_status !== 'approved' && !post.is_mine) return null;
 
@@ -381,12 +218,21 @@ function CommentBlock({
         >
           <div className="flex flex-col gap-2 sm:flex-row">
             <input
+              ref={inputRef}
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder="Leave a comment… (paste a GIF / meme link too!)"
               maxLength={1000}
               className="flex-1 rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:border-fuchsia-400 focus:outline-none"
             />
+            <button
+              type="button"
+              onClick={() => setGifOpen(true)}
+              className="inline-flex h-9 items-center gap-1 rounded-lg border border-fuchsia-400/40 bg-fuchsia-500/10 px-3 text-xs text-fuchsia-200 transition hover:border-fuchsia-400/70 hover:bg-fuchsia-500/20"
+              aria-label="Add a GIF"
+            >
+              🔎 GIF
+            </button>
             <button
               type="submit"
               disabled={busy || !content.trim()}
@@ -396,6 +242,18 @@ function CommentBlock({
             </button>
           </div>
           {err && <p className="text-xs text-rose-300">{err}</p>}
+          <GifPicker
+            open={gifOpen}
+            onClose={() => setGifOpen(false)}
+            onPick={(url) => {
+              setContent((prev) => {
+                const sep = prev && !prev.endsWith(' ') ? ' ' : '';
+                return prev + sep + url;
+              });
+              setGifOpen(false);
+              requestAnimationFrame(() => inputRef.current?.focus());
+            }}
+          />
         </form>
       )}
     </div>
@@ -417,6 +275,31 @@ function Composer({
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [okMsg, setOkMsg] = useState<string | null>(null);
+  const [gifOpen, setGifOpen] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const insertAtCursor = (snippet: string) => {
+    const el = textareaRef.current;
+    if (!el) {
+      setContent((prev) => (prev ? prev.trimEnd() + '\n' + snippet : snippet));
+      return;
+    }
+    const start = el.selectionStart ?? el.value.length;
+    const end = el.selectionEnd ?? el.value.length;
+    const before = el.value.slice(0, start);
+    const after = el.value.slice(end);
+    const sep = before && !before.endsWith('\n') ? '\n' : '';
+    const tail = after && !after.startsWith('\n') ? '\n' : '';
+    const next = before + sep + snippet + tail + after;
+    setContent(next);
+    const caret = before.length + sep.length + snippet.length + tail.length;
+    requestAnimationFrame(() => {
+      el.focus();
+      try {
+        el.setSelectionRange(caret, caret);
+      } catch {}
+    });
+  };
 
   return (
     <form
@@ -458,6 +341,7 @@ function Composer({
         ) : null}
       </div>
       <textarea
+        ref={textareaRef}
         value={content}
         onChange={(e) => setContent(e.target.value)}
         placeholder="Say hi, paste a GIF / meme / YouTube link, or tell Isla a joke…"
@@ -465,7 +349,15 @@ function Composer({
         maxLength={2000}
         className="w-full resize-y rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:border-fuchsia-400 focus:outline-none"
       />
-      <MediaHelperBar />
+      <MediaHelperBar onPickGif={() => setGifOpen(true)} />
+      <GifPicker
+        open={gifOpen}
+        onClose={() => setGifOpen(false)}
+        onPick={(url) => {
+          insertAtCursor(url);
+          setGifOpen(false);
+        }}
+      />
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-xs text-slate-400">
           Posts are reviewed by Isla&apos;s dad before showing up publicly. You&apos;ll see your own

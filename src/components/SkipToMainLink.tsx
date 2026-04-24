@@ -9,7 +9,7 @@ export function SkipToMainLink() {
       className="skip-to-main-link"
       style={{
         position: 'absolute',
-        top: '-40px',
+        top: '-100px',
         left: '0',
         background: 'var(--color-primary)',
         color: 'white',
@@ -23,7 +23,7 @@ export function SkipToMainLink() {
         (e.currentTarget as HTMLElement).style.top = '0';
       }}
       onBlur={(e) => {
-        (e.currentTarget as HTMLElement).style.top = '-40px';
+        (e.currentTarget as HTMLElement).style.top = '-100px';
       }}
     >
       Skip to main content
