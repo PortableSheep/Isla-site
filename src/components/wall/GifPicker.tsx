@@ -108,22 +108,27 @@ export function GifPicker({
     >
       <div className="flex h-[85vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-white/10 bg-slate-950/95 shadow-2xl sm:h-[70vh]">
         <div className="flex items-center gap-3 border-b border-white/10 p-3">
-          <h2 id="gif-picker-title" className="text-sm font-semibold text-slate-100">
+          <div
+            id="gif-picker-title"
+            role="heading"
+            aria-level={2}
+            className="shrink-0 text-sm font-semibold text-slate-100"
+          >
             🎞️ Pick a GIF
-          </h2>
+          </div>
           <input
             ref={inputRef}
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Search GIFs…"
             maxLength={80}
-            className="flex-1 rounded-lg border border-white/10 bg-black/30 px-3 py-1.5 text-sm text-white placeholder:text-slate-500 focus:border-fuchsia-400 focus:outline-none"
+            className="min-w-0 flex-1 rounded-lg border border-white/10 bg-black/30 px-3 py-1.5 text-sm text-white placeholder:text-slate-500 focus:border-fuchsia-400 focus:outline-none"
             aria-label="Search GIFs"
           />
           <button
             type="button"
             onClick={onClose}
-            className="rounded-md border border-white/10 bg-white/5 px-2 py-1 text-xs text-slate-300 hover:border-white/25 hover:text-white"
+            className="shrink-0 rounded-md border border-white/10 bg-white/5 px-2 py-1 text-xs text-slate-300 hover:border-white/25 hover:text-white"
             aria-label="Close GIF picker"
           >
             ✕
