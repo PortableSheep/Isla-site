@@ -28,7 +28,7 @@ async function requireAdmin() {
   return { supabase, user, admin: profile?.role === 'admin' };
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const { supabase, user, admin } = await requireAdmin();
     if (!user) {
@@ -38,12 +38,30 @@ export async function GET() {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const { data: posts, error } = await supabase
+    const url = new URL(request.url);
+    const statusParam = url.searchParams.get('status') ?? 'pending';
+    const allowed = ['pending', 'approved', 'rejected', 'all'] as const;
+    const status = (allowed as readonly string[]).includes(statusParam)
+      ? (statusParam as typeof allowed[number])
+      : 'pending';
+
+    let query = supabase
       .from('posts')
-      .select('id, author_id, author_name, author_cookie_id, content, parent_post_id, created_at, moderation_status, family_id, spam_score, spam_reasons, client_ip')
-      .eq('moderation_status', 'pending')
+      .select(
+        'id, author_id, author_name, author_cookie_id, content, parent_post_id, created_at, moderation_status, family_id, spam_score, spam_reasons, client_ip'
+      )
       .is('deleted_at', null)
-      .order('created_at', { ascending: true });
+      .order('created_at', { ascending: status === 'pending' });
+
+    if (status !== 'all') {
+      query = query.eq('moderation_status', status);
+    }
+    if (status === 'approved' || status === 'rejected') {
+      // Cap the list for the admin "retroactive removal" view.
+      query = query.limit(200);
+    }
+
+    const { data: posts, error } = await query;
 
     if (error) {
       return NextResponse.json(
@@ -71,11 +89,20 @@ export async function GET() {
 
     return NextResponse.json({
       success: true,
-      pending: (posts ?? []).map((p) => ({
+      status,
+      items: (posts ?? []).map((p) => ({
         ...p,
         author: p.author_id ? profiles[p.author_id] ?? null : null,
         kind: p.parent_post_id ? 'comment' : 'post',
       })),
+      // keep legacy field for any callers still on the old shape
+      pending: status === 'pending'
+        ? (posts ?? []).map((p) => ({
+            ...p,
+            author: p.author_id ? profiles[p.author_id] ?? null : null,
+            kind: p.parent_post_id ? 'comment' : 'post',
+          }))
+        : [],
     });
   } catch (err) {
     console.error('moderation queue error:', err);

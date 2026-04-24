@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { CreatureDisplay } from '@/components/CreatureDisplay';
 
 type Comment = {
   id: string;
@@ -10,6 +11,7 @@ type Comment = {
   moderation_status: 'pending' | 'approved' | 'rejected';
   created_at: string;
   is_mine: boolean;
+  _optimistic?: boolean;
 };
 
 type Post = Comment & {
@@ -19,14 +21,107 @@ type Post = Comment & {
 };
 
 const EMOJIS = ['❤️', '👍', '😂', '😮', '😢', '🎉', '🔥'];
+const NAME_KEY = 'wall_author_name';
+
+function readSavedName(): string {
+  if (typeof window === 'undefined') return '';
+  try {
+    return window.localStorage.getItem(NAME_KEY) ?? '';
+  } catch {
+    return '';
+  }
+}
+
+function saveName(name: string) {
+  if (typeof window === 'undefined') return;
+  try {
+    if (name) window.localStorage.setItem(NAME_KEY, name);
+    else window.localStorage.removeItem(NAME_KEY);
+  } catch {
+    /* ignore quota/permission */
+  }
+}
 
 function formatTime(iso: string): string {
   try {
-    const d = new Date(iso);
-    return d.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+    return new Date(iso).toLocaleString(undefined, {
+      dateStyle: 'medium',
+      timeStyle: 'short',
+    });
   } catch {
     return iso;
   }
+}
+
+// Match youtube.com/watch?v=ID, youtu.be/ID, youtube.com/shorts/ID, youtube.com/embed/ID
+const YT_REGEX =
+  /https?:\/\/(?:www\.|m\.)?(?:youtube\.com\/(?:watch\?[^\s]*v=|shorts\/|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{11})(?:[^\s]*)?/gi;
+
+function extractYouTubeIds(text: string): string[] {
+  const ids = new Set<string>();
+  for (const m of text.matchAll(YT_REGEX)) {
+    if (m[1]) ids.add(m[1]);
+  }
+  return Array.from(ids);
+}
+
+const URL_REGEX = /(https?:\/\/[^\s<]+)/g;
+
+function Linkified({ text }: { text: string }) {
+  const parts: (string | { href: string })[] = [];
+  let last = 0;
+  for (const m of text.matchAll(URL_REGEX)) {
+    const start = m.index ?? 0;
+    if (start > last) parts.push(text.slice(last, start));
+    parts.push({ href: m[0] });
+    last = start + m[0].length;
+  }
+  if (last < text.length) parts.push(text.slice(last));
+  return (
+    <>
+      {parts.map((p, i) =>
+        typeof p === 'string' ? (
+          <span key={i}>{p}</span>
+        ) : (
+          <a
+            key={i}
+            href={p.href}
+            target="_blank"
+            rel="noopener noreferrer nofollow"
+            className="text-fuchsia-300 underline decoration-dotted underline-offset-2 hover:text-fuchsia-200"
+          >
+            {p.href}
+          </a>
+        )
+      )}
+    </>
+  );
+}
+
+function YouTubeEmbeds({ content }: { content: string }) {
+  const ids = useMemo(() => extractYouTubeIds(content), [content]);
+  if (ids.length === 0) return null;
+  return (
+    <div className="mt-3 flex flex-col gap-3">
+      {ids.slice(0, 3).map((id) => (
+        <div
+          key={id}
+          className="relative w-full overflow-hidden rounded-xl border border-white/10"
+          style={{ paddingBottom: '56.25%' }}
+        >
+          <iframe
+            src={`https://www.youtube-nocookie.com/embed/${id}`}
+            title="YouTube video"
+            loading="lazy"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerPolicy="strict-origin-when-cross-origin"
+            allowFullScreen
+            className="absolute inset-0 h-full w-full"
+          />
+        </div>
+      ))}
+    </div>
+  );
 }
 
 function Badge({ status }: { status: Comment['moderation_status'] }) {
@@ -82,15 +177,23 @@ function ReactionBar({
 
 function CommentBlock({
   post,
+  defaultName,
   onSubmit,
+  onNameChange,
 }: {
   post: Post;
+  defaultName: string;
   onSubmit: (parentId: string, name: string, content: string) => Promise<void>;
+  onNameChange: (n: string) => void;
 }) {
-  const [name, setName] = useState('');
+  const [name, setName] = useState(defaultName);
   const [content, setContent] = useState('');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+
+  useEffect(() => {
+    setName(defaultName);
+  }, [defaultName]);
 
   if (post.moderation_status !== 'approved' && !post.is_mine) return null;
 
@@ -104,7 +207,9 @@ function CommentBlock({
             <span>{formatTime(c.created_at)}</span>
             <Badge status={c.moderation_status} />
           </div>
-          <p className="mt-1 whitespace-pre-wrap text-sm text-slate-100">{c.content}</p>
+          <p className="mt-1 whitespace-pre-wrap text-sm text-slate-100">
+            <Linkified text={c.content} />
+          </p>
         </div>
       ))}
 
@@ -129,7 +234,10 @@ function CommentBlock({
           <div className="flex flex-col gap-2 sm:flex-row">
             <input
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => {
+                setName(e.target.value);
+                onNameChange(e.target.value);
+              }}
               placeholder="Your name (optional)"
               maxLength={40}
               className="rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:border-fuchsia-400 focus:outline-none sm:max-w-[220px]"
@@ -157,15 +265,23 @@ function CommentBlock({
 }
 
 function Composer({
+  defaultName,
   onSubmit,
+  onNameChange,
 }: {
+  defaultName: string;
   onSubmit: (name: string, content: string) => Promise<void>;
+  onNameChange: (n: string) => void;
 }) {
-  const [name, setName] = useState('');
+  const [name, setName] = useState(defaultName);
   const [content, setContent] = useState('');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [okMsg, setOkMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    setName(defaultName);
+  }, [defaultName]);
 
   return (
     <form
@@ -190,20 +306,23 @@ function Composer({
       <h2 className="text-lg font-semibold">Leave a note for Isla 💌</h2>
       <input
         value={name}
-        onChange={(e) => setName(e.target.value)}
-        placeholder="Your name (optional)"
+        onChange={(e) => {
+          setName(e.target.value);
+          onNameChange(e.target.value);
+        }}
+        placeholder="Your name (optional — we'll remember it on this device)"
         maxLength={40}
         className="w-full rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:border-fuchsia-400 focus:outline-none"
       />
       <textarea
         value={content}
         onChange={(e) => setContent(e.target.value)}
-        placeholder="Say hi, share a memory, draw a doodle with words…"
+        placeholder="Say hi, share a YouTube link, tell Isla a joke…"
         rows={4}
         maxLength={2000}
         className="w-full resize-y rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:border-fuchsia-400 focus:outline-none"
       />
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-xs text-slate-400">
           Posts are reviewed by Isla&apos;s dad before showing up publicly. You&apos;ll see your own
           note while it&apos;s waiting.
@@ -225,14 +344,34 @@ function Composer({
 export function PublicWall() {
   const [feed, setFeed] = useState<Post[] | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [savedName, setSavedName] = useState('');
   const reloadTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    setSavedName(readSavedName());
+  }, []);
+
+  const handleNameChange = useCallback((n: string) => {
+    setSavedName(n);
+    saveName(n);
+  }, []);
 
   const refresh = useCallback(async () => {
     try {
       const res = await fetch('/api/wall/feed', { cache: 'no-store', credentials: 'include' });
       if (!res.ok) throw new Error(`Feed failed (${res.status})`);
       const json = await res.json();
-      setFeed(json.feed as Post[]);
+      setFeed((prev) => {
+        const incoming = (json.feed as Post[]) ?? [];
+        if (!prev) return incoming;
+        // Keep optimistic items that don't yet exist server-side (by matching content+created window)
+        const keepers = prev.filter(
+          (p) =>
+            p._optimistic &&
+            !incoming.some((q) => q.content === p.content && q.is_mine && q.parent_post_id === null)
+        );
+        return [...keepers, ...incoming];
+      });
       setLoadError(null);
     } catch (e) {
       setLoadError(e instanceof Error ? e.message : 'Could not load wall');
@@ -250,19 +389,42 @@ export function PublicWall() {
 
   const submitPost = useCallback(
     async (name: string, content: string) => {
-      const res = await fetch('/api/wall/post', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ author_name: name || undefined, content }),
-      });
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        if (res.status === 429) throw new Error('You\u2019re posting a bit too fast \u2014 try again in a bit.');
-        if (res.status === 403 && body?.error === 'banned') throw new Error('This device has been banned from posting.');
-        throw new Error(body?.detail || body?.error || `Failed (${res.status})`);
+      // optimistic insert
+      const tempId = `tmp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      const optimistic: Post = {
+        id: tempId,
+        parent_post_id: null,
+        author_name: name || null,
+        content,
+        moderation_status: 'pending',
+        created_at: new Date().toISOString(),
+        is_mine: true,
+        reactions: {},
+        my_reactions: [],
+        comments: [],
+        _optimistic: true,
+      };
+      setFeed((prev) => (prev ? [optimistic, ...prev] : [optimistic]));
+
+      try {
+        const res = await fetch('/api/wall/post', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ author_name: name || undefined, content }),
+        });
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          // remove the optimistic row
+          setFeed((prev) => prev?.filter((p) => p.id !== tempId) ?? null);
+          if (res.status === 429) throw new Error('You\u2019re posting a bit too fast — try again in a bit.');
+          if (res.status === 403 && body?.error === 'banned')
+            throw new Error('This device has been banned from posting.');
+          throw new Error(body?.detail || body?.error || `Failed (${res.status})`);
+        }
+      } finally {
+        scheduleReload();
       }
-      scheduleReload();
     },
     [scheduleReload]
   );
@@ -306,16 +468,22 @@ export function PublicWall() {
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 py-10">
-      <header className="text-center">
+      <header className="relative text-center">
+        <div className="pointer-events-none absolute -top-2 left-0 hidden md:block">
+          <CreatureDisplay creatureId="sparkle" state="happy" animation="bounce" size="medium" />
+        </div>
+        <div className="pointer-events-none absolute -top-2 right-0 hidden md:block">
+          <CreatureDisplay creatureId="glimmer" state="happy" animation="gentle_bounce" size="medium" />
+        </div>
         <h1 className="iz-gradient-text text-4xl font-bold tracking-tight md:text-5xl">
           Isla&apos;s Wall
         </h1>
         <p className="mt-2 text-sm text-slate-300">
-          Notes, doodles, and hellos from anyone who wants to say hi.
+          Notes, doodles, YouTube links, and hellos from anyone who wants to say hi.
         </p>
       </header>
 
-      <Composer onSubmit={submitPost} />
+      <Composer defaultName={savedName} onSubmit={submitPost} onNameChange={handleNameChange} />
 
       {loadError && (
         <div className="rounded-xl border border-rose-400/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
@@ -346,19 +514,25 @@ export function PublicWall() {
               <Badge status={p.moderation_status} />
             </div>
             <p className="mt-3 whitespace-pre-wrap text-[15px] leading-relaxed text-slate-100">
-              {p.content}
+              <Linkified text={p.content} />
             </p>
-            <ReactionBar
+            {p.moderation_status === 'approved' && <YouTubeEmbeds content={p.content} />}
+            <ReactionBar post={p} onReact={(emoji, removing) => submitReaction(p.id, emoji, removing)} />
+            <CommentBlock
               post={p}
-              onReact={(emoji, removing) => submitReaction(p.id, emoji, removing)}
+              defaultName={savedName}
+              onSubmit={submitComment}
+              onNameChange={handleNameChange}
             />
-            <CommentBlock post={p} onSubmit={submitComment} />
           </article>
         ))}
         {feed !== null && items.length === 0 && (
-          <p className="text-center text-sm text-slate-400">
-            The wall is quiet right now. Be the first to say hi!
-          </p>
+          <div className="flex flex-col items-center gap-3 py-10 text-center">
+            <CreatureDisplay creatureId="drift" state="neutral" animation="gentle_bounce" size="large" />
+            <p className="text-sm text-slate-400">
+              The wall is quiet right now. Be the first to say hi!
+            </p>
+          </div>
         )}
       </div>
     </div>

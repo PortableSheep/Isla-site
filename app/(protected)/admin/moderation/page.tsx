@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/AuthContext';
 import { supabase } from '@/lib/supabase';
-import { ModerationDashboard } from '@/components/moderation';
+import { WallModerationDashboard } from '@/components/moderation/WallModerationDashboard';
 import { CreatureDisplay } from '@/components/CreatureDisplay';
 
 export default function ModerationPage() {
@@ -15,45 +15,34 @@ export default function ModerationPage() {
 
   useEffect(() => {
     async function checkAdminAccess() {
-      if (!user) {
-        return;
-      }
-
+      if (!user) return;
       try {
-        const { data, error } = await supabase
-          .from('user_profiles')
-          .select('role')
-          .eq('user_id', user.id)
-          .single();
-
+        const { data, error } = await supabase.rpc('is_admin', { uid: user.id });
         if (error) {
           console.error('Error checking admin status:', error);
-          router.push('/dashboard');
+          router.push('/');
           return;
         }
-
-        if ((data as { role: string } | null)?.role === 'admin') {
+        if (data === true) {
           setIsAdmin(true);
           setCheckingAdmin(false);
         } else {
-          router.push('/dashboard');
+          router.push('/');
         }
       } catch (error) {
         console.error('Error checking admin status:', error);
-        router.push('/dashboard');
+        router.push('/');
       }
     }
 
-    if (!loading) {
-      checkAdminAccess();
-    }
+    if (!loading) checkAdminAccess();
   }, [user, loading, router]);
 
   if (loading || checkingAdmin || !isAdmin) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-950 dark:to-blue-950">
+      <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
-          <div className="inline-block mb-4">
+          <div className="mb-4 inline-block">
             <CreatureDisplay
               creatureId="drift"
               state="processing"
@@ -61,15 +50,11 @@ export default function ModerationPage() {
               size="large"
             />
           </div>
-          <p className="text-gray-600 dark:text-gray-400 font-medium">Verifying access...</p>
+          <p className="font-medium text-slate-400">Verifying access...</p>
         </div>
       </div>
     );
   }
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-white dark:from-gray-950 dark:via-blue-950 dark:to-gray-900">
-      <ModerationDashboard />
-    </div>
-  );
+  return <WallModerationDashboard />;
 }
