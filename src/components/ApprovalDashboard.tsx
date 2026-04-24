@@ -32,9 +32,12 @@ export function ApprovalDashboard() {
       setLoading(true);
       setError(null);
       const response = await fetch('/api/approvals/pending');
-      
+
       if (!response.ok) {
-        throw new Error('Failed to fetch pending approvals');
+        const data = await response.json().catch(() => ({}));
+        throw new Error(
+          data.error || `Failed to fetch pending approvals (${response.status})`
+        );
       }
 
       const data = await response.json();

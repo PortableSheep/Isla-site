@@ -58,7 +58,7 @@ export default function DashboardPage() {
           const p = await fetch('/api/approvals/pending');
           if (p.ok) {
             const d = await p.json();
-            setPendingCount(Array.isArray(d.approvals) ? d.approvals.length : 0);
+            setPendingCount(Array.isArray(d.pending) ? d.pending.length : 0);
           }
         } catch {}
       } finally {

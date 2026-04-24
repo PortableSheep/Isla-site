@@ -45,13 +45,24 @@ body {
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+  line-height: 1.15;
+  padding-block: 0.08em;
+  display: inline-block;
 }
 
 /* Primary gradient button */
 .iz-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  border-radius: 12px;
   background: linear-gradient(110deg, #8b5cf6 0%, #ec4899 55%, #f97316 100%);
   color: white;
   font-weight: 600;
+  text-decoration: none;
+  line-height: 1.2;
   transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.2s ease;
   box-shadow: 0 10px 30px -10px rgba(236, 72, 153, 0.5);
 }
@@ -61,9 +72,17 @@ body {
 
 /* Secondary / ghost */
 .iz-btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  border-radius: 12px;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.12);
   color: #e2e8f0;
+  text-decoration: none;
+  line-height: 1.2;
   transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
 }
 .iz-btn-ghost:hover {
