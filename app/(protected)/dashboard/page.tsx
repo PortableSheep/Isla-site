@@ -2,6 +2,7 @@
 
 import { useAuth } from '@/lib/AuthContext';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 type Family = {
@@ -12,12 +13,13 @@ type Family = {
 
 type Profile = {
   family_id: string | null;
-  role: 'isla' | 'admin' | 'parent' | 'child' | null;
-  status: 'pending_approval' | 'approved' | 'rejected' | null;
+  role: 'isla' | 'admin' | 'parent' | 'child' | 'friend' | null;
+  status: 'pending_approval' | 'approved' | 'rejected' | 'active' | null;
 };
 
 export default function DashboardPage() {
   const { user } = useAuth();
+  const router = useRouter();
   const firstName = user?.user_metadata?.name?.split(' ')[0] || 'Friend';
   const [families, setFamilies] = useState<Family[] | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -70,6 +72,16 @@ export default function DashboardPage() {
 
   const isAdmin = profile?.role === 'admin' || profile?.role === 'isla';
   const needsApproval = profile?.status === 'pending_approval';
+
+  // Friends (and any other non-admin roles like 'child') should land on the
+  // wall, not the admin-flavoured dashboard.
+  useEffect(() => {
+    if (loading) return;
+    if (!profile) return;
+    if (!isAdmin && !needsApproval) {
+      router.replace('/wall');
+    }
+  }, [loading, profile, isAdmin, needsApproval, router]);
 
   return (
     <div className="min-h-screen iz-grid-bg py-12 px-4 sm:px-6 lg:px-8">

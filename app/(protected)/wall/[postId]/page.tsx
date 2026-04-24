@@ -6,6 +6,27 @@ import { supabase } from '@/lib/supabase';
 import { getPost, getThreadReplies } from '@/lib/posts';
 import { Post } from '@/types/posts';
 import Link from 'next/link';
+import { ReactionBar } from '@/components/wall/ReactionBar';
+
+function ModerationBadge({ post }: { post: Post }) {
+  if (post.moderation_status === 'pending') {
+    return (
+      <div className="mb-2 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-yellow-900/30 border border-yellow-700/50 text-yellow-300 text-xs font-medium">
+        <span>⏳</span>
+        Waiting for approval — only you can see this
+      </div>
+    );
+  }
+  if (post.moderation_status === 'rejected') {
+    return (
+      <div className="mb-2 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-900/30 border border-red-700/50 text-red-300 text-xs font-medium">
+        <span>🚫</span>
+        Rejected{post.rejected_reason ? `: ${post.rejected_reason}` : ''}
+      </div>
+    );
+  }
+  return null;
+}
 
 export default function ThreadPage() {
   const params = useParams();
@@ -131,12 +152,17 @@ export default function ThreadPage() {
 
       {/* Original Post */}
       <div className="rounded-lg border border-slate-700 bg-slate-900 p-6 mb-6">
+        <ModerationBadge post={post} />
         <div className="mb-4">
           <p className="text-gray-100 whitespace-pre-wrap">{post.content}</p>
         </div>
-        <div className="text-xs text-gray-500">
+        <div className="text-xs text-gray-500 mb-3">
           {new Date(post.created_at).toLocaleString()}
         </div>
+        {post.moderation_status !== 'pending' &&
+          post.moderation_status !== 'rejected' && (
+            <ReactionBar postId={post.id} />
+          )}
       </div>
 
       {/* Replies */}
@@ -147,6 +173,7 @@ export default function ThreadPage() {
           </div>
           {replies.map((reply) => (
             <div key={reply.id} className="border-l-2 border-slate-600 pl-4 py-3">
+              <ModerationBadge post={reply} />
               <p className="text-gray-100 text-sm whitespace-pre-wrap">{reply.content}</p>
               <div className="text-xs text-gray-500 mt-2">
                 {new Date(reply.created_at).toLocaleString()}
