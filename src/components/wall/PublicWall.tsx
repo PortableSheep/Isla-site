@@ -86,33 +86,16 @@ function CommentBody({ comment }: { comment: Comment }) {
 
 function MediaHelperBar({ onPickGif }: { onPickGif: () => void }) {
   return (
-    <div className="flex flex-wrap items-center gap-2 rounded-lg border border-dashed border-white/10 bg-black/20 px-3 py-2 text-xs text-slate-400">
-      <span className="text-slate-300">Add a GIF or meme:</span>
+    <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-400">
       <button
         type="button"
         onClick={onPickGif}
-        className="rounded-md border border-fuchsia-400/40 bg-fuchsia-500/10 px-2 py-1 text-fuchsia-200 transition hover:border-fuchsia-400/70 hover:bg-fuchsia-500/20"
+        className="inline-flex items-center gap-1 rounded-md border border-white/10 bg-white/5 px-2 py-1 text-slate-200 transition hover:border-fuchsia-400/40 hover:text-fuchsia-200"
       >
-        🔎 Search GIFs
+        🔎 Add a GIF
       </button>
-      <a
-        href="https://giphy.com/search/funny"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="rounded-md border border-white/10 bg-white/5 px-2 py-1 text-slate-200 transition hover:border-fuchsia-400/40 hover:text-fuchsia-200"
-      >
-        🎞️ Giphy
-      </a>
-      <a
-        href="https://www.youtube.com"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="rounded-md border border-white/10 bg-white/5 px-2 py-1 text-slate-200 transition hover:border-fuchsia-400/40 hover:text-fuchsia-200"
-      >
-        📺 YouTube
-      </a>
-      <span className="basis-full text-[11px] text-slate-500">
-        Pick a GIF above, or paste any GIF / meme / YouTube link — it&apos;ll show up right on the wall.
+      <span className="text-[11px] text-slate-500">
+        Or paste any GIF / meme / YouTube link and it&apos;ll embed automatically.
       </span>
     </div>
   );

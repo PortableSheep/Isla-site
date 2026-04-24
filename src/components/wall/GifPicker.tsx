@@ -135,7 +135,7 @@ export function GifPicker({
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-3">
+        <div className="min-h-0 flex-1 overflow-y-auto p-3">
           {notConfigured ? (
             <div className="rounded-lg border border-amber-400/30 bg-amber-500/10 p-4 text-sm text-amber-100">
               GIF search isn&apos;t set up yet. Ask Isla&apos;s dad to add{' '}
