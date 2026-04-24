@@ -2,32 +2,30 @@
 
 import { useAuth } from '@/lib/AuthContext';
 import { useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
-import { isIslaUser } from '@/lib/islaUser';
-import NotificationBell from './NotificationBell';
+import { useEffect, useState } from 'react';
+import { supabase } from '@/lib/supabase';
 
 export function Navigation() {
   const { user, signOut } = useAuth();
   const router = useRouter();
-  const [isIsla, setIsIsla] = useState(false);
-  const [checkingIsla, setCheckingIsla] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    const checkIsla = async () => {
-      if (user) {
-        const isIslaCheck = await isIslaUser(user.id);
-        setIsIsla(isIslaCheck);
+    if (!user) return;
+    (async () => {
+      try {
+        const { data } = await supabase.rpc('is_admin', { uid: user.id });
+        setIsAdmin(data === true);
+      } catch {
+        setIsAdmin(false);
       }
-      setCheckingIsla(false);
-    };
-
-    checkIsla();
+    })();
   }, [user]);
 
   const handleLogout = async () => {
     try {
       await signOut();
-      router.push('/auth/login');
+      router.push('/');
     } catch (error) {
       console.error('Logout failed:', error);
     }
@@ -38,102 +36,53 @@ export function Navigation() {
       className="sticky top-0 z-40 border-b border-white/5 bg-slate-950/70 backdrop-blur-xl"
       aria-label="Main navigation"
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          <div className="flex items-center gap-8">
-            <a
-              href="/"
-              className="font-bold text-lg iz-gradient-text focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-400 rounded"
-              aria-label="Isla Zone home"
-            >
-              Isla Zone
-            </a>
-            {user && (
-              <div className="hidden md:flex items-center gap-1">
-                {!checkingIsla && isIsla && (
-                  <a
-                    href="/compose"
-                    className="text-fuchsia-300 hover:text-fuchsia-200 text-sm font-medium transition-colors flex items-center gap-1 rounded-lg px-3 py-1.5 hover:bg-white/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-400"
-                    aria-label="Compose new message"
-                  >
-                    <span aria-hidden="true">✨</span>
-                    Compose
-                  </a>
-                )}
-                <a
-                  href="/dashboard"
-                  className="text-slate-300 hover:text-white text-sm transition-colors rounded-lg px-3 py-1.5 hover:bg-white/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-400"
-                  aria-label="Go to dashboard"
-                >
-                  Dashboard
-                </a>
-                <a
-                  href="/approvals"
-                  className="text-slate-300 hover:text-white text-sm transition-colors rounded-lg px-3 py-1.5 hover:bg-white/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-400"
-                  aria-label="View approvals"
-                >
-                  Approvals
-                </a>
-                <a
-                  href="/approvals/history"
-                  className="text-slate-300 hover:text-white text-sm transition-colors rounded-lg px-3 py-1.5 hover:bg-white/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-400"
-                  aria-label="View approval history"
-                >
-                  History
-                </a>
-                <a
-                  href="/wall"
-                  className="text-slate-300 hover:text-white text-sm transition-colors rounded-lg px-3 py-1.5 hover:bg-white/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-400"
-                  aria-label="Go to message wall"
-                >
-                  Wall
-                </a>
-                <a
-                  href="/admin/moderation"
-                  className="text-slate-300 hover:text-white text-sm transition-colors rounded-lg px-3 py-1.5 hover:bg-white/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-400"
-                  aria-label="Moderation queue"
-                >
-                  Moderate
-                </a>
-                <a
-                  href="/admin/bans"
-                  className="text-slate-300 hover:text-white text-sm transition-colors rounded-lg px-3 py-1.5 hover:bg-white/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-400"
-                  aria-label="IP bans"
-                >
-                  Bans
-                </a>
-              </div>
-            )}
-          </div>
-
-          <div className="flex items-center gap-3">
-            {user && (
-              <>
-                <NotificationBell userId={user.id} />
-                <span
-                  className="hidden sm:inline text-slate-400 text-sm"
-                  aria-label={`Logged in as ${user.email}`}
-                >
-                  {user.email}
-                </span>
-                <a
-                  href="/settings"
-                  className="text-slate-300 hover:text-white text-sm transition-colors rounded-lg px-3 py-1.5 hover:bg-white/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-400"
-                  aria-label="Go to settings"
-                >
-                  Settings
-                </a>
-                <button
-                  onClick={handleLogout}
-                  className="iz-btn-ghost rounded-lg px-4 py-1.5 text-sm font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-400"
-                  aria-label="Log out from Isla Zone"
-                >
-                  Logout
-                </button>
-              </>
-            )}
-          </div>
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center gap-6">
+          <a
+            href="/"
+            className="iz-gradient-text rounded text-lg font-bold focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-400"
+            aria-label="Isla Zone home"
+          >
+            Isla Zone
+          </a>
+          {user && isAdmin && (
+            <div className="hidden items-center gap-1 md:flex">
+              <a
+                href="/admin/moderation"
+                className="rounded-lg px-3 py-1.5 text-sm text-slate-300 transition-colors hover:bg-white/5 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-400"
+              >
+                Moderate
+              </a>
+              <a
+                href="/admin/bans"
+                className="rounded-lg px-3 py-1.5 text-sm text-slate-300 transition-colors hover:bg-white/5 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-400"
+              >
+                Bans
+              </a>
+              <a
+                href="/admin/audit-logs"
+                className="rounded-lg px-3 py-1.5 text-sm text-slate-300 transition-colors hover:bg-white/5 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-400"
+              >
+                Audit
+              </a>
+            </div>
+          )}
         </div>
+
+        {user && (
+          <div className="flex items-center gap-3">
+            <span className="hidden text-sm text-slate-400 sm:inline">
+              {user.email}
+            </span>
+            <button
+              onClick={handleLogout}
+              className="iz-btn-ghost rounded-lg px-4 py-1.5 text-sm font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-400"
+              aria-label="Log out"
+            >
+              Logout
+            </button>
+          </div>
+        )}
       </div>
     </nav>
   );

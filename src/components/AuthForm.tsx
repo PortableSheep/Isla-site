@@ -71,7 +71,7 @@ export function AuthForm({ type, onSuccess }: AuthFormProps) {
         announceToScreenReader(msg, 'polite');
         setTimeout(() => {
           onSuccess?.();
-          router.push('/dashboard');
+          router.push('/');
         }, 1000);
       }
     } catch (err) {
