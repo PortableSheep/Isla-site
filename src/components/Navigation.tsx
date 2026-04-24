@@ -88,6 +88,20 @@ export function Navigation() {
                 >
                   Wall
                 </a>
+                <a
+                  href="/admin/moderation"
+                  className="text-slate-300 hover:text-white text-sm transition-colors rounded-lg px-3 py-1.5 hover:bg-white/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-400"
+                  aria-label="Moderation queue"
+                >
+                  Moderate
+                </a>
+                <a
+                  href="/admin/bans"
+                  className="text-slate-300 hover:text-white text-sm transition-colors rounded-lg px-3 py-1.5 hover:bg-white/5 focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-400"
+                  aria-label="IP bans"
+                >
+                  Bans
+                </a>
               </div>
             )}
           </div>
