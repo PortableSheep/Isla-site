@@ -214,7 +214,7 @@ export async function waitForApiResponse(
   urlPattern: string | RegExp,
   callback: () => Promise<void>,
   timeout: number = 5000,
-): Promise<any> {
+): Promise<unknown> {
   const responsePromise = page.waitForResponse(
     (response) => {
       const url = response.url();
@@ -237,7 +237,7 @@ export async function waitForApiResponse(
 export async function mockApiEndpoint(
   page: Page,
   urlPattern: string | RegExp,
-  response: any,
+  response: unknown,
   status: number = 200,
 ): Promise<void> {
   await page.route(urlPattern, (route) => {
@@ -279,7 +279,7 @@ export async function waitForConsoleMessage(
   const startTime = Date.now();
   while (Date.now() - startTime < timeout) {
     const messages = await page.evaluate(() => {
-      return (window as any).__consoleLogs || [];
+      return (window as unknown as { __consoleLogs?: string[] }).__consoleLogs || [];
     });
     if (messages.some((msg: string) => msg.includes(text))) {
       return;

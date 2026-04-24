@@ -34,7 +34,7 @@ export async function resetTestDatabase(supabase: SupabaseClient): Promise<void>
  */
 export async function createTestParent(
   supabase: SupabaseClient,
-  authAdmin: any,
+  authAdmin: SupabaseClient,
 ): Promise<{ user_id: string; email: string; password: string }> {
   const parentData = generateParentUser();
 
@@ -211,7 +211,7 @@ export async function createTestNotification(
  */
 export async function setupCompleteTestScenario(
   supabase: SupabaseClient,
-  authAdmin: any,
+  authAdmin: SupabaseClient,
   numChildren: number = 2,
 ): Promise<{
   parentId: string;

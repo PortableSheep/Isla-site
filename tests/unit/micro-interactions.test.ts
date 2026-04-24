@@ -8,7 +8,7 @@
  * - No console errors or memory leaks
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi, type MockInstance } from 'vitest';
 import {
   getAnimationDuration,
   respectMotionPreference,
@@ -46,7 +46,7 @@ import {
 
 describe('Micro-interactions', () => {
   let mockElement: HTMLElement;
-  let mockWindow: { matchMedia: (query: string) => { matches: boolean } };
+  let mockWindow: { matchMedia: MockInstance<[string], { matches: boolean }> };
 
   beforeEach(() => {
     // Create mock element
@@ -59,7 +59,7 @@ describe('Micro-interactions', () => {
         matches: false
       })
     };
-    global.window.matchMedia = mockWindow.matchMedia as any;
+    global.window.matchMedia = mockWindow.matchMedia as unknown as typeof window.matchMedia;
   });
 
   afterEach(() => {
@@ -92,7 +92,7 @@ describe('Micro-interactions', () => {
     });
 
     it('should return false when prefers-reduced-motion is disabled', () => {
-      (mockWindow.matchMedia as any).mockReturnValue({
+      mockWindow.matchMedia.mockReturnValue({
         matches: false
       });
 
@@ -100,7 +100,7 @@ describe('Micro-interactions', () => {
     });
 
     it('should get correct animation class based on motion preference', () => {
-      (mockWindow.matchMedia as any).mockReturnValue({
+      mockWindow.matchMedia.mockReturnValue({
         matches: false
       });
 
@@ -108,7 +108,7 @@ describe('Micro-interactions', () => {
         'my-animation'
       );
 
-      (mockWindow.matchMedia as any).mockReturnValue({
+      mockWindow.matchMedia.mockReturnValue({
         matches: true
       });
 
@@ -138,7 +138,7 @@ describe('Micro-interactions', () => {
     });
 
     it('should apply reduced animation when motion preference is enabled', () => {
-      (mockWindow.matchMedia as any).mockReturnValue({
+      mockWindow.matchMedia.mockReturnValue({
         matches: true
       });
 
@@ -192,7 +192,7 @@ describe('Micro-interactions', () => {
     });
 
     it('should apply reduced animation when motion preference is enabled', () => {
-      (mockWindow.matchMedia as any).mockReturnValue({
+      mockWindow.matchMedia.mockReturnValue({
         matches: true
       });
 
@@ -421,7 +421,7 @@ describe('Micro-interactions', () => {
     it('should trigger haptic feedback', () => {
       // Mock navigator.vibrate
       const vibrateSpy = vi.fn();
-      (navigator as any).vibrate = vibrateSpy;
+      (navigator as unknown as { vibrate: typeof vibrateSpy }).vibrate = vibrateSpy;
 
       triggerHapticFeedback('light');
       expect(vibrateSpy).toHaveBeenCalledWith(10);
@@ -559,7 +559,7 @@ describe('Micro-interactions', () => {
         currentTime: 0
       };
 
-      (window as any).AudioContext = vi.fn().mockReturnValue(mockAudioContext);
+      (window as unknown as { AudioContext: unknown }).AudioContext = vi.fn().mockReturnValue(mockAudioContext);
 
       await playNotificationSound('success');
 

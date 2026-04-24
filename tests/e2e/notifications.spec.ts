@@ -739,8 +739,8 @@ test.describe('Notification E2E Tests', () => {
       await feed2.waitForFeedToLoad();
 
       // Get initial unread count on page2
-      let initialBadge = page2.locator('[aria-label="Notifications"] .bg-amber-500');
-      let initialBadgeExists = await initialBadge.isVisible().catch(() => false);
+      const initialBadge = page2.locator('[aria-label="Notifications"] .bg-amber-500');
+      const initialBadgeExists = await initialBadge.isVisible().catch(() => false);
       let initialCount = 0;
 
       if (initialBadgeExists) {
