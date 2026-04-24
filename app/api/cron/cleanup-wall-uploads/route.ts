@@ -9,7 +9,7 @@ export const runtime = 'nodejs';
  *
  * Deletes two categories of no-longer-needed attachments from both the DB
  * and the `wall-uploads` private storage bucket:
- *   1. Orphaned uploads: rows with post_id IS NULL that are older than 1h.
+ *   1. Orphaned uploads: rows with post_id IS NULL that are older than 24h.
  *      These happen when a user opens the composer, uploads a file, then
  *      walks away without submitting, or when the post insert rolls back.
  *   2. Rejected-post attachments: rows whose linked post has
@@ -37,7 +37,7 @@ export async function GET(request: Request) {
     );
   }
   const now = Date.now();
-  const oneHourAgo = new Date(now - 60 * 60 * 1000).toISOString();
+  const oneDayAgo = new Date(now - 24 * 60 * 60 * 1000).toISOString();
   const sevenDaysAgo = new Date(now - 7 * 24 * 60 * 60 * 1000).toISOString();
 
   const toDelete: Array<{ id: string; storage_path: string }> = [];
@@ -48,7 +48,7 @@ export async function GET(request: Request) {
       .from('post_attachments')
       .select('id, storage_path')
       .is('post_id', null)
-      .lt('created_at', oneHourAgo)
+      .lt('created_at', oneDayAgo)
       .limit(500);
     if (error) {
       return NextResponse.json(
