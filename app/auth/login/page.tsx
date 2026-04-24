@@ -31,7 +31,7 @@ export default function LoginPage() {
             Welcome Back!
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
-            Sign in to connect with your family on Isla
+            Sign in to connect with your family on Isla Zone
           </p>
         </div>
 

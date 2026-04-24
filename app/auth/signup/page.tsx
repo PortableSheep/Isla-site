@@ -27,7 +27,7 @@ export default function SignUpPage() {
             />
           </div>
           <h1 className="text-4xl font-bold bg-gradient-to-r from-orange-600 to-pink-600 bg-clip-text text-transparent mb-2">
-            Join Isla
+            Join Isla Zone
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
             Create an account to share family moments
@@ -100,7 +100,7 @@ export default function SignUpPage() {
               />
             </div>
             <p className="text-sm font-medium text-green-700 dark:text-green-300">
-              Welcome to Isla! Check your email to verify.
+              Welcome to Isla Zone! Check your email to verify.
             </p>
           </div>
         )}

@@ -95,7 +95,7 @@ export default function InvitePage() {
     <div className="w-full max-w-md mx-auto">
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold text-white mb-2">Family Invite</h1>
-        <p className="text-gray-400">Join your family on Isla.site</p>
+        <p className="text-gray-400">Join your family on Isla Zone</p>
       </div>
 
       <div className="space-y-6">

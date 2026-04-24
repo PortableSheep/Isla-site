@@ -44,9 +44,9 @@ export function Navigation() {
             <a 
               href="/" 
               className="text-white font-bold text-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500"
-              aria-label="Isla.site home"
+              aria-label="Isla Zone home"
             >
-              Isla.site
+              Isla Zone
             </a>
             {user && (
               <div className="flex items-center gap-6">
@@ -112,7 +112,7 @@ export function Navigation() {
                 <button
                   onClick={handleLogout}
                   className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-red-400"
-                  aria-label="Log out from Isla.site"
+                  aria-label="Log out from Isla Zone"
                 >
                   Logout
                 </button>

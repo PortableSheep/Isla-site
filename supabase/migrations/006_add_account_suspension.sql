@@ -67,7 +67,7 @@ GRANT ALL ON suspension_appeals TO authenticated;
 -- Update user_profiles RLS to restrict suspended users
 
 -- Policy: Suspended users cannot update their profiles
-ALTER TABLE user_profiles DROP POLICY IF EXISTS "Users can update their own profiles";
+DROP POLICY IF EXISTS "Users can update their own profiles" ON user_profiles;
 
 CREATE POLICY "Users can update their own profiles" ON user_profiles
   FOR UPDATE USING (

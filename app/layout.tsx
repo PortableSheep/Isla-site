@@ -4,7 +4,7 @@ import { AuthProvider } from "@/lib/AuthContext";
 import { SkipToMainLink } from "@/components/SkipToMainLink";
 
 export const metadata: Metadata = {
-  title: "Isla.site - Message Wall for Children",
+  title: "Isla Zone - Message Wall for Children",
   description: "A private message wall designed for children to share thoughts and memories",
 };
 

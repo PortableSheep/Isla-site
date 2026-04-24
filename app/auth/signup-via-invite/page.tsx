@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { signUp, validateEmail, validatePassword } from '@/lib/auth';
 import { acceptInvite } from '@/lib/inviteFlow';
 import { InviteInfo } from '@/lib/inviteFlow';
 
-export default function SignupViaInvitePage() {
+function SignupViaInviteContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
@@ -228,5 +228,13 @@ export default function SignupViaInvitePage() {
         </p>
       </form>
     </div>
+  );
+}
+
+export default function SignupViaInvitePage() {
+  return (
+    <Suspense fallback={<div className="w-full max-w-md mx-auto text-center text-gray-400">Loading...</div>}>
+      <SignupViaInviteContent />
+    </Suspense>
   );
 }

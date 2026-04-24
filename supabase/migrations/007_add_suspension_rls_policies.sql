@@ -2,7 +2,7 @@
 -- Update posts table to check suspension status
 
 -- Drop existing insert policies if they exist (to avoid conflicts)
-ALTER TABLE posts DROP POLICY IF EXISTS "Users can create posts" CASCADE;
+DROP POLICY IF EXISTS "Users can create posts" ON posts CASCADE;
 
 -- New policy: Only non-suspended users can create posts
 CREATE POLICY "Non-suspended users can create posts" ON posts
@@ -15,7 +15,7 @@ CREATE POLICY "Non-suspended users can create posts" ON posts
   );
 
 -- Policy for users to update their own posts (if not suspended)
-ALTER TABLE posts DROP POLICY IF EXISTS "Users can update their own posts" CASCADE;
+DROP POLICY IF EXISTS "Users can update their own posts" ON posts CASCADE;
 
 CREATE POLICY "Non-suspended users can update their own posts" ON posts
   FOR UPDATE USING (

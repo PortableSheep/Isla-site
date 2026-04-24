@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { updatePassword, validatePassword } from '@/lib/auth';
 import { supabase } from '@/lib/supabase';
 
-export default function ResetPasswordConfirmPage() {
+function ResetPasswordConfirmContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [password, setPassword] = useState('');
@@ -188,5 +188,13 @@ export default function ResetPasswordConfirmPage() {
         </button>
       </form>
     </div>
+  );
+}
+
+export default function ResetPasswordConfirmPage() {
+  return (
+    <Suspense fallback={<div className="w-full max-w-md text-center text-gray-400">Loading...</div>}>
+      <ResetPasswordConfirmContent />
+    </Suspense>
   );
 }
