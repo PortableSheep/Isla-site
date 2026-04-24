@@ -206,7 +206,11 @@ export async function getMyFamilies(userId: string): Promise<FamilyInfo[]>  {
       .eq('user_id', userId)
       .maybeSingle();
 
-    if (error || !profile || !profile.family_id) {
+    if (error) {
+      console.error('getMyFamilies: user_profiles query failed', error);
+      return [];
+    }
+    if (!profile || !profile.family_id) {
       return [];
     }
 
@@ -216,8 +220,15 @@ export async function getMyFamilies(userId: string): Promise<FamilyInfo[]>  {
       .eq('id', profile.family_id)
       .maybeSingle();
 
-    if (famError || !family) {
-      console.error('getMyFamilies: could not load family row', famError);
+    if (famError) {
+      console.error('getMyFamilies: families query failed', famError);
+      return [];
+    }
+    if (!family) {
+      console.error(
+        'getMyFamilies: profile.family_id points at missing family',
+        profile.family_id
+      );
       return [];
     }
 
