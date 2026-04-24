@@ -17,6 +17,12 @@ type ModItem = {
   client_ip: string | null;
   kind: 'post' | 'comment';
   author: { name?: string; email?: string; role?: string } | null;
+  attachments?: Array<{
+    id: string;
+    signed_url: string | null;
+    mime_type: string;
+    byte_size: number;
+  }>;
 };
 
 type Status = 'pending' | 'approved' | 'rejected';
@@ -56,7 +62,13 @@ function SpamTag({ score, reasons }: { score: number | null; reasons: string[] |
   );
 }
 
-function ModBody({ content }: { content: string }) {
+function ModBody({
+  content,
+  attachments,
+}: {
+  content: string;
+  attachments?: ModItem['attachments'];
+}) {
   const { embeds, consumed } = useMemo(() => extractMedia(content), [content]);
   return (
     <div className="mt-3">
@@ -64,6 +76,28 @@ function ModBody({ content }: { content: string }) {
         <Linkified text={content} hideUrls={consumed} />
       </p>
       <MediaEmbeds embeds={embeds} />
+      {attachments && attachments.length > 0 && (
+        <div className="mt-3 flex flex-wrap gap-2">
+          {attachments.map((a) =>
+            a.signed_url ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                key={a.id}
+                src={a.signed_url}
+                alt="attached"
+                className="max-h-64 rounded-lg border border-slate-700 object-contain"
+              />
+            ) : (
+              <div
+                key={a.id}
+                className="rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-xs text-slate-400"
+              >
+                [attachment preview unavailable]
+              </div>
+            )
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -215,7 +249,7 @@ export function WallModerationDashboard() {
                 </span>
               )}
             </div>
-            <ModBody content={it.content} />
+            <ModBody content={it.content} attachments={it.attachments} />
 
             <div className="mt-3 flex flex-wrap gap-2">
               {it.moderation_status !== 'approved' && (

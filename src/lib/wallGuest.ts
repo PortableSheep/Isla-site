@@ -94,7 +94,7 @@ export async function isIpBanned(ip: string | null): Promise<boolean> {
 
 /** Per-bucket atomic rate limit. Returns true if the action is allowed. */
 export async function checkRateLimit(
-  bucket: 'post' | 'comment' | 'react',
+  bucket: 'post' | 'comment' | 'react' | 'upload',
   key: string,
   limit: number,
   windowSeconds: number,

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabaseServer';
+import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 
 export const dynamic = 'force-dynamic';
 
@@ -87,22 +88,56 @@ export async function GET(request: Request) {
       );
     }
 
+    // Fetch attachments for the posts in the queue so admins can see images.
+    const postIds = (posts ?? []).map((p) => p.id);
+    const attachmentsByPost: Record<
+      string,
+      Array<{ id: string; signed_url: string | null; mime_type: string; byte_size: number }>
+    > = {};
+    if (postIds.length > 0) {
+      const admin = getSupabaseAdmin();
+      if (admin) {
+        const { data: atts } = await admin
+          .from('post_attachments')
+          .select('id, post_id, storage_path, mime_type, byte_size')
+          .in('post_id', postIds);
+        const rows = atts ?? [];
+        if (rows.length > 0) {
+          const paths = rows.map((r) => r.storage_path);
+          const { data: signed } = await admin.storage
+            .from('wall-uploads')
+            .createSignedUrls(paths, 600);
+          const urlByPath = new Map(
+            (signed ?? []).map((s) => [s.path ?? '', s.signedUrl ?? null])
+          );
+          for (const r of rows) {
+            if (!r.post_id) continue;
+            const arr = attachmentsByPost[r.post_id] ?? [];
+            arr.push({
+              id: r.id,
+              signed_url: urlByPath.get(r.storage_path) ?? null,
+              mime_type: r.mime_type,
+              byte_size: r.byte_size,
+            });
+            attachmentsByPost[r.post_id] = arr;
+          }
+        }
+      }
+    }
+
+    type PostRow = NonNullable<typeof posts>[number];
+    const enrich = (p: PostRow) => ({
+      ...p,
+      author: p.author_id ? profiles[p.author_id] ?? null : null,
+      kind: p.parent_post_id ? 'comment' : 'post',
+      attachments: attachmentsByPost[p.id] ?? [],
+    });
+
     return NextResponse.json({
       success: true,
       status,
-      items: (posts ?? []).map((p) => ({
-        ...p,
-        author: p.author_id ? profiles[p.author_id] ?? null : null,
-        kind: p.parent_post_id ? 'comment' : 'post',
-      })),
-      // keep legacy field for any callers still on the old shape
-      pending: status === 'pending'
-        ? (posts ?? []).map((p) => ({
-            ...p,
-            author: p.author_id ? profiles[p.author_id] ?? null : null,
-            kind: p.parent_post_id ? 'comment' : 'post',
-          }))
-        : [],
+      items: (posts ?? []).map(enrich),
+      pending: status === 'pending' ? (posts ?? []).map(enrich) : [],
     });
   } catch (err) {
     console.error('moderation queue error:', err);

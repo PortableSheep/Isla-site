@@ -5,10 +5,13 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 
+const PENDING_POLL_MS = 60_000;
+
 export function Navigation() {
   const { user, signOut } = useAuth();
   const router = useRouter();
   const [isAdmin, setIsAdmin] = useState(false);
+  const [pendingCount, setPendingCount] = useState<number | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -21,6 +24,39 @@ export function Navigation() {
       }
     })();
   }, [user]);
+
+  // Poll the moderation queue count while an admin is logged in. Refreshes
+  // on window focus so switching tabs shows a fresh badge immediately.
+  useEffect(() => {
+    if (!isAdmin) {
+      // No reset needed — the badge is only rendered when isAdmin is true.
+      return;
+    }
+    let cancelled = false;
+
+    const fetchCount = async () => {
+      try {
+        const res = await fetch('/api/admin/moderation-count', { cache: 'no-store' });
+        if (!res.ok) return;
+        const body = (await res.json()) as { count?: number };
+        if (!cancelled && typeof body.count === 'number') {
+          setPendingCount(body.count);
+        }
+      } catch {
+        // Silent — the badge just won't update this tick.
+      }
+    };
+
+    fetchCount();
+    const interval = setInterval(fetchCount, PENDING_POLL_MS);
+    const onFocus = () => fetchCount();
+    window.addEventListener('focus', onFocus);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+      window.removeEventListener('focus', onFocus);
+    };
+  }, [isAdmin]);
 
   const handleLogout = async () => {
     try {
@@ -49,9 +85,22 @@ export function Navigation() {
             <div className="hidden items-center gap-1 md:flex">
               <a
                 href="/admin/moderation"
-                className="rounded-lg px-3 py-1.5 text-sm text-slate-300 transition-colors hover:bg-white/5 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-400"
+                className="relative rounded-lg px-3 py-1.5 text-sm text-slate-300 transition-colors hover:bg-white/5 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-400"
+                aria-label={
+                  pendingCount && pendingCount > 0
+                    ? `Moderate (${pendingCount} pending)`
+                    : 'Moderate'
+                }
               >
                 Moderate
+                {pendingCount && pendingCount > 0 ? (
+                  <span
+                    className="ml-1.5 inline-flex min-w-[1.25rem] items-center justify-center rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-semibold leading-none text-white"
+                    aria-hidden="true"
+                  >
+                    {pendingCount > 99 ? '99+' : pendingCount}
+                  </span>
+                ) : null}
               </a>
               <a
                 href="/admin/bans"
@@ -64,6 +113,12 @@ export function Navigation() {
                 className="rounded-lg px-3 py-1.5 text-sm text-slate-300 transition-colors hover:bg-white/5 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-400"
               >
                 Audit
+              </a>
+              <a
+                href="/admin/analytics"
+                className="rounded-lg px-3 py-1.5 text-sm text-slate-300 transition-colors hover:bg-white/5 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-400"
+              >
+                Analytics
               </a>
             </div>
           )}

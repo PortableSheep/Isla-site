@@ -4,6 +4,9 @@ import { readAuthorCookieId, getIslaFamilyId } from '@/lib/wallGuest';
 
 export const dynamic = 'force-dynamic';
 
+const STORAGE_BUCKET = 'wall-uploads';
+const SIGNED_URL_TTL = 600; // 10 minutes
+
 type WallPost = {
   id: string;
   parent_post_id: string | null;
@@ -15,10 +18,19 @@ type WallPost = {
   is_mine: boolean;
 };
 
+type FeedAttachment = {
+  id: string;
+  mime_type: string;
+  width: number | null;
+  height: number | null;
+  signed_url: string | null;
+};
+
 type FeedPost = Omit<WallPost, 'author_cookie_id'> & {
   reactions: Record<string, number>;
   my_reactions: string[];
-  comments: Omit<WallPost, 'author_cookie_id'>[];
+  comments: (Omit<WallPost, 'author_cookie_id'> & { attachments: FeedAttachment[] })[];
+  attachments: FeedAttachment[];
 };
 
 export async function GET(request: NextRequest) {
@@ -109,6 +121,90 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    // Attachments: pull rows for every post/comment in this feed, then mint
+    // signed URLs only for rows whose owning row is approved OR belongs to
+    // the caller. Pending posts owned by strangers come back with
+    // signed_url=null so the UI can hide them the same way it hides text
+    // embeds pre-approval.
+    const allPostIds = [
+      ...(topRows ?? []).map((p) => p.id),
+      ...commentRows.map((c) => c.id),
+    ];
+    const approvalById = new Map<string, 'pending' | 'approved' | 'rejected'>();
+    const ownerCookieById = new Map<string, string | null>();
+    for (const p of topRows ?? []) {
+      approvalById.set(p.id, p.moderation_status);
+      ownerCookieById.set(p.id, p.author_cookie_id);
+    }
+    for (const c of commentRows) {
+      approvalById.set(c.id, c.moderation_status);
+      ownerCookieById.set(c.id, c.author_cookie_id);
+    }
+
+    const attachmentsByPost = new Map<string, FeedAttachment[]>();
+    if (allPostIds.length > 0) {
+      const { data: aRows, error: aErr } = await admin
+        .from('post_attachments')
+        .select('id, post_id, storage_path, mime_type, width, height')
+        .in('post_id', allPostIds);
+      if (aErr) {
+        return NextResponse.json(
+          { error: 'db_failed', detail: aErr.message },
+          { status: 500 }
+        );
+      }
+
+      const signable = (aRows ?? []).filter((a) => {
+        const status = approvalById.get(a.post_id!);
+        const owner = ownerCookieById.get(a.post_id!);
+        const isMine = Boolean(cookieId && owner === cookieId);
+        return status === 'approved' || isMine;
+      });
+
+      if (signable.length > 0) {
+        const { data: signed, error: signErr } = await admin.storage
+          .from(STORAGE_BUCKET)
+          .createSignedUrls(
+            signable.map((a) => a.storage_path),
+            SIGNED_URL_TTL
+          );
+        if (signErr) {
+          console.error('[wall/feed] createSignedUrls failed', signErr);
+        }
+        const urlByPath = new Map<string, string | null>();
+        for (const s of signed ?? []) {
+          urlByPath.set(s.path ?? '', s.signedUrl ?? null);
+        }
+        for (const a of aRows ?? []) {
+          const status = approvalById.get(a.post_id!);
+          const owner = ownerCookieById.get(a.post_id!);
+          const isMine = Boolean(cookieId && owner === cookieId);
+          const canSee = status === 'approved' || isMine;
+          const bucket = attachmentsByPost.get(a.post_id!) ?? [];
+          bucket.push({
+            id: a.id,
+            mime_type: a.mime_type,
+            width: a.width,
+            height: a.height,
+            signed_url: canSee ? urlByPath.get(a.storage_path) ?? null : null,
+          });
+          attachmentsByPost.set(a.post_id!, bucket);
+        }
+      } else {
+        for (const a of aRows ?? []) {
+          const bucket = attachmentsByPost.get(a.post_id!) ?? [];
+          bucket.push({
+            id: a.id,
+            mime_type: a.mime_type,
+            width: a.width,
+            height: a.height,
+            signed_url: null,
+          });
+          attachmentsByPost.set(a.post_id!, bucket);
+        }
+      }
+    }
+
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const strip = ({ author_cookie_id: _c, ...rest }: WallPost) => rest;
 
@@ -121,9 +217,13 @@ export async function GET(request: NextRequest) {
         ...strip(withMine),
         reactions: reactionsByPost.get(p.id) ?? {},
         my_reactions: Array.from(myReactionsByPost.get(p.id) ?? []),
+        attachments: attachmentsByPost.get(p.id) ?? [],
         comments: commentRows
           .filter((c) => c.parent_post_id === p.id)
-          .map(strip),
+          .map((c) => ({
+            ...strip(c),
+            attachments: attachmentsByPost.get(c.id) ?? [],
+          })),
       };
     });
 

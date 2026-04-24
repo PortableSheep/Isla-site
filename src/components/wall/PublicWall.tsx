@@ -4,6 +4,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { CreatureDisplay } from '@/components/CreatureDisplay';
 import { extractMedia, Linkified, MediaEmbeds } from '@/components/wall/media';
 import { GifPicker } from '@/components/wall/GifPicker';
+import {
+  ImageUploadButton,
+  type PendingAttachment,
+} from '@/components/wall/ImageUploadButton';
+import {
+  ModeratedImageList,
+  type FeedAttachment,
+} from '@/components/wall/ModeratedImage';
 
 type Comment = {
   id: string;
@@ -13,6 +21,7 @@ type Comment = {
   moderation_status: 'pending' | 'approved' | 'rejected';
   created_at: string;
   is_mine: boolean;
+  attachments?: FeedAttachment[];
   _optimistic?: boolean;
 };
 
@@ -61,12 +70,19 @@ function formatTime(iso: string): string {
 function PostBody({ post }: { post: Post }) {
   const { embeds, consumed } = useMemo(() => extractMedia(post.content), [post.content]);
   const showEmbeds = post.moderation_status === 'approved' || post.is_mine;
+  const isAuthorPending = post.is_mine && post.moderation_status !== 'approved';
   return (
     <>
       <p className="mt-3 whitespace-pre-wrap text-[15px] leading-relaxed text-slate-100">
         <Linkified text={post.content} hideUrls={showEmbeds ? consumed : undefined} />
       </p>
       {showEmbeds && <MediaEmbeds embeds={embeds} />}
+      {showEmbeds && post.attachments && (
+        <ModeratedImageList
+          attachments={post.attachments}
+          isAuthorPending={isAuthorPending}
+        />
+      )}
     </>
   );
 }
@@ -74,12 +90,19 @@ function PostBody({ post }: { post: Post }) {
 function CommentBody({ comment }: { comment: Comment }) {
   const { embeds, consumed } = useMemo(() => extractMedia(comment.content), [comment.content]);
   const showEmbeds = comment.moderation_status === 'approved' || comment.is_mine;
+  const isAuthorPending = comment.is_mine && comment.moderation_status !== 'approved';
   return (
     <>
       <p className="mt-1 whitespace-pre-wrap text-sm text-slate-100">
         <Linkified text={comment.content} hideUrls={showEmbeds ? consumed : undefined} />
       </p>
       {showEmbeds && <MediaEmbeds embeds={embeds} />}
+      {showEmbeds && comment.attachments && (
+        <ModeratedImageList
+          attachments={comment.attachments}
+          isAuthorPending={isAuthorPending}
+        />
+      )}
     </>
   );
 }
@@ -213,12 +236,13 @@ function CommentBlock({
 }: {
   post: Post;
   requireName: () => Promise<string | null>;
-  onSubmit: (parentId: string, name: string, content: string) => Promise<void>;
+  onSubmit: (parentId: string, name: string, content: string, attachmentIds: string[]) => Promise<void>;
 }) {
   const [content, setContent] = useState('');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [gifOpen, setGifOpen] = useState(false);
+  const [attachment, setAttachment] = useState<PendingAttachment | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   if (post.moderation_status !== 'approved' && !post.is_mine) return null;
@@ -241,7 +265,7 @@ function CommentBlock({
         <form
           onSubmit={async (e) => {
             e.preventDefault();
-            if (!content.trim() || busy) return;
+            if ((!content.trim() && !attachment) || busy) return;
             setBusy(true);
             setErr(null);
             try {
@@ -250,8 +274,14 @@ function CommentBlock({
                 setBusy(false);
                 return;
               }
-              await onSubmit(post.id, name, content.trim());
+              await onSubmit(
+                post.id,
+                name,
+                content.trim(),
+                attachment ? [attachment.id] : []
+              );
               setContent('');
+              setAttachment(null);
             } catch (error) {
               setErr(error instanceof Error ? error.message : 'Something went wrong');
             } finally {
@@ -279,12 +309,18 @@ function CommentBlock({
             </button>
             <button
               type="submit"
-              disabled={busy || !content.trim()}
+              disabled={busy || (!content.trim() && !attachment)}
               className="iz-btn-primary h-9 rounded-lg px-4 text-sm disabled:opacity-50"
             >
               {busy ? 'Sending…' : 'Send'}
             </button>
           </div>
+          <ImageUploadButton
+            attachment={attachment}
+            onChange={setAttachment}
+            disabled={busy}
+            compact
+          />
           {err && <p className="text-xs text-rose-300">{err}</p>}
           <GifPicker
             open={gifOpen}
@@ -313,13 +349,14 @@ function Composer({
   savedName: string;
   onOpenSettings: () => void;
   requireName: () => Promise<string | null>;
-  onSubmit: (name: string, content: string) => Promise<void>;
+  onSubmit: (name: string, content: string, attachmentIds: string[]) => Promise<void>;
 }) {
   const [content, setContent] = useState('');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [okMsg, setOkMsg] = useState<string | null>(null);
   const [gifOpen, setGifOpen] = useState(false);
+  const [attachment, setAttachment] = useState<PendingAttachment | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const insertAtCursor = (snippet: string) => {
@@ -349,7 +386,7 @@ function Composer({
     <form
       onSubmit={async (e) => {
         e.preventDefault();
-        if (!content.trim() || busy) return;
+        if ((!content.trim() && !attachment) || busy) return;
         setBusy(true);
         setErr(null);
         setOkMsg(null);
@@ -359,8 +396,13 @@ function Composer({
             setBusy(false);
             return;
           }
-          await onSubmit(name, content.trim());
+          await onSubmit(
+            name,
+            content.trim(),
+            attachment ? [attachment.id] : []
+          );
           setContent('');
+          setAttachment(null);
           setOkMsg('Thanks! Dad will read this soon and approve it for the wall.');
         } catch (error) {
           setErr(error instanceof Error ? error.message : 'Something went wrong');
@@ -394,6 +436,11 @@ function Composer({
         className="w-full resize-y rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:border-fuchsia-400 focus:outline-none"
       />
       <MediaHelperBar onPickGif={() => setGifOpen(true)} />
+      <ImageUploadButton
+        attachment={attachment}
+        onChange={setAttachment}
+        disabled={busy}
+      />
       <GifPicker
         open={gifOpen}
         onClose={() => setGifOpen(false)}
@@ -409,7 +456,7 @@ function Composer({
         </p>
         <button
           type="submit"
-          disabled={busy || !content.trim()}
+          disabled={busy || (!content.trim() && !attachment)}
           className="iz-btn-primary h-10 rounded-lg px-5 text-sm disabled:opacity-50"
         >
           {busy ? 'Sending…' : 'Post to wall'}
@@ -580,7 +627,7 @@ export function PublicWall() {
   }, [refresh]);
 
   const submitPost = useCallback(
-    async (name: string, content: string) => {
+    async (name: string, content: string, attachmentIds: string[]) => {
       // optimistic insert
       const tempId = `tmp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
       const optimistic: Post = {
@@ -594,6 +641,7 @@ export function PublicWall() {
         reactions: {},
         my_reactions: [],
         comments: [],
+        attachments: [],
         _optimistic: true,
       };
       setFeed((prev) => (prev ? [optimistic, ...prev] : [optimistic]));
@@ -603,7 +651,11 @@ export function PublicWall() {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
-          body: JSON.stringify({ author_name: name || undefined, content }),
+          body: JSON.stringify({
+            author_name: name || undefined,
+            content,
+            attachment_ids: attachmentIds.length ? attachmentIds : undefined,
+          }),
         });
         if (!res.ok) {
           const body = await res.json().catch(() => ({}));
@@ -622,7 +674,7 @@ export function PublicWall() {
   );
 
   const submitComment = useCallback(
-    async (parentId: string, name: string, content: string) => {
+    async (parentId: string, name: string, content: string, attachmentIds: string[]) => {
       const res = await fetch('/api/wall/comment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -631,6 +683,7 @@ export function PublicWall() {
           parent_post_id: parentId,
           author_name: name || undefined,
           content,
+          attachment_ids: attachmentIds.length ? attachmentIds : undefined,
         }),
       });
       if (!res.ok) {

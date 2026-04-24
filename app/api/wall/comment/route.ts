@@ -8,6 +8,7 @@ import {
   getIslaFamilyId,
 } from '@/lib/wallGuest';
 import { scoreSpam } from '@/lib/spamScore';
+import { linkAttachmentsToPost } from '@/lib/wallAttachments';
 
 export const dynamic = 'force-dynamic';
 
@@ -114,6 +115,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: 'db_failed', detail: error.message },
         { status: 500 }
+      );
+    }
+
+    const attachmentLinkError = await linkAttachmentsToPost(
+      admin,
+      body?.attachment_ids,
+      inserted.id,
+      guest.cookieId
+    );
+    if (attachmentLinkError) {
+      await admin.from('posts').delete().eq('id', inserted.id);
+      return NextResponse.json(
+        { error: attachmentLinkError.code, detail: attachmentLinkError.detail },
+        { status: attachmentLinkError.status }
       );
     }
 

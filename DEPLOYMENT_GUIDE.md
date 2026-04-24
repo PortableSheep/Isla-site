@@ -72,6 +72,8 @@ The Isla.site project requires three sets of environment variables:
 | `NEXT_PUBLIC_SUPABASE_URL` | Public | Supabase API endpoint (safe to expose) | Supabase Dashboard |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Public | Client-side auth key (safe to expose) | Supabase Dashboard |
 | `SUPABASE_SERVICE_ROLE_KEY` | Secret | Server-side admin key (DO NOT expose) | Supabase Dashboard |
+| `ANALYTICS_SALT` | Secret | Random string used to hash visitor IPs for `/admin/analytics`. Rotate anytime (invalidates cross-day correlation). | Generate with `openssl rand -hex 32` |
+| `MODERATION_WEBHOOK_SECRET` | Secret | Shared secret used by the Supabase DB trigger to authenticate calls to `/api/hooks/moderation-event`. Also store the same value in `system_state.moderation_webhook.secret` (see `supabase/migrations/020_moderation_webhook.sql`). | Generate with `openssl rand -hex 32` |
 | `VERCEL_DEPLOYMENT_TOKEN` | Secret | Vercel CLI authentication | Vercel Account Settings |
 | `RESEND_API_KEY` | Secret | Email service authentication | Resend Dashboard |
 

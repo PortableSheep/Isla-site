@@ -3,6 +3,10 @@
     {
       "path": "/api/cron/moderation-digest",
       "schedule": "0 14 * * *"
+    },
+    {
+      "path": "/api/cron/cleanup-wall-uploads",
+      "schedule": "0 * * * *"
     }
   ]
 }

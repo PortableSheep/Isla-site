@@ -1,12 +1,18 @@
 import { createServerClient } from '@supabase/ssr';
-import { NextResponse, type NextRequest } from 'next/server';
+import { NextResponse, type NextFetchEvent, type NextRequest } from 'next/server';
+import { recordPageView } from '@/lib/analyticsCapture';
 
 /**
  * Refresh the Supabase session on every request so that both browser and
  * server see the same (fresh) auth state. Based on the official Supabase
  * SSR guide for Next.js.
+ *
+ * Also records a page view row for homegrown analytics (admin-only
+ * dashboard at /admin/analytics). Recording runs via `event.waitUntil`
+ * so it never delays the response and failures are swallowed — analytics
+ * must never break the user-visible request path.
  */
-export async function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest, event: NextFetchEvent) {
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(
@@ -29,7 +35,25 @@ export async function middleware(request: NextRequest) {
   );
 
   // IMPORTANT: this triggers session refresh + cookie rewrites
-  await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  // Fire-and-forget page view capture. `recordPageView` also sets the
+  // sliding session cookie on `response` synchronously before awaiting
+  // the DB write, so the cookie is attached even if waitUntil is slow.
+  try {
+    const capture = recordPageView({
+      request,
+      response,
+      userId: user?.id ?? null,
+    }).catch((err) => {
+      console.error('[analytics] capture failed:', err);
+    });
+    event.waitUntil(capture);
+  } catch (err) {
+    console.error('[analytics] capture scheduling failed:', err);
+  }
 
   return response;
 }
