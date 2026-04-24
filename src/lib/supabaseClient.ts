@@ -2,26 +2,22 @@
  * Resolves a Supabase client appropriate for the current runtime context.
  *
  * `@supabase/ssr` is statically imported so Vercel's file tracer bundles it
- * into the serverless function. Only `next/headers` is loaded via indirect
- * `eval()`-ed dynamic import, because it is server-only and would otherwise
- * error when this file is pulled into a client bundle.
+ * into the serverless function. `next/headers` is loaded via a
+ * `webpackIgnore`'d dynamic import so the literal `import('next/headers')`
+ * survives bundling: Webpack won't try to resolve it (keeping it out of the
+ * client bundle), Node resolves it at runtime on the server, and Vercel's
+ * output file tracer picks up the string literal and ships the submodule
+ * with the lambda.
  */
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { createServerClient } from '@supabase/ssr';
 import { supabase as browserClient } from './supabase';
 
-// Indirect eval produces a dynamic import that the bundler can't trace,
-// keeping `next/headers` out of the client bundle.
-// eslint-disable-next-line @typescript-eslint/no-implied-eval, no-eval
-const dynImport: (specifier: string) => Promise<any> = (0, eval)(
-  '(s) => import(s)'
-);
-
 export async function getSbClient(): Promise<SupabaseClient> {
   if (typeof window !== 'undefined') {
     return browserClient;
   }
-  const { cookies } = await dynImport('next/headers');
+  const { cookies } = await import(/* webpackIgnore: true */ 'next/headers');
   const cookieStore = await cookies();
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
