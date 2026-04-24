@@ -121,15 +121,36 @@ export const CreatureDisplay: React.FC<CreatureDisplayProps> = ({
       data-animation={animation || 'none'}
       onAnimationEnd={handleAnimationEnd}
     >
-      {/* 
-        Placeholder for SVG or image. Replace with:
-        - <Image src={`/creatures/${creature.id}.svg`} {...} />
-        - Inline SVG component
-        - PNG/WebP image
-      */}
-      <div className={styles.placeholder}>
-        {creature.name}
-      </div>
+      {/* Render the SVG creature from /public/creatures/ */}
+      {(() => {
+        const variantMap: Record<string, 'happy' | 'surprised' | 'thinking'> = {
+          happy: 'happy',
+          smiling: 'happy',
+          celebrating: 'happy',
+          waving: 'happy',
+          greeting: 'happy',
+          surprised: 'surprised',
+          thinking: 'thinking',
+        };
+        const variant = variantMap[state];
+        const src = `/creatures/${creature.id}${variant ? `-${variant}` : ''}.svg`;
+        const fallback = `/creatures/${creature.id}.svg`;
+        return (
+          <img
+            src={src}
+            alt={creature.alt_text}
+            width={pixelSize}
+            height={pixelSize}
+            style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+            onError={(e) => {
+              const img = e.currentTarget;
+              if (img.src.endsWith(src) && src !== fallback) {
+                img.src = fallback;
+              }
+            }}
+          />
+        );
+      })()}
 
       {/* Debug info */}
       {debug && (
