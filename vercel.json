@@ -2,7 +2,7 @@
   "crons": [
     {
       "path": "/api/cron/moderation-digest",
-      "schedule": "*/15 * * * *"
+      "schedule": "0 14 * * *"
     }
   ]
 }

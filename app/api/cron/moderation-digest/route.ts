@@ -1,8 +1,46 @@
 import { NextResponse } from 'next/server';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
 import { sendEmail, getAppUrl } from '@/lib/email/resend';
 
 export const dynamic = 'force-dynamic';
+
+async function resolveFirstAdminEmail(
+  admin: SupabaseClient
+): Promise<string | null> {
+  // 1. Oldest family creator (parents are implicit admins in this codebase).
+  const { data: family } = await admin
+    .from('families')
+    .select('created_by, created_at')
+    .order('created_at', { ascending: true })
+    .limit(1)
+    .maybeSingle();
+
+  const candidates: string[] = [];
+  if (family?.created_by) candidates.push(family.created_by);
+
+  // 2. Any user_profile with role='admin', oldest first.
+  const { data: adminProfiles } = await admin
+    .from('user_profiles')
+    .select('user_id, created_at')
+    .eq('role', 'admin')
+    .order('created_at', { ascending: true })
+    .limit(5);
+  for (const p of adminProfiles ?? []) {
+    if (p.user_id && !candidates.includes(p.user_id)) candidates.push(p.user_id);
+  }
+
+  for (const uid of candidates) {
+    try {
+      const { data, error } = await admin.auth.admin.getUserById(uid);
+      if (!error && data?.user?.email) return data.user.email;
+    } catch {
+      // try next
+    }
+  }
+  return null;
+}
+
 
 // Vercel Cron hits this endpoint. We gate it with a shared secret so it can't
 // be triggered by random internet traffic (Vercel sends `Authorization:
@@ -97,7 +135,13 @@ export async function GET(request: Request) {
     .filter(Boolean);
 
   if (to.length === 0) {
-    console.warn('[mod-digest] MOD_ALERT_TO not set — skipping email');
+    // Fall back to the first admin account we can find.
+    const resolved = await resolveFirstAdminEmail(admin);
+    if (resolved) to.push(resolved);
+  }
+
+  if (to.length === 0) {
+    console.warn('[mod-digest] no admin email resolved — skipping send');
     return NextResponse.json({
       ok: true,
       pendingTotal: allPending.length,

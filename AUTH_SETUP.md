@@ -311,14 +311,15 @@ If you didn't request this change, ignore this email.
 
 ### Moderation digest cron
 
-Vercel Cron hits `/api/cron/moderation-digest` every 15 minutes (configured
-in `vercel.json`). The endpoint:
+Vercel Cron hits `/api/cron/moderation-digest` once a day (configured in
+`vercel.json`, currently `0 14 * * *` UTC ≈ 9am Central). The endpoint:
 
 1. Reads the `last_alerted_max_created_at` watermark from `system_state`
    (migration `018_system_state.sql`).
 2. Loads pending posts/comments newer than that watermark.
-3. If any, emails an HTML digest via Resend to `MOD_ALERT_TO` and advances
-   the watermark so the next run won't re-alert.
+3. If any, emails an HTML digest via Resend to the first admin account it
+   can resolve (oldest family creator, then oldest `user_profiles.role='admin'`),
+   and advances the watermark.
 
 Required env vars (set in Vercel → Project Settings → Environment Variables):
 
@@ -326,14 +327,14 @@ Required env vars (set in Vercel → Project Settings → Environment Variables)
 |---|---|
 | `RESEND_API_KEY` | Resend API key (`re_...`). |
 | `RESEND_FROM_EMAIL` | Optional. Defaults to `Isla Zone <noreply@islazone.app>`. Must be a domain verified in Resend. |
-| `MOD_ALERT_TO` | Comma-separated list of admin emails to notify. If unset, the cron runs but no email is sent. |
+| `MOD_ALERT_TO` | **Optional override.** Comma-separated emails. If unset, the route auto-resolves the first admin account. |
 | `CRON_SECRET` | Vercel-generated secret. Vercel automatically sends `Authorization: Bearer $CRON_SECRET`. If unset, the route is open (dev only). |
-| `SUPABASE_SERVICE_ROLE_KEY` | Already required; used to bypass RLS for the pending query and watermark upsert. |
+| `SUPABASE_SERVICE_ROLE_KEY` | Already required; used to bypass RLS + look up admin email via `auth.admin.getUserById`. |
 | `NEXT_PUBLIC_APP_URL` | Used to build the dashboard link in the email. |
 
-Schedule: `*/15 * * * *`. **Vercel Hobby plans only run cron once per day** —
-bump to Pro, or change the schedule to `0 * * * *` / `0 9 * * *` if you're on
-Hobby. Manually trigger for testing: `curl -H "Authorization: Bearer $CRON_SECRET" https://your-app.vercel.app/api/cron/moderation-digest`.
+Schedule: `0 14 * * *` (once daily — Vercel Hobby allows one run per day).
+Upgrade to Pro + switch to `*/15 * * * *` if you want near-realtime digests.
+Manually trigger for testing: `curl -H "Authorization: Bearer $CRON_SECRET" https://your-app.vercel.app/api/cron/moderation-digest`.
 
 ### Using External Email Services (auth emails)
 
