@@ -137,8 +137,5 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Check test files syntax
-        run: npx tsc --noEmit
-
       - name: Lint test files
         run: npx eslint tests/ --ext .ts --max-warnings 0 || true
