@@ -82,13 +82,10 @@ export function WallModerationDashboard() {
   }, [tab, load]);
 
   const act = useCallback(
-    async (id: string, action: 'approve' | 'reject' | 'delete') => {
+    async (id: string, action: 'approve' | 'reject') => {
       setBusy(id + ':' + action);
       try {
-        const url =
-          action === 'delete'
-            ? `/api/admin/posts/${id}/delete`
-            : `/api/admin/moderation/${id}/${action}`;
+        const url = `/api/admin/moderation/${id}/${action}`;
         const res = await fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -138,7 +135,7 @@ export function WallModerationDashboard() {
         <div>
           <h1 className="iz-gradient-text text-2xl font-bold">Moderation</h1>
           <p className="text-sm text-slate-400">
-            Approve, reject, remove posts/comments, or ban an IP.
+            Approve or reject posts and comments, or ban an IP.
           </p>
         </div>
         <button
@@ -221,18 +218,11 @@ export function WallModerationDashboard() {
                 <button
                   disabled={busy?.startsWith(it.id)}
                   onClick={() => act(it.id, 'reject')}
-                  className="rounded-lg bg-amber-500/20 px-3 py-1.5 text-sm text-amber-200 hover:bg-amber-500/30 disabled:opacity-50"
+                  className="rounded-lg bg-rose-500/20 px-3 py-1.5 text-sm text-rose-200 hover:bg-rose-500/30 disabled:opacity-50"
                 >
                   Reject
                 </button>
               )}
-              <button
-                disabled={busy?.startsWith(it.id)}
-                onClick={() => act(it.id, 'delete')}
-                className="rounded-lg bg-rose-500/20 px-3 py-1.5 text-sm text-rose-200 hover:bg-rose-500/30 disabled:opacity-50"
-              >
-                Remove
-              </button>
               {it.client_ip && (
                 <button
                   disabled={busy?.startsWith(it.id)}
