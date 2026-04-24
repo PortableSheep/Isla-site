@@ -125,14 +125,7 @@ function YouTubeEmbeds({ content }: { content: string }) {
 }
 
 function Badge({ status }: { status: Comment['moderation_status'] }) {
-  if (status === 'approved') return null;
-  if (status === 'pending') {
-    return (
-      <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-amber-300">
-        Waiting for Dad to approve
-      </span>
-    );
-  }
+  if (status === 'approved' || status === 'pending') return null;
   return (
     <span className="inline-flex items-center gap-1 rounded-full bg-rose-500/15 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-rose-300">
       Not approved
