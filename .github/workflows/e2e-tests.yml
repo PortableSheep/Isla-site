@@ -85,13 +85,6 @@ jobs:
           path: tests/screenshots/
           retention-days: 7
 
-      - name: Publish test report
-        if: always()
-        uses: daun/playwright-report-action@v3
-        with:
-          report-path: playwright-report
-          report-title: E2E Test Results
-
       - name: Comment PR with test results
         if: github.event_name == 'pull_request' && always()
         uses: actions/github-script@v7
@@ -145,7 +138,7 @@ jobs:
         run: npm ci
 
       - name: Check test files syntax
-        run: npx tsc --noEmit tests/**/*.ts
+        run: npx tsc --noEmit
 
       - name: Lint test files
         run: npx eslint tests/ --ext .ts --max-warnings 0 || true
