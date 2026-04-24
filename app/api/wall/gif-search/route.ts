@@ -7,16 +7,26 @@ import {
 
 export const dynamic = 'force-dynamic';
 
-type TenorResult = {
-  id: string;
-  content_description?: string;
-  itemurl?: string;
+// Giphy GIF object (subset we use). See: https://developers.giphy.com/docs/api/schema
+type GiphyImageVariant = {
   url?: string;
-  media_formats?: {
-    gif?: { url: string; dims?: number[] };
-    tinygif?: { url: string; dims?: number[] };
-    gifpreview?: { url: string; dims?: number[] };
-    nanogif?: { url: string; dims?: number[] };
+  width?: string;
+  height?: string;
+};
+
+type GiphyResult = {
+  id: string;
+  url?: string;
+  title?: string;
+  alt_text?: string;
+  images?: {
+    fixed_width_small?: GiphyImageVariant;
+    fixed_height_small?: GiphyImageVariant;
+    fixed_width?: GiphyImageVariant;
+    fixed_height?: GiphyImageVariant;
+    downsized?: GiphyImageVariant;
+    preview_gif?: GiphyImageVariant;
+    original?: GiphyImageVariant;
   };
 };
 
@@ -69,33 +79,45 @@ function cacheSet(key: string, items: PickerItem[]) {
   CACHE.set(key, { expires: Date.now() + CACHE_TTL_MS, items });
 }
 
-function mapResults(results: TenorResult[]): PickerItem[] {
+function parseDim(v: string | undefined): number | undefined {
+  if (!v) return undefined;
+  const n = parseInt(v, 10);
+  return Number.isFinite(n) ? n : undefined;
+}
+
+function mapResults(results: GiphyResult[]): PickerItem[] {
   return results
     .map((r): PickerItem | null => {
+      const img = r.images ?? {};
       const preview =
-        r.media_formats?.tinygif ??
-        r.media_formats?.nanogif ??
-        r.media_formats?.gifpreview ??
-        r.media_formats?.gif;
-      const full = r.media_formats?.gif ?? preview;
-      if (!preview?.url || !full?.url) return null;
-      // Tenor share URLs look like: https://tenor.com/view/<slug>-<id>
-      const share = r.itemurl || r.url || `https://tenor.com/view/-${r.id}`;
-      const [w, h] = preview.dims ?? [];
+        img.fixed_width_small ??
+        img.fixed_height_small ??
+        img.preview_gif ??
+        img.fixed_width ??
+        img.fixed_height ??
+        img.downsized ??
+        img.original;
+      if (!preview?.url || !r.url || !r.id) return null;
       return {
         id: r.id,
         preview_url: preview.url,
-        share_url: share,
-        description: (r.content_description ?? 'GIF').slice(0, 140),
-        width: w,
-        height: h,
+        // Giphy share URL form: https://giphy.com/gifs/<slug>-<id> (sometimes slugless).
+        share_url: r.url,
+        description: (r.title || r.alt_text || 'GIF').slice(0, 140),
+        width: parseDim(preview.width),
+        height: parseDim(preview.height),
       };
     })
     .filter((x): x is PickerItem => x !== null);
 }
 
 export async function GET(req: NextRequest) {
-  const apiKey = process.env.TENOR_API_KEY;
+  // Prefer GIPHY_API_KEY; accept legacy TENOR_API_KEY during transition so
+  // environments only set up with the old name don't immediately break. The
+  // Tenor key won't actually work against Giphy, but the UI will surface the
+  // 502 instead of the 503-not-configured state — signalling to ops that the
+  // env var needs renaming.
+  const apiKey = process.env.GIPHY_API_KEY ?? process.env.TENOR_API_KEY;
   if (!apiKey) {
     return NextResponse.json(
       { error: 'GIF search is not configured' },
@@ -125,15 +147,16 @@ export async function GET(req: NextRequest) {
 
   const endpoint = new URL(
     q
-      ? 'https://tenor.googleapis.com/v2/search'
-      : 'https://tenor.googleapis.com/v2/featured',
+      ? 'https://api.giphy.com/v1/gifs/search'
+      : 'https://api.giphy.com/v1/gifs/trending',
   );
-  endpoint.searchParams.set('key', apiKey);
-  endpoint.searchParams.set('client_key', 'isla_wall');
+  endpoint.searchParams.set('api_key', apiKey);
   endpoint.searchParams.set('limit', '24');
-  endpoint.searchParams.set('media_filter', 'gif,tinygif,nanogif,gifpreview');
-  endpoint.searchParams.set('contentfilter', 'high'); // strictest kid-safe
-  endpoint.searchParams.set('locale', 'en_US');
+  // rating=g is the strictest kid-safe filter. Always enforced server-side;
+  // anything the client supplied is ignored.
+  endpoint.searchParams.set('rating', 'g');
+  endpoint.searchParams.set('lang', 'en');
+  endpoint.searchParams.set('bundle', 'messaging_non_clips');
   if (q) endpoint.searchParams.set('q', q);
 
   try {
@@ -141,14 +164,14 @@ export async function GET(req: NextRequest) {
       next: { revalidate: 60 },
     });
     if (!resp.ok) {
-      console.error('[gif-search] tenor returned', resp.status);
+      console.error('[gif-search] giphy returned', resp.status);
       return NextResponse.json(
         { error: 'GIF search unavailable' },
         { status: 502 },
       );
     }
-    const body = (await resp.json()) as { results?: TenorResult[] };
-    const items = mapResults(body.results ?? []);
+    const body = (await resp.json()) as { data?: GiphyResult[] };
+    const items = mapResults(body.data ?? []);
     cacheSet(cacheKey, items);
     return NextResponse.json({ results: items });
   } catch (err) {

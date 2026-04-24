@@ -134,17 +134,8 @@ export function GifPicker({
           {notConfigured ? (
             <div className="rounded-lg border border-amber-400/30 bg-amber-500/10 p-4 text-sm text-amber-100">
               GIF search isn&apos;t set up yet. Ask Isla&apos;s dad to add{' '}
-              <code className="rounded bg-black/40 px-1">TENOR_API_KEY</code>. You can
+              <code className="rounded bg-black/40 px-1">GIPHY_API_KEY</code>. You can
               still paste a GIF link from{' '}
-              <a
-                href="https://tenor.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-fuchsia-300 underline"
-              >
-                tenor.com
-              </a>{' '}
-              or{' '}
               <a
                 href="https://giphy.com"
                 target="_blank"
@@ -152,6 +143,15 @@ export function GifPicker({
                 className="text-fuchsia-300 underline"
               >
                 giphy.com
+              </a>{' '}
+              or{' '}
+              <a
+                href="https://tenor.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-fuchsia-300 underline"
+              >
+                tenor.com
               </a>
               .
             </div>
@@ -189,7 +189,7 @@ export function GifPicker({
         </div>
 
         <div className="border-t border-white/10 bg-black/40 px-3 py-2 text-[11px] text-slate-500">
-          Powered by Tenor · Filtered for kids · Dad still reviews every post
+          Powered by GIPHY · Filtered for kids · Dad still reviews every post
         </div>
       </div>
     </div>

@@ -8,8 +8,13 @@ export const IMG_REGEX =
   /https?:\/\/[^\s<]+?\.(?:gif|png|jpe?g|webp)(?:\?[^\s<]*)?/gi;
 export const TENOR_VIEW_REGEX =
   /https?:\/\/(?:www\.)?tenor\.com\/view\/[^\s<]*?-(\d+)/gi;
+// Matches Giphy share URLs in three forms:
+//   https://giphy.com/gifs/<slug>-<id>     ← typical: slug ends with "-<id>"
+//   https://giphy.com/gifs/<id>             ← slugless short form
+//   https://giphy.com/clips/<slug>-<id>    ← video clip variant
+// The ID is always the trailing [A-Za-z0-9]{6,} segment.
 export const GIPHY_VIEW_REGEX =
-  /https?:\/\/(?:www\.)?giphy\.com\/(?:gifs|clips)\/[^\s<]*?-([A-Za-z0-9]+)(?=[^\w]|$)/gi;
+  /https?:\/\/(?:www\.|media\.)?giphy\.com\/(?:gifs|clips|embed)\/(?:[^\s<]*?-)?([A-Za-z0-9]{6,})(?=[^\w]|$)/gi;
 
 export const URL_REGEX = /(https?:\/\/[^\s<]+)/g;
 

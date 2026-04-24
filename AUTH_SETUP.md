@@ -477,9 +477,12 @@ GITHUB_OAUTH_CLIENT_ID=your_client_id
 GITHUB_OAUTH_CLIENT_SECRET=your_client_secret
 
 # Optional: enables the in-app GIF picker on the public wall.
-# Create a key at https://developers.google.com/tenor/guides/quickstart
-# Tenor API is free. The key is used server-side only.
-TENOR_API_KEY=your_tenor_api_key
+# Create a key at https://developers.giphy.com/dashboard (create an app,
+# pick "API", copy the key). Giphy's free/beta tier is plenty for a personal
+# site. The key is used server-side only; searches are forced to rating=g
+# (kid-safe). NOTE: Tenor API is deprecated (shutdown June 30, 2026), which
+# is why we're on Giphy.
+GIPHY_API_KEY=your_giphy_api_key
 ```
 
 #### Step 3: Update Supabase for Production
