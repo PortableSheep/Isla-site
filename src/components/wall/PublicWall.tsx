@@ -177,23 +177,16 @@ function ReactionBar({
 
 function CommentBlock({
   post,
-  defaultName,
+  requireName,
   onSubmit,
-  onNameChange,
 }: {
   post: Post;
-  defaultName: string;
+  requireName: () => Promise<string | null>;
   onSubmit: (parentId: string, name: string, content: string) => Promise<void>;
-  onNameChange: (n: string) => void;
 }) {
-  const [name, setName] = useState(defaultName);
   const [content, setContent] = useState('');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
-
-  useEffect(() => {
-    setName(defaultName);
-  }, [defaultName]);
 
   if (post.moderation_status !== 'approved' && !post.is_mine) return null;
 
@@ -221,7 +214,12 @@ function CommentBlock({
             setBusy(true);
             setErr(null);
             try {
-              await onSubmit(post.id, name.trim(), content.trim());
+              const name = await requireName();
+              if (!name) {
+                setBusy(false);
+                return;
+              }
+              await onSubmit(post.id, name, content.trim());
               setContent('');
             } catch (error) {
               setErr(error instanceof Error ? error.message : 'Something went wrong');
@@ -232,16 +230,6 @@ function CommentBlock({
           className="space-y-2"
         >
           <div className="flex flex-col gap-2 sm:flex-row">
-            <input
-              value={name}
-              onChange={(e) => {
-                setName(e.target.value);
-                onNameChange(e.target.value);
-              }}
-              placeholder="Your name (optional)"
-              maxLength={40}
-              className="rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:border-fuchsia-400 focus:outline-none sm:max-w-[220px]"
-            />
             <input
               value={content}
               onChange={(e) => setContent(e.target.value)}
@@ -265,23 +253,20 @@ function CommentBlock({
 }
 
 function Composer({
-  defaultName,
+  savedName,
+  onOpenSettings,
+  requireName,
   onSubmit,
-  onNameChange,
 }: {
-  defaultName: string;
+  savedName: string;
+  onOpenSettings: () => void;
+  requireName: () => Promise<string | null>;
   onSubmit: (name: string, content: string) => Promise<void>;
-  onNameChange: (n: string) => void;
 }) {
-  const [name, setName] = useState(defaultName);
   const [content, setContent] = useState('');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [okMsg, setOkMsg] = useState<string | null>(null);
-
-  useEffect(() => {
-    setName(defaultName);
-  }, [defaultName]);
 
   return (
     <form
@@ -292,7 +277,12 @@ function Composer({
         setErr(null);
         setOkMsg(null);
         try {
-          await onSubmit(name.trim(), content.trim());
+          const name = await requireName();
+          if (!name) {
+            setBusy(false);
+            return;
+          }
+          await onSubmit(name, content.trim());
           setContent('');
           setOkMsg('Thanks! Dad will read this soon and approve it for the wall.');
         } catch (error) {
@@ -303,17 +293,20 @@ function Composer({
       }}
       className="space-y-3 rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur"
     >
-      <h2 className="text-lg font-semibold">Leave a note for Isla 💌</h2>
-      <input
-        value={name}
-        onChange={(e) => {
-          setName(e.target.value);
-          onNameChange(e.target.value);
-        }}
-        placeholder="Your name (optional — we'll remember it on this device)"
-        maxLength={40}
-        className="w-full rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:border-fuchsia-400 focus:outline-none"
-      />
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="text-lg font-semibold">Leave a note for Isla 💌</h2>
+        {savedName ? (
+          <button
+            type="button"
+            onClick={onOpenSettings}
+            className="text-xs text-slate-400 hover:text-fuchsia-300"
+            aria-label="Change your name"
+          >
+            Posting as <span className="font-medium text-slate-200">{savedName}</span>
+            <span className="ml-1 underline decoration-dotted">change</span>
+          </button>
+        ) : null}
+      </div>
       <textarea
         value={content}
         onChange={(e) => setContent(e.target.value)}
@@ -341,19 +334,131 @@ function Composer({
   );
 }
 
+function NameDialog({
+  open,
+  initialName,
+  firstTime,
+  onCancel,
+  onSubmit,
+}: {
+  open: boolean;
+  initialName: string;
+  firstTime: boolean;
+  onCancel: () => void;
+  onSubmit: (name: string) => void;
+}) {
+  const [value, setValue] = useState(initialName);
+
+  useEffect(() => {
+    if (open) setValue(initialName);
+  }, [open, initialName]);
+
+  if (!open) return null;
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="name-dialog-title"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
+      onKeyDown={(e) => {
+        if (e.key === 'Escape' && !firstTime) onCancel();
+      }}
+    >
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          const n = value.trim();
+          if (!n) return;
+          onSubmit(n);
+        }}
+        className="w-full max-w-sm space-y-4 rounded-2xl border border-white/10 bg-slate-950/90 p-5 shadow-2xl"
+      >
+        <h3 id="name-dialog-title" className="text-lg font-semibold text-white">
+          {firstTime ? 'What should we call you?' : 'Change your display name'}
+        </h3>
+        <p className="text-xs text-slate-400">
+          Your name shows up on posts and comments. Saved on this device only.
+        </p>
+        <input
+          autoFocus
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          placeholder="e.g. Maya, or Isla's cousin"
+          maxLength={40}
+          className="w-full rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:border-fuchsia-400 focus:outline-none"
+        />
+        <div className="flex justify-end gap-2">
+          {!firstTime && (
+            <button
+              type="button"
+              onClick={onCancel}
+              className="rounded-lg border border-white/10 px-4 py-1.5 text-sm text-slate-300 hover:border-white/25"
+            >
+              Cancel
+            </button>
+          )}
+          <button
+            type="submit"
+            disabled={!value.trim()}
+            className="iz-btn-primary rounded-lg px-4 py-1.5 text-sm disabled:opacity-50"
+          >
+            Save
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
 export function PublicWall() {
   const [feed, setFeed] = useState<Post[] | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [savedName, setSavedName] = useState('');
   const reloadTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogFirstTime, setDialogFirstTime] = useState(false);
+  const pendingResolver = useRef<((name: string | null) => void) | null>(null);
+
   useEffect(() => {
     setSavedName(readSavedName());
   }, []);
 
-  const handleNameChange = useCallback((n: string) => {
-    setSavedName(n);
-    saveName(n);
+  const requireName = useCallback((): Promise<string | null> => {
+    const existing = readSavedName();
+    if (existing) {
+      setSavedName(existing);
+      return Promise.resolve(existing);
+    }
+    return new Promise<string | null>((resolve) => {
+      pendingResolver.current = resolve;
+      setDialogFirstTime(true);
+      setDialogOpen(true);
+    });
+  }, []);
+
+  const openSettings = useCallback(() => {
+    setDialogFirstTime(false);
+    setDialogOpen(true);
+  }, []);
+
+  const handleDialogSubmit = useCallback((name: string) => {
+    saveName(name);
+    setSavedName(name);
+    setDialogOpen(false);
+    if (pendingResolver.current) {
+      pendingResolver.current(name);
+      pendingResolver.current = null;
+    }
+  }, []);
+
+  const handleDialogCancel = useCallback(() => {
+    setDialogOpen(false);
+    if (pendingResolver.current) {
+      pendingResolver.current(null);
+      pendingResolver.current = null;
+    }
   }, []);
 
   const refresh = useCallback(async () => {
@@ -468,6 +573,37 @@ export function PublicWall() {
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 py-10">
+      <NameDialog
+        open={dialogOpen}
+        initialName={savedName}
+        firstTime={dialogFirstTime}
+        onCancel={handleDialogCancel}
+        onSubmit={handleDialogSubmit}
+      />
+
+      <button
+        type="button"
+        onClick={openSettings}
+        aria-label="Settings (change your display name)"
+        title={savedName ? `Posting as ${savedName}` : 'Set your display name'}
+        className="fixed top-3 right-14 z-30 flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-slate-900/60 text-slate-500 backdrop-blur-md transition hover:border-fuchsia-400/40 hover:bg-slate-900/80 hover:text-fuchsia-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-400"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="h-4 w-4"
+          aria-hidden="true"
+        >
+          <circle cx="12" cy="12" r="3" />
+          <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34H9a1.7 1.7 0 0 0 1.03-1.56V3a2 2 0 1 1 4 0v.09A1.7 1.7 0 0 0 15 4.6a1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87V9c.15.37.53.6.93.6H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1Z" />
+        </svg>
+      </button>
+
       <header className="relative text-center">
         <div className="pointer-events-none absolute -top-2 left-0 hidden md:block">
           <CreatureDisplay creatureId="sparkle" state="happy" animation="bounce" size="medium" />
@@ -483,7 +619,12 @@ export function PublicWall() {
         </p>
       </header>
 
-      <Composer defaultName={savedName} onSubmit={submitPost} onNameChange={handleNameChange} />
+      <Composer
+        savedName={savedName}
+        onOpenSettings={openSettings}
+        requireName={requireName}
+        onSubmit={submitPost}
+      />
 
       {loadError && (
         <div className="rounded-xl border border-rose-400/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
@@ -518,12 +659,7 @@ export function PublicWall() {
             </p>
             {p.moderation_status === 'approved' && <YouTubeEmbeds content={p.content} />}
             <ReactionBar post={p} onReact={(emoji, removing) => submitReaction(p.id, emoji, removing)} />
-            <CommentBlock
-              post={p}
-              defaultName={savedName}
-              onSubmit={submitComment}
-              onNameChange={handleNameChange}
-            />
+            <CommentBlock post={p} requireName={requireName} onSubmit={submitComment} />
           </article>
         ))}
         {feed !== null && items.length === 0 && (
