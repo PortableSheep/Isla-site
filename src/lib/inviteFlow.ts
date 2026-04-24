@@ -202,7 +202,7 @@ export async function getMyFamilies(userId: string): Promise<FamilyInfo[]>  {
     // schema has user_id UNIQUE, so we get at most one family here.
     const { data: profile, error } = await supabase
       .from('user_profiles')
-      .select('family_id, status, families(id, name)')
+      .select('family_id, status')
       .eq('user_id', userId)
       .maybeSingle();
 
@@ -210,10 +210,16 @@ export async function getMyFamilies(userId: string): Promise<FamilyInfo[]>  {
       return [];
     }
 
-    const family = Array.isArray((profile as any).families)
-      ? (profile as any).families[0]
-      : (profile as any).families;
-    if (!family) return [];
+    const { data: family, error: famError } = await supabase
+      .from('families')
+      .select('id, name')
+      .eq('id', profile.family_id)
+      .maybeSingle();
+
+    if (famError || !family) {
+      console.error('getMyFamilies: could not load family row', famError);
+      return [];
+    }
 
     const { count } = await supabase
       .from('user_profiles')
