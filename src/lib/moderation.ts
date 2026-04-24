@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { supabase } from './supabase';
+import { getSbClient } from './supabaseClient';
 import { FlagStatus, FlaggedPostData, ModerationStats, ModFlag } from '@/types/moderation';
 import { logAction } from './auditLog';
 
@@ -9,7 +9,8 @@ export async function getFlaggedPosts(
   familyId?: string,
   limit: number = 50,
   offset: number = 0
-): Promise<FlaggedPostData[]> {
+): Promise<FlaggedPostData[]>  {
+  const supabase = await getSbClient();
   try {
     let query = supabase
       .from('posts')
@@ -61,7 +62,8 @@ export async function getFlaggedPosts(
 }
 
 // Get a single post with all its flags
-export async function getPostWithFlags(postId: string): Promise<FlaggedPostData | null> {
+export async function getPostWithFlags(postId: string): Promise<FlaggedPostData | null>  {
+  const supabase = await getSbClient();
   try {
     const { data, error } = await supabase
       .from('posts')
@@ -100,7 +102,8 @@ export async function getPostWithFlags(postId: string): Promise<FlaggedPostData 
 }
 
 // Get a single flag
-export async function getFlag(flagId: string): Promise<ModFlag | null> {
+export async function getFlag(flagId: string): Promise<ModFlag | null>  {
+  const supabase = await getSbClient();
   try {
     const { data, error } = await supabase
       .from('post_flags')
@@ -121,7 +124,8 @@ export async function getFlag(flagId: string): Promise<ModFlag | null> {
 }
 
 // Update flag status
-export async function updateFlagStatus(flagId: string, newStatus: FlagStatus): Promise<ModFlag | null> {
+export async function updateFlagStatus(flagId: string, newStatus: FlagStatus): Promise<ModFlag | null>  {
+  const supabase = await getSbClient();
   try {
     const { data, error } = await supabase
       .from('post_flags')
@@ -142,7 +146,8 @@ export async function updateFlagStatus(flagId: string, newStatus: FlagStatus): P
 }
 
 // Update multiple flags status (for a post)
-export async function updatePostFlagsStatus(postId: string, newStatus: FlagStatus): Promise<void> {
+export async function updatePostFlagsStatus(postId: string, newStatus: FlagStatus): Promise<void>  {
+  const supabase = await getSbClient();
   try {
     const { error } = await supabase
       .from('post_flags')
@@ -159,7 +164,8 @@ export async function updatePostFlagsStatus(postId: string, newStatus: FlagStatu
 }
 
 // Get moderation statistics
-export async function getModerationStats(): Promise<ModerationStats> {
+export async function getModerationStats(): Promise<ModerationStats>  {
+  const supabase = await getSbClient();
   try {
     // Count by status
     const { count: totalCount, error: totalError } = await supabase
@@ -204,7 +210,8 @@ export async function getModerationStats(): Promise<ModerationStats> {
 }
 
 // Count pending flags
-export async function countPendingFlags(): Promise<number> {
+export async function countPendingFlags(): Promise<number>  {
+  const supabase = await getSbClient();
   try {
     const { count, error } = await supabase
       .from('post_flags')
@@ -223,7 +230,8 @@ export async function countPendingFlags(): Promise<number> {
 }
 
 // Hide a post (admin action)
-export async function hidePost(postId: string, reason?: string, actorId?: string): Promise<void> {
+export async function hidePost(postId: string, reason?: string, actorId?: string): Promise<void>  {
+  const supabase = await getSbClient();
   try {
     const { error } = await supabase
       .from('posts')
@@ -245,7 +253,8 @@ export async function hidePost(postId: string, reason?: string, actorId?: string
 }
 
 // Delete a post (admin action - soft delete)
-export async function deletePost(postId: string, reason?: string, actorId?: string): Promise<void> {
+export async function deletePost(postId: string, reason?: string, actorId?: string): Promise<void>  {
+  const supabase = await getSbClient();
   try {
     const { error } = await supabase
       .from('posts')
@@ -267,7 +276,8 @@ export async function deletePost(postId: string, reason?: string, actorId?: stri
 }
 
 // Search flagged posts by content
-export async function searchFlaggedPosts(query: string): Promise<FlaggedPostData[]> {
+export async function searchFlaggedPosts(query: string): Promise<FlaggedPostData[]>  {
+  const supabase = await getSbClient();
   try {
     const { data, error } = await supabase
       .from('posts')

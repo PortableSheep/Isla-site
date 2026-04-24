@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabaseServer';
 import { getThreadReplies, createPost } from '@/lib/posts';
 import { notifyReplyToPost } from '@/lib/notifications';
 
@@ -9,6 +9,8 @@ export async function GET(
   { params }: { params: Promise<{ postId: string }> }
 ) {
   try {
+    
+    const supabase = await createClient();
     const {
       data: { user },
       error: authError,
@@ -34,6 +36,8 @@ export async function POST(
   { params }: { params: Promise<{ postId: string }> }
 ) {
   try {
+    
+    const supabase = await createClient();
     const {
       data: { user },
       error: authError,

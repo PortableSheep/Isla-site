@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabaseServer';
 import { rejectChild } from '@/lib/approvals';
 import { sendEmail, getAppUrl } from '@/lib/email/resend';
 import { rejectionEmailTemplate } from '@/lib/email/templates';
@@ -10,6 +10,8 @@ export async function POST(
   { params }: { params: Promise<{ childId: string }> }
 ) {
   try {
+    
+    const supabase = await createClient();
     const {
       data: { user },
       error: authError,

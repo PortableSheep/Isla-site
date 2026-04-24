@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabaseServer';
 import {
   getUserPreferences,
   createPreferences,
@@ -11,6 +11,8 @@ import { NotificationPreferencesInput } from '@/types/notifications';
 
 export async function GET(request: NextRequest) {
   try {
+    
+    const supabase = await createClient();
     const {
       data: { user },
       error: authError,
@@ -37,6 +39,8 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    
+    const supabase = await createClient();
     const {
       data: { user },
       error: authError,
@@ -66,6 +70,8 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
+    
+    const supabase = await createClient();
     const {
       data: { user },
       error: authError,

@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+import { getSbClient } from './supabaseClient';
 import { 
   AuditLogInput, 
   AuditLogFilters, 
@@ -22,7 +22,8 @@ export async function logAction(
   metadata?: Record<string, unknown>,
   familyId?: string,
   actorRole: ActorRole = 'admin'
-): Promise<void> {
+): Promise<void>  {
+  const supabase = await getSbClient();
   try {
     // Run in background without awaiting
     (supabase as any)
@@ -54,7 +55,8 @@ export async function logAction(
 export async function getAuditLogs(
   filters: AuditLogFilters = {},
   adminCheck = true
-): Promise<AuditLogResponse> {
+): Promise<AuditLogResponse>  {
+  const supabase = await getSbClient();
   try {
     const {
       action,
@@ -126,7 +128,8 @@ export async function getAuditLogs(
 /**
  * Get all actions on a specific post
  */
-export async function getPostAuditTrail(postId: string): Promise<AuditLog[]> {
+export async function getPostAuditTrail(postId: string): Promise<AuditLog[]>  {
+  const supabase = await getSbClient();
   try {
     const { data, error } = await (supabase as any)
       .from('audit_logs')
@@ -149,7 +152,8 @@ export async function getPostAuditTrail(postId: string): Promise<AuditLog[]> {
 /**
  * Get all actions by a specific user
  */
-export async function getUserActivity(userId: string): Promise<AuditLog[]> {
+export async function getUserActivity(userId: string): Promise<AuditLog[]>  {
+  const supabase = await getSbClient();
   try {
     const { data, error } = await (supabase as any)
       .from('audit_logs')
@@ -173,7 +177,8 @@ export async function getUserActivity(userId: string): Promise<AuditLog[]> {
  */
 export async function exportAuditLogs(
   filters: AuditLogFilters = {}
-): Promise<string> {
+): Promise<string>  {
+  const supabase = await getSbClient();
   try {
     const { logs } = await getAuditLogs({ ...filters, limit: 10000 });
 
@@ -222,7 +227,8 @@ export async function exportAuditLogs(
 /**
  * Get audit log statistics
  */
-export async function getAuditLogStats(familyId?: string): Promise<Record<string, number>> {
+export async function getAuditLogStats(familyId?: string): Promise<Record<string, number>>  {
+  const supabase = await getSbClient();
   try {
     let query = (supabase as any)
       .from('audit_logs')

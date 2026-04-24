@@ -1,6 +1,7 @@
-import { supabase } from './supabase';
+import { getSbClient } from './supabaseClient';
 
 export async function signUp(email: string, password: string) {
+  const supabase = await getSbClient();
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
@@ -13,6 +14,7 @@ export async function signUp(email: string, password: string) {
 }
 
 export async function signIn(email: string, password: string) {
+  const supabase = await getSbClient();
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password,
@@ -22,11 +24,13 @@ export async function signIn(email: string, password: string) {
 }
 
 export async function signOut() {
+  const supabase = await getSbClient();
   const { error } = await supabase.auth.signOut();
   if (error) throw error;
 }
 
 export async function getCurrentUser() {
+  const supabase = await getSbClient();
   const {
     data: { user },
     error,
@@ -36,6 +40,7 @@ export async function getCurrentUser() {
 }
 
 export async function getSession() {
+  const supabase = await getSbClient();
   const {
     data: { session },
     error,
@@ -45,6 +50,7 @@ export async function getSession() {
 }
 
 export async function resetPassword(email: string) {
+  const supabase = await getSbClient();
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
     redirectTo: `${typeof window !== 'undefined' ? window.location.origin : ''}/auth/reset-password-confirm`,
   });
@@ -52,6 +58,7 @@ export async function resetPassword(email: string) {
 }
 
 export async function updatePassword(newPassword: string) {
+  const supabase = await getSbClient();
   const { error } = await supabase.auth.updateUser({
     password: newPassword,
   });

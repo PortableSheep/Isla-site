@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { supabase } from './supabase';
+import { getSbClient } from './supabaseClient';
 import { Post, PostFlag, PostCreateInput, PostUpdateInput, PostWithReplies } from '@/types/posts';
 
 const MAX_CONTENT_LENGTH = 5000;
@@ -23,7 +23,8 @@ function validateContent(content: string): string {
 }
 
 // Create a new post
-export async function createPost(input: PostCreateInput): Promise<Post> {
+export async function createPost(input: PostCreateInput): Promise<Post>  {
+  const supabase = await getSbClient();
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError || !user) {
     throw new Error('Unauthorized');
@@ -55,7 +56,8 @@ export async function getPostsByFamily(
   familyId: string,
   limit: number = 50,
   offset: number = 0
-): Promise<Post[]> {
+): Promise<Post[]>  {
+  const supabase = await getSbClient();
   const { data, error } = await supabase
     .from('posts')
     .select()
@@ -74,7 +76,8 @@ export async function getPostsByFamily(
 }
 
 // Get all replies to a post (thread)
-export async function getThreadReplies(parentPostId: string): Promise<Post[]> {
+export async function getThreadReplies(parentPostId: string): Promise<Post[]>  {
+  const supabase = await getSbClient();
   const { data, error } = await supabase
     .from('posts')
     .select()
@@ -90,7 +93,8 @@ export async function getThreadReplies(parentPostId: string): Promise<Post[]> {
 }
 
 // Get a single post
-export async function getPost(postId: string): Promise<Post | null> {
+export async function getPost(postId: string): Promise<Post | null>  {
+  const supabase = await getSbClient();
   const { data, error } = await supabase
     .from('posts')
     .select()
@@ -105,7 +109,8 @@ export async function getPost(postId: string): Promise<Post | null> {
 }
 
 // Get a post with all its replies
-export async function getPostWithReplies(postId: string): Promise<PostWithReplies | null> {
+export async function getPostWithReplies(postId: string): Promise<PostWithReplies | null>  {
+  const supabase = await getSbClient();
   const post = await getPost(postId);
   if (!post) {
     return null;
@@ -120,7 +125,8 @@ export async function getPostWithReplies(postId: string): Promise<PostWithReplie
 }
 
 // Update a post (content only)
-export async function updatePost(postId: string, input: PostUpdateInput): Promise<Post> {
+export async function updatePost(postId: string, input: PostUpdateInput): Promise<Post>  {
+  const supabase = await getSbClient();
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError || !user) {
     throw new Error('Unauthorized');
@@ -146,7 +152,8 @@ export async function updatePost(postId: string, input: PostUpdateInput): Promis
 }
 
 // Soft delete a post with reason tracking (mark as deleted)
-export async function deletePost(postId: string, reason?: string, reasonText?: string): Promise<void> {
+export async function deletePost(postId: string, reason?: string, reasonText?: string): Promise<void>  {
+  const supabase = await getSbClient();
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError || !user) {
     throw new Error('Unauthorized');
@@ -183,7 +190,8 @@ export async function deletePost(postId: string, reason?: string, reasonText?: s
 }
 
 // Hard delete a post (admin only)
-export async function permanentlyDeletePost(postId: string): Promise<void> {
+export async function permanentlyDeletePost(postId: string): Promise<void>  {
+  const supabase = await getSbClient();
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError || !user) {
     throw new Error('Unauthorized');
@@ -213,7 +221,8 @@ export async function createAuditLog(data: {
   actor_id: string;
   post_id?: string | null;
   reason?: string | null;
-}): Promise<void> {
+}): Promise<void>  {
+  const supabase = await getSbClient();
   const { error } = await supabase
     .from('audit_logs')
     .insert({
@@ -230,7 +239,8 @@ export async function createAuditLog(data: {
 }
 
 // Get audit logs for a post
-export async function getPostAuditLogs(postId: string): Promise<Array<any>> {
+export async function getPostAuditLogs(postId: string): Promise<Array<any>>  {
+  const supabase = await getSbClient();
   const { data, error } = await supabase
     .from('audit_logs')
     .select()
@@ -250,7 +260,8 @@ export async function flagPost(
   postId: string,
   reason: string,
   flaggedBy: string
-): Promise<PostFlag> {
+): Promise<PostFlag>  {
+  const supabase = await getSbClient();
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError || !user) {
     throw new Error('Unauthorized');
@@ -292,7 +303,8 @@ export async function flagPost(
 }
 
 // Hide a post (moderator action) with reason tracking
-export async function hidePost(postId: string, reason?: string, reasonText?: string): Promise<void> {
+export async function hidePost(postId: string, reason?: string, reasonText?: string): Promise<void>  {
+  const supabase = await getSbClient();
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError || !user) {
     throw new Error('Unauthorized');
@@ -330,7 +342,8 @@ export async function hidePost(postId: string, reason?: string, reasonText?: str
 }
 
 // Unhide a post (moderator action)
-export async function unhidePost(postId: string): Promise<void> {
+export async function unhidePost(postId: string): Promise<void>  {
+  const supabase = await getSbClient();
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError || !user) {
     throw new Error('Unauthorized');
@@ -361,7 +374,8 @@ export async function unhidePost(postId: string): Promise<void> {
 }
 
 // Get flags for a post
-export async function getPostFlags(postId: string): Promise<PostFlag[]> {
+export async function getPostFlags(postId: string): Promise<PostFlag[]>  {
+  const supabase = await getSbClient();
   const { data, error } = await supabase
     .from('post_flags')
     .select()
@@ -379,7 +393,8 @@ export async function getPostFlags(postId: string): Promise<PostFlag[]> {
 export async function updateFlagStatus(
   flagId: string,
   status: 'pending' | 'reviewed' | 'dismissed'
-): Promise<void> {
+): Promise<void>  {
+  const supabase = await getSbClient();
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError || !user) {
     throw new Error('Unauthorized');
@@ -399,7 +414,8 @@ export async function updateFlagStatus(
 export async function createReply(
   parentPostId: string,
   content: string
-): Promise<Post> {
+): Promise<Post>  {
+  const supabase = await getSbClient();
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError || !user) {
     throw new Error('Unauthorized');
@@ -444,6 +460,7 @@ export async function createReply(
 export async function getRepliesWithAuthors(postId: string): Promise<
   (Post & { author?: { name?: string; email?: string; role?: 'parent' | 'child' | 'admin' } })[]
 > {
+  const supabase = await getSbClient();
   const replies = await getThreadReplies(postId);
 
   // Fetch user profiles for each reply
@@ -470,7 +487,8 @@ export async function getRepliesWithAuthors(postId: string): Promise<
 }
 
 // Delete a reply (with ownership check)
-export async function deleteReply(replyId: string): Promise<void> {
+export async function deleteReply(replyId: string): Promise<void>  {
+  const supabase = await getSbClient();
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError || !user) {
     throw new Error('Unauthorized');
@@ -489,7 +507,8 @@ export async function deleteReply(replyId: string): Promise<void> {
 }
 
 // Flag a reply for moderation
-export async function flagReply(replyId: string, reason: string): Promise<PostFlag> {
+export async function flagReply(replyId: string, reason: string): Promise<PostFlag>  {
+  const supabase = await getSbClient();
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError || !user) {
     throw new Error('Unauthorized');
@@ -508,7 +527,8 @@ export async function flagReply(replyId: string, reason: string): Promise<PostFl
 }
 
 // Get all updates (Isla-wide announcements)
-export async function getUpdates(limit: number = 50, offset: number = 0): Promise<Post[]> {
+export async function getUpdates(limit: number = 50, offset: number = 0): Promise<Post[]>  {
+  const supabase = await getSbClient();
   const { data, error } = await supabase
     .from('posts')
     .select()
@@ -526,7 +546,8 @@ export async function getUpdates(limit: number = 50, offset: number = 0): Promis
 }
 
 // Get a single update
-export async function getUpdate(updateId: string): Promise<Post | null> {
+export async function getUpdate(updateId: string): Promise<Post | null>  {
+  const supabase = await getSbClient();
   const post = await getPost(updateId);
   if (!post || !post.is_update) {
     return null;
@@ -535,7 +556,8 @@ export async function getUpdate(updateId: string): Promise<Post | null> {
 }
 
 // Search updates by content
-export async function searchUpdates(query: string, limit: number = 50): Promise<Post[]> {
+export async function searchUpdates(query: string, limit: number = 50): Promise<Post[]>  {
+  const supabase = await getSbClient();
   if (!query || query.trim().length === 0) {
     return getUpdates(limit);
   }

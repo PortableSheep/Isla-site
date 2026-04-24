@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { supabase } from './supabase';
+import { getSbClient } from './supabaseClient';
 
 export interface AuthorInfo {
   id: string;
@@ -8,7 +8,8 @@ export interface AuthorInfo {
   isIslaBrand?: boolean;
 }
 
-export async function getAuthorInfo(authorId: string): Promise<AuthorInfo | null> {
+export async function getAuthorInfo(authorId: string): Promise<AuthorInfo | null>  {
+  const supabase = await getSbClient();
   try {
     // Get user profile with role
     const { data: profileData, error: profileError } = await supabase
@@ -50,7 +51,8 @@ export async function getAuthorInfo(authorId: string): Promise<AuthorInfo | null
 }
 
 // Get multiple authors efficiently
-export async function getAuthorsInfo(authorIds: string[]): Promise<Map<string, AuthorInfo>> {
+export async function getAuthorsInfo(authorIds: string[]): Promise<Map<string, AuthorInfo>>  {
+  const supabase = await getSbClient();
   try {
     const uniqueIds = Array.from(new Set(authorIds));
     const results = new Map<string, AuthorInfo>();

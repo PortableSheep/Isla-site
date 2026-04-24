@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { supabase } from './supabase';
+import { getSbClient } from './supabaseClient';
 
 export interface FamilyInfo {
   id: string;
@@ -14,7 +14,7 @@ export interface InviteInfo extends FamilyInfo {
 }
 
 // Generate a secure token
-export function generateInviteToken(): string {
+export function generateInviteToken(): string  {
   // Generate a 32-byte random token (64 hex characters)
   const array = new Uint8Array(32);
   if (typeof window !== 'undefined') {
@@ -29,7 +29,8 @@ export function generateInviteToken(): string {
 }
 
 // Get family information from an invite token
-export async function getInviteInfo(token: string): Promise<InviteInfo> {
+export async function getInviteInfo(token: string): Promise<InviteInfo>  {
+  const supabase = await getSbClient();
   try {
     // Query the invite token
     const { data: invite, error: inviteError } = await (supabase
@@ -100,6 +101,7 @@ export async function acceptInvite(token: string, userId: string): Promise<{
   familyId?: string;
   error?: string;
 }> {
+  const supabase = await getSbClient();
   try {
     // Start a transaction - get invite details
     const { data: invite, error: inviteError } = await supabase
@@ -193,7 +195,8 @@ export async function acceptInvite(token: string, userId: string): Promise<{
 }
 
 // Get user's families
-export async function getMyFamilies(userId: string): Promise<FamilyInfo[]> {
+export async function getMyFamilies(userId: string): Promise<FamilyInfo[]>  {
+  const supabase = await getSbClient();
   try {
     const { data: families, error } = await supabase
       .from('family_members')

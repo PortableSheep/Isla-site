@@ -1,15 +1,15 @@
-import { supabase } from './supabase';
+import { getSbClient } from './supabaseClient';
 import { InviteToken } from '../types/invite';
 import { randomBytes } from 'crypto';
 
 const TOKEN_LENGTH = 32;
 const DEFAULT_EXPIRY_DAYS = 30;
 
-export function generateToken(): string {
+export function generateToken(): string  {
   return randomBytes(TOKEN_LENGTH).toString('hex');
 }
 
-export function checkExpiration(expiresAt: string): boolean {
+export function checkExpiration(expiresAt: string): boolean  {
   const expiryTime = new Date(expiresAt).getTime();
   const currentTime = new Date().getTime();
   return currentTime > expiryTime;
@@ -19,7 +19,8 @@ export async function createInviteToken(
   createdBy: string,
   familyId?: string,
   expiresInDays: number = DEFAULT_EXPIRY_DAYS
-): Promise<InviteToken> {
+): Promise<InviteToken>  {
+  const supabase = await getSbClient();
   const token = generateToken();
   const expiresAt = new Date();
   expiresAt.setDate(expiresAt.getDate() + expiresInDays);
@@ -47,7 +48,8 @@ export async function createInviteToken(
   return data;
 }
 
-export async function getTokenInfo(token: string): Promise<InviteToken | null> {
+export async function getTokenInfo(token: string): Promise<InviteToken | null>  {
+  const supabase = await getSbClient();
   const { data, error } = await supabase
     .from('invite_tokens')
     .select('*')
@@ -69,6 +71,7 @@ export async function validateToken(token: string): Promise<{
   reason?: string;
   tokenData?: InviteToken;
 }> {
+  const supabase = await getSbClient();
   if (!token || token.length !== TOKEN_LENGTH * 2) {
     return { isValid: false, reason: 'Invalid token format' };
   }
@@ -90,7 +93,8 @@ export async function validateToken(token: string): Promise<{
   return { isValid: true, tokenData };
 }
 
-export async function redeemToken(token: string, userId: string): Promise<InviteToken> {
+export async function redeemToken(token: string, userId: string): Promise<InviteToken>  {
+  const supabase = await getSbClient();
   const validation = await validateToken(token);
 
   if (!validation.isValid) {
@@ -115,7 +119,8 @@ export async function redeemToken(token: string, userId: string): Promise<Invite
   return data;
 }
 
-export async function getTokensByFamilyId(familyId: string): Promise<InviteToken[]> {
+export async function getTokensByFamilyId(familyId: string): Promise<InviteToken[]>  {
+  const supabase = await getSbClient();
   const { data, error } = await supabase
     .from('invite_tokens')
     .select('*')
@@ -129,7 +134,8 @@ export async function getTokensByFamilyId(familyId: string): Promise<InviteToken
   return data || [];
 }
 
-export async function getTokensByCreatedBy(createdBy: string): Promise<InviteToken[]> {
+export async function getTokensByCreatedBy(createdBy: string): Promise<InviteToken[]>  {
+  const supabase = await getSbClient();
   const { data, error } = await supabase
     .from('invite_tokens')
     .select('*')

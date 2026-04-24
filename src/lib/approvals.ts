@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { supabase } from './supabase';
+import { getSbClient } from './supabaseClient';
 
 export interface ChildProfile {
   id: string;
@@ -34,7 +34,8 @@ export interface ApprovalStats {
 export async function getPendingChildren(
   parentId: string,
   familyId?: string
-): Promise<ChildProfile[]> {
+): Promise<ChildProfile[]>  {
+  const supabase = await getSbClient();
   try {
     let query: any = supabase
       .from('user_profiles')
@@ -71,7 +72,8 @@ export async function getPendingChildren(
 /**
  * Get a child's profile by ID
  */
-export async function getChildProfile(childId: string): Promise<ChildProfile | null> {
+export async function getChildProfile(childId: string): Promise<ChildProfile | null>  {
+  const supabase = await getSbClient();
   try {
     const { data, error } = await (supabase
       .from('user_profiles')
@@ -98,7 +100,8 @@ export async function approveChild(
   childId: string,
   familyId: string,
   parentId: string
-): Promise<void> {
+): Promise<void>  {
+  const supabase = await getSbClient();
   try {
     // Verify child exists and is pending
     const profile = await getChildProfile(childId);
@@ -158,7 +161,8 @@ export async function rejectChild(
   familyId: string,
   parentId: string,
   reason?: string
-): Promise<void> {
+): Promise<void>  {
+  const supabase = await getSbClient();
   try {
     // Verify child exists
     const profile = await getChildProfile(childId);
@@ -215,7 +219,8 @@ export async function rejectChild(
 export async function getApprovalHistory(
   familyId: string,
   action?: 'approved' | 'rejected'
-): Promise<ApprovalRecord[]> {
+): Promise<ApprovalRecord[]>  {
+  const supabase = await getSbClient();
   try {
     let query: any = supabase
       .from('child_approvals')
@@ -240,7 +245,8 @@ export async function getApprovalHistory(
 /**
  * Get approval statistics for a family
  */
-export async function getApprovalStats(familyId: string): Promise<ApprovalStats> {
+export async function getApprovalStats(familyId: string): Promise<ApprovalStats>  {
+  const supabase = await getSbClient();
   try {
     const { data, error } = await (supabase
       .from('user_profiles')
@@ -271,7 +277,8 @@ export async function getApprovalStats(familyId: string): Promise<ApprovalStats>
 /**
  * Get child's approval status
  */
-export async function getChildApprovalStatus(childId: string): Promise<string> {
+export async function getChildApprovalStatus(childId: string): Promise<string>  {
+  const supabase = await getSbClient();
   try {
     const profile = await getChildProfile(childId);
     return profile?.status || 'not_found';

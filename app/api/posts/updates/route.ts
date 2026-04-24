@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabaseServer';
 import { getUpdates, searchUpdates } from '@/lib/posts';
 
 export async function GET(request: NextRequest) {
   try {
+    
+    const supabase = await createClient();
     const {
       data: { user },
       error: authError,

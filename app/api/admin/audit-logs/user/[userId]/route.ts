@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabaseServer';
 import { getUserActivity } from '@/lib/auditLog';
 
 // Check if user is admin
-async function isAdmin(userId: string): Promise<boolean> {
+async function isAdmin(supabase: import('@supabase/supabase-js').SupabaseClient, userId: string): Promise<boolean> {
   try {
     const { data, error } = await supabase
       .from('user_profiles')
@@ -28,6 +28,8 @@ export async function GET(
   { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
+    
+    const supabase = await createClient();
     // Get current user
     const {
       data: { user },
@@ -39,7 +41,7 @@ export async function GET(
     }
 
     // Check if user is admin
-    const admin = await isAdmin(user.id);
+    const admin = await isAdmin(supabase, user.id);
     if (!admin) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }

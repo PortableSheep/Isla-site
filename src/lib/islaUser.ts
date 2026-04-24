@@ -1,6 +1,7 @@
-import { supabase } from './supabase';
+import { getSbClient } from './supabaseClient';
 
-export async function isIslaUser(userId: string): Promise<boolean> {
+export async function isIslaUser(userId: string): Promise<boolean>  {
+  const supabase = await getSbClient();
   try {
     const { data, error } = await supabase
       .from('user_profiles')
@@ -21,6 +22,7 @@ export async function isIslaUser(userId: string): Promise<boolean> {
 }
 
 export async function getIslaUserProfile() {
+  const supabase = await getSbClient();
   try {
     const { data, error } = await supabase
       .from('user_profiles')

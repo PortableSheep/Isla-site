@@ -1,9 +1,10 @@
-import { supabase } from './supabase';
+import { getSbClient } from './supabaseClient';
 import { SuspensionData } from '@/types/suspension';
 
 export async function getUserSuspensionStatus(
   userId: string
-): Promise<SuspensionData | null> {
+): Promise<SuspensionData | null>  {
+  const supabase = await getSbClient();
   try {
     const { data, error } = await supabase
       .from('user_profiles')
@@ -25,7 +26,8 @@ export async function getUserSuspensionStatus(
   }
 }
 
-export async function checkAndAutoUnsuspend(userId: string): Promise<boolean> {
+export async function checkAndAutoUnsuspend(userId: string): Promise<boolean>  {
+  const supabase = await getSbClient();
   try {
     const suspension = await getUserSuspensionStatus(userId);
 
@@ -78,7 +80,7 @@ export async function checkAndAutoUnsuspend(userId: string): Promise<boolean> {
   }
 }
 
-export function getFormattedSuspensionReason(reason: string | null): string {
+export function getFormattedSuspensionReason(reason: string | null): string  {
   if (!reason) return 'Unknown';
 
   return reason

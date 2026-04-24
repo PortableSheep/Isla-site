@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { supabase } from './supabase';
+import { getSbClient } from './supabaseClient';
 import {
   NotificationPreference,
   NotificationPreferencesInput,
@@ -18,13 +18,14 @@ const DEFAULT_PREFERENCES: Omit<NotificationPreference, 'id' | 'user_id' | 'crea
   digest_time: '09:00',
 };
 
-export function getDefaultPreferences(): Omit<NotificationPreference, 'id' | 'user_id' | 'created_at' | 'updated_at'> {
+export function getDefaultPreferences(): Omit<NotificationPreference, 'id' | 'user_id' | 'created_at' | 'updated_at'>  {
   return { ...DEFAULT_PREFERENCES };
 }
 
 export async function getUserPreferences(
   userId: string
-): Promise<NotificationPreference | null> {
+): Promise<NotificationPreference | null>  {
+  const supabase = await getSbClient();
   try {
     const { data, error } = await supabase
       .from('notification_preferences')
@@ -50,7 +51,8 @@ export async function getUserPreferences(
 export async function createPreferences(
   userId: string,
   preferences?: NotificationPreferencesInput
-): Promise<NotificationPreference> {
+): Promise<NotificationPreference>  {
+  const supabase = await getSbClient();
   try {
     const { data, error } = await (supabase
       .from('notification_preferences') as any)
@@ -74,7 +76,8 @@ export async function createPreferences(
 export async function savePreferences(
   userId: string,
   preferences: NotificationPreferencesInput
-): Promise<NotificationPreference> {
+): Promise<NotificationPreference>  {
+  const supabase = await getSbClient();
   try {
     // Try to get existing preferences
     const existing = await getUserPreferences(userId);
@@ -105,7 +108,8 @@ export async function updatePreference(
   userId: string,
   key: keyof NotificationPreferencesInput,
   value: any
-): Promise<NotificationPreference> {
+): Promise<NotificationPreference>  {
+  const supabase = await getSbClient();
   try {
     const updateData = { [key]: value };
 
@@ -131,10 +135,10 @@ export async function updatePreference(
   }
 }
 
-export function isValidDigestDay(day: string): day is DigestDay {
+export function isValidDigestDay(day: string): day is DigestDay  {
   return ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].includes(day);
 }
 
-export function isValidFrequency(frequency: string): frequency is 'immediate' | 'digest' | 'off' {
+export function isValidFrequency(frequency: string): frequency is 'immediate' | 'digest' | 'off'  {
   return ['immediate', 'digest', 'off'].includes(frequency);
 }

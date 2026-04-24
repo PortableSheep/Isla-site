@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabaseServer';
 import { flagPost } from '@/lib/posts';
 
 export async function POST(
@@ -8,6 +8,8 @@ export async function POST(
   { params }: { params: Promise<{ postId: string }> }
 ) {
   try {
+    
+    const supabase = await createClient();
     const {
       data: { user },
       error: authError,

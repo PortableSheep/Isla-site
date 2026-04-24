@@ -1,9 +1,11 @@
 import { getMyFamilies } from '@/lib/inviteFlow';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabaseServer';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
   try {
+    
+    const supabase = await createClient();
     // Get the current user
     const {
       data: { user },

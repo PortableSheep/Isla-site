@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabaseServer';
 import { getPostsByFamily } from '@/lib/posts';
 
 export async function GET(
@@ -8,6 +8,8 @@ export async function GET(
   { params }: { params: Promise<{ familyId: string }> }
 ) {
   try {
+    
+    const supabase = await createClient();
     const {
       data: { user },
       error: authError,

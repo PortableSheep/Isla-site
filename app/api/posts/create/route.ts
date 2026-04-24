@@ -1,11 +1,13 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabaseServer';
 import { createPost } from '@/lib/posts';
 import { createUpdateNotifications } from '@/lib/notifications';
 import { isIslaUser } from '@/lib/islaUser';
 
 export async function POST(request: Request) {
   try {
+    
+    const supabase = await createClient();
     const {
       data: { user },
       error: authError,

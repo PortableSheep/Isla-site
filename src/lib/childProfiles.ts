@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+import { getSbClient } from './supabaseClient';
 import { ChildProfile, CreateChildProfileRequest, UpdateChildProfileRequest } from '@/types/child';
 
 /**
@@ -8,7 +8,8 @@ export async function createChildProfile(
   parentId: string,
   data: CreateChildProfileRequest,
   familyId?: string
-): Promise<ChildProfile> {
+): Promise<ChildProfile>  {
+  const supabase = await getSbClient();
   const { name, age, bio } = data;
 
   // Validate input
@@ -58,7 +59,8 @@ export async function createChildProfile(
 /**
  * Get all children for a parent
  */
-export async function getChildrenByParent(parentId: string): Promise<ChildProfile[]> {
+export async function getChildrenByParent(parentId: string): Promise<ChildProfile[]>  {
+  const supabase = await getSbClient();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data, error } = (await (supabase as any)
     .from('users')
@@ -76,7 +78,8 @@ export async function getChildrenByParent(parentId: string): Promise<ChildProfil
 /**
  * Get a single child profile by ID
  */
-export async function getChildProfile(childId: string): Promise<ChildProfile> {
+export async function getChildProfile(childId: string): Promise<ChildProfile>  {
+  const supabase = await getSbClient();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data, error } = (await (supabase as any)
     .from('users')
@@ -97,7 +100,8 @@ export async function getChildProfile(childId: string): Promise<ChildProfile> {
 export async function updateChildProfile(
   childId: string,
   data: UpdateChildProfileRequest
-): Promise<ChildProfile> {
+): Promise<ChildProfile>  {
+  const supabase = await getSbClient();
   // Validate input
   if (data.name && (data.name.trim().length < 2 || data.name.trim().length > 50)) {
     throw new Error('Name must be between 2 and 50 characters');
@@ -143,7 +147,8 @@ export async function updateChildProfile(
 /**
  * Delete a child profile (only pending profiles)
  */
-export async function deleteChildProfile(childId: string, parentId: string): Promise<void> {
+export async function deleteChildProfile(childId: string, parentId: string): Promise<void>  {
+  const supabase = await getSbClient();
   // First verify the profile exists and belongs to the parent
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: profile, error: fetchError } = (await (supabase as any)
@@ -179,7 +184,8 @@ export async function deleteChildProfile(childId: string, parentId: string): Pro
 export async function getChildrenByStatus(
   parentId: string,
   status: 'pending_approval' | 'active' | 'rejected' | 'suspended'
-): Promise<ChildProfile[]> {
+): Promise<ChildProfile[]>  {
+  const supabase = await getSbClient();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data, error } = (await (supabase as any)
     .from('users')
@@ -198,7 +204,8 @@ export async function getChildrenByStatus(
 /**
  * Check if a child is approved
  */
-export async function isChildApproved(childId: string): Promise<boolean> {
+export async function isChildApproved(childId: string): Promise<boolean>  {
+  const supabase = await getSbClient();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data, error } = (await (supabase as any)
     .from('users')

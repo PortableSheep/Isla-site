@@ -5,7 +5,7 @@ import { CreateInviteTokenRequest, GenerateTokenResponse } from '@/types/invite'
 import { sendEmail, getAppUrl } from '@/lib/email/resend';
 import { inviteEmailTemplate } from '@/lib/email/templates';
 import { getUserEmail } from '@/lib/supabaseAdmin';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabaseServer';
 
 interface GenerateInviteBody extends CreateInviteTokenRequest {
   recipient_email?: string;
@@ -13,6 +13,8 @@ interface GenerateInviteBody extends CreateInviteTokenRequest {
 
 export async function POST(request: NextRequest) {
   try {
+    
+    const supabase = await createClient();
     const user = await getCurrentUser();
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

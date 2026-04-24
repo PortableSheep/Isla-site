@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { supabase } from './supabase';
+import { getSbClient } from './supabaseClient';
 import {
   Notification,
   NotificationCreateInput,
@@ -10,7 +10,8 @@ import { NotificationPreference } from '@/types/notifications';
 // Create a notification for a user
 export async function createNotification(
   input: NotificationCreateInput
-): Promise<Notification> {
+): Promise<Notification>  {
+  const supabase = await getSbClient();
   const { data, error } = await supabase
     .from('notifications')
     .insert({
@@ -36,7 +37,8 @@ export async function getUserNotifications(
   userId: string,
   limit: number = 20,
   offset: number = 0
-): Promise<Notification[]> {
+): Promise<Notification[]>  {
+  const supabase = await getSbClient();
   const { data, error } = await supabase
     .from('notifications')
     .select('*')
@@ -52,7 +54,8 @@ export async function getUserNotifications(
 }
 
 // Get unread notification count
-export async function getUnreadCount(userId: string): Promise<number> {
+export async function getUnreadCount(userId: string): Promise<number>  {
+  const supabase = await getSbClient();
   const { count, error } = await supabase
     .from('notifications')
     .select('*', { count: 'exact', head: true })
@@ -67,7 +70,8 @@ export async function getUnreadCount(userId: string): Promise<number> {
 }
 
 // Mark notification as read
-export async function markAsRead(notificationId: string): Promise<void> {
+export async function markAsRead(notificationId: string): Promise<void>  {
+  const supabase = await getSbClient();
   const { error } = await supabase
     .from('notifications')
     .update({
@@ -82,7 +86,8 @@ export async function markAsRead(notificationId: string): Promise<void> {
 }
 
 // Mark all notifications as read for a user
-export async function markAllAsRead(userId: string): Promise<void> {
+export async function markAllAsRead(userId: string): Promise<void>  {
+  const supabase = await getSbClient();
   const { error } = await supabase
     .from('notifications')
     .update({
@@ -98,7 +103,8 @@ export async function markAllAsRead(userId: string): Promise<void> {
 }
 
 // Delete a notification
-export async function deleteNotification(notificationId: string): Promise<void> {
+export async function deleteNotification(notificationId: string): Promise<void>  {
+  const supabase = await getSbClient();
   const { error } = await supabase
     .from('notifications')
     .delete()
@@ -110,7 +116,8 @@ export async function deleteNotification(notificationId: string): Promise<void> 
 }
 
 // Delete all notifications for a user
-export async function deleteAllNotifications(userId: string): Promise<void> {
+export async function deleteAllNotifications(userId: string): Promise<void>  {
+  const supabase = await getSbClient();
   const { error } = await supabase
     .from('notifications')
     .delete()
@@ -124,7 +131,8 @@ export async function deleteAllNotifications(userId: string): Promise<void> {
 // Get notification preferences
 export async function getNotificationPreferences(
   userId: string
-): Promise<NotificationPreference> {
+): Promise<NotificationPreference>  {
+  const supabase = await getSbClient();
   const { data, error } = await supabase
     .from('notification_preferences')
     .select('*')
@@ -161,7 +169,8 @@ export async function getNotificationPreferences(
 export async function shouldSendEmail(
   userId: string,
   notificationType: 'update' | 'reply' | 'child_approved' | 'child_rejected'
-): Promise<boolean> {
+): Promise<boolean>  {
+  const supabase = await getSbClient();
   const prefs = await getNotificationPreferences(userId);
 
   // Check type-specific setting
@@ -184,7 +193,8 @@ export async function queueEmailNotification(
   userId: string,
   notificationId: string | null,
   notificationType: string
-): Promise<NotificationQueue> {
+): Promise<NotificationQueue>  {
+  const supabase = await getSbClient();
   const { data, error } = await supabase
     .from('notification_queue')
     .insert({
@@ -209,7 +219,8 @@ export async function createUpdateNotifications(
   postId: string,
   postContent: string,
   postAuthorId: string
-): Promise<void> {
+): Promise<void>  {
+  const supabase = await getSbClient();
   // Get all users who are parents (have role 'parent' or are family creators)
   // and have email_updates preference enabled
   const { data: parents, error: parentsError } = await supabase
@@ -277,7 +288,8 @@ export async function createUpdateNotifications(
 export async function notifyReplyToPost(
   postId: string,
   replyId: string
-): Promise<void> {
+): Promise<void>  {
+  const supabase = await getSbClient();
   try {
     // Get the original post
     const { data: post, error: postError } = await supabase
@@ -400,6 +412,7 @@ export async function getThreadNotifications(
     }>;
   }>
 > {
+  const supabase = await getSbClient();
   try {
     // Get all pending reply notifications for this user from queue
     const { data: queueItems, error: queueError } = await supabase
