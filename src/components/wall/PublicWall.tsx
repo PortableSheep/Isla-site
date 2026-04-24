@@ -404,7 +404,7 @@ function Composer({
       />
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-xs text-slate-400">
-          Posts are reviewed by Isla&apos;s dad before showing up publicly. You&apos;ll see your own
+          Posts require review before being public. You&apos;ll see your own
           note while it&apos;s waiting.
         </p>
         <button

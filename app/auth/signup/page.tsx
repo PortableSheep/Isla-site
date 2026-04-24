@@ -31,9 +31,9 @@ export default function SignUpPage() {
       </p>
 
       <p className="mt-4 text-center text-xs text-slate-500">
-        Every post and comment is reviewed by Isla&apos;s dad before it appears on
-        the wall. You&apos;ll always see your own posts with a &ldquo;waiting for
-        approval&rdquo; badge until they&apos;re approved.
+        Every post and comment requires review before being public. You&apos;ll
+        always see your own posts with a &ldquo;waiting for approval&rdquo;
+        badge until they&apos;re approved.
       </p>
     </div>
   );
