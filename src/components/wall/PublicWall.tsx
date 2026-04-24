@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { supabase } from '@/lib/supabase';
 import { CreatureDisplay } from '@/components/CreatureDisplay';
 import { extractMedia, Linkified, MediaEmbeds } from '@/components/wall/media';
 import { GifPicker } from '@/components/wall/GifPicker';
@@ -545,11 +546,18 @@ function NameDialog({
   );
 }
 
+const POLL_INTERVAL_MS = 15_000;
+const TOAST_DURATION_MS = 2_500;
+
 export function PublicWall() {
   const [feed, setFeed] = useState<Post[] | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [savedName, setSavedName] = useState('');
+  const [toast, setToast] = useState<string | null>(null);
   const reloadTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Track the IDs we've already shown so we can detect truly new posts.
+  const knownPostIds = useRef<Set<string>>(new Set());
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogFirstTime, setDialogFirstTime] = useState(false);
@@ -595,15 +603,37 @@ export function PublicWall() {
     }
   }, []);
 
-  const refresh = useCallback(async () => {
+  const showToast = useCallback((message: string) => {
+    setToast(message);
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => setToast(null), TOAST_DURATION_MS);
+  }, []);
+
+  const refresh = useCallback(async ({ silent = false } = {}) => {
     try {
       const res = await fetch('/api/wall/feed', { cache: 'no-store', credentials: 'include' });
       if (!res.ok) throw new Error(`Feed failed (${res.status})`);
       const json = await res.json();
+      const incoming = (json.feed as Post[]) ?? [];
+
       setFeed((prev) => {
-        const incoming = (json.feed as Post[]) ?? [];
-        if (!prev) return incoming;
-        // Keep optimistic items that don't yet exist server-side (by matching content+created window)
+        if (!prev) {
+          // First load — seed known IDs.
+          for (const p of incoming) knownPostIds.current.add(p.id);
+          return incoming;
+        }
+
+        // Detect posts that are genuinely new (not mine / not already seen).
+        const newFromOthers = incoming.filter(
+          (p) => !p.is_mine && !knownPostIds.current.has(p.id)
+        );
+        if (!silent && newFromOthers.length > 0) {
+          const count = newFromOthers.length;
+          showToast(count === 1 ? '✨ 1 new post on the wall!' : `✨ ${count} new posts on the wall!`);
+        }
+        for (const p of incoming) knownPostIds.current.add(p.id);
+
+        // Keep optimistic items that don't yet exist server-side.
         const keepers = prev.filter(
           (p) =>
             p._optimistic &&
@@ -615,10 +645,42 @@ export function PublicWall() {
     } catch (e) {
       setLoadError(e instanceof Error ? e.message : 'Could not load wall');
     }
-  }, []);
+  }, [showToast]);
 
+  // Initial load
   useEffect(() => {
-    refresh();
+    refresh({ silent: true });
+  }, [refresh]);
+
+  // 15-second fallback poll (handles missed realtime events)
+  useEffect(() => {
+    const id = setInterval(() => refresh(), POLL_INTERVAL_MS);
+    return () => clearInterval(id);
+  }, [refresh]);
+
+  // Supabase Realtime subscription — triggers an immediate refresh when any
+  // approved post is inserted or updated in the database.
+  useEffect(() => {
+    const channel = supabase
+      .channel('public-wall-posts')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'posts',
+          filter: 'moderation_status=eq.approved',
+        },
+        () => {
+          // Don't read payload — always fetch via the enriched API.
+          refresh();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [refresh]);
 
   const scheduleReload = useCallback(() => {
@@ -720,6 +782,17 @@ export function PublicWall() {
         onCancel={handleDialogCancel}
         onSubmit={handleDialogSubmit}
       />
+
+      {/* Live-update toast */}
+      {toast && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="fixed bottom-5 left-1/2 z-50 -translate-x-1/2 rounded-full border border-fuchsia-400/30 bg-slate-900/90 px-5 py-2.5 text-sm font-medium text-fuchsia-200 shadow-lg backdrop-blur"
+        >
+          {toast}
+        </div>
+      )}
 
       <button
         type="button"
