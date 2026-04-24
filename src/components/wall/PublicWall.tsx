@@ -117,18 +117,61 @@ function ReactionBar({
   post: Post;
   onReact: (emoji: string, removing: boolean) => void;
 }) {
+  // Optimistic overrides keyed by emoji. Each entry flips `mine` locally,
+  // adjusts the count relative to server values, and carries an animKey so
+  // we can retrigger the pop animation on every click.
+  const [overrides, setOverrides] = useState<
+    Record<string, { mine: boolean; delta: number; animKey: number }>
+  >({});
+
+  // Reset overrides whenever the server-side reactions change, so subsequent
+  // feed refreshes become the source of truth again.
+  useEffect(() => {
+    setOverrides({});
+    // Intentionally depend on the stringified values — arrays/objects would
+    // cause a reset on every render.
+  }, [JSON.stringify(post.reactions), JSON.stringify(post.my_reactions)]);
+
   if (post.moderation_status !== 'approved') return null;
+
   return (
     <div className="flex flex-wrap gap-2 pt-2">
       {EMOJIS.map((e) => {
-        const count = post.reactions[e] ?? 0;
-        const mine = post.my_reactions.includes(e);
+        const serverCount = post.reactions[e] ?? 0;
+        const serverMine = post.my_reactions.includes(e);
+        const ov = overrides[e];
+        const mine = ov ? ov.mine : serverMine;
+        const count = Math.max(0, serverCount + (ov?.delta ?? 0));
+        const animKey = ov?.animKey ?? 0;
+
+        const handleClick = () => {
+          const currentlyMine = mine;
+          const nextMine = !currentlyMine;
+          const delta = nextMine
+            ? serverMine
+              ? 0
+              : 1
+            : serverMine
+              ? -1
+              : 0;
+          setOverrides((prev) => ({
+            ...prev,
+            [e]: {
+              mine: nextMine,
+              delta,
+              animKey: (prev[e]?.animKey ?? 0) + 1,
+            },
+          }));
+          onReact(e, currentlyMine);
+        };
+
         return (
           <button
             key={e}
             type="button"
-            onClick={() => onReact(e, mine)}
-            className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-sm transition ${
+            onClick={handleClick}
+            // re-mount animation target on every click via keyed span below
+            className={`relative inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-sm transition active:scale-95 ${
               mine
                 ? 'border-fuchsia-400/60 bg-fuchsia-500/15 text-white'
                 : 'border-white/10 bg-white/5 text-slate-200 hover:border-white/25'
@@ -136,13 +179,31 @@ function ReactionBar({
             aria-pressed={mine}
             aria-label={`React ${e}${count ? `, ${count} total` : ''}`}
           >
-            <span>{e}</span>
+            <span
+              key={animKey}
+              className={animKey > 0 ? 'iz-reaction-pop inline-block' : 'inline-block'}
+            >
+              {e}
+            </span>
             {count > 0 && <span className="text-xs text-slate-400">{count}</span>}
+            {animKey > 0 && nextAnimShouldShowFly(ov) && (
+              <span key={`fly-${animKey}`} aria-hidden className="iz-reaction-fly">
+                {e}
+              </span>
+            )}
           </button>
         );
       })}
     </div>
   );
+}
+
+// Show the floating "+1" emoji only when the user is *adding* a reaction, not
+// removing one — feels more natural.
+function nextAnimShouldShowFly(
+  ov: { mine: boolean; delta: number } | undefined
+): boolean {
+  return !!ov && ov.mine === true;
 }
 
 function CommentBlock({

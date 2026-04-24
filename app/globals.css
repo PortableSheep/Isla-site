@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+/* Force Tailwind's dark: variant to always be active: the .dark class on
+   <html> (set in app/layout.tsx) triggers it regardless of the user's OS
+   theme. The app is dark-only. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* ============================================================================
    Isla Zone — Base Page Styles
    ============================================================================ */
@@ -123,55 +128,56 @@ body {
 
 
 :root {
-  /* Primary Colors - Playful Purple */
+  color-scheme: dark;
+  /* Primary Colors - Playful Purple (dark-mode values) */
   --color-primary-light: #A78BFA;
-  --color-primary: #7C3AED;
-  --color-primary-dark: #5B21B6;
+  --color-primary: #9333EA;
+  --color-primary-dark: #6B21A8;
 
   /* Secondary Colors - Vibrant Pink */
   --color-secondary-light: #F472B6;
-  --color-secondary: #EC4899;
+  --color-secondary: #F43F5E;
   --color-secondary-dark: #BE185D;
 
   /* Success - Lucky Green */
-  --color-success-light: #86EFAC;
-  --color-success: #10B981;
-  --color-success-dark: #047857;
+  --color-success-light: #6EE7B7;
+  --color-success: #14B8A6;
+  --color-success-dark: #0D9488;
 
   /* Warning - Sunny Orange */
   --color-warning-light: #FDBA74;
-  --color-warning: #F59E0B;
-  --color-warning-dark: #D97706;
+  --color-warning: #FB923C;
+  --color-warning-dark: #EA580C;
 
   /* Error - Soft Red */
   --color-error-light: #FCA5A5;
-  --color-error: #EF4444;
+  --color-error: #F87171;
   --color-error-dark: #DC2626;
 
   /* Info - Sky Blue */
   --color-info-light: #93C5FD;
-  --color-info: #3B82F6;
-  --color-info-dark: #1D4ED8;
+  --color-info: #60A5FA;
+  --color-info-dark: #3B82F6;
 
-  /* Neutral - Warm Beige */
-  --color-neutral-light: #FEF9E7;
-  --color-neutral: #FEF3C7;
-  --color-neutral-dark: #FCD34D;
+  /* Neutral */
+  --color-neutral-light: #F3E8FF;
+  --color-neutral: #E9D5FF;
+  --color-neutral-dark: #DDD6FE;
 
-  /* Text - Charcoal Gray */
-  --color-text-light: #9CA3AF;
-  --color-text: #1F2937;
-  --color-text-dark: #111827;
+  /* Text */
+  --color-text-light: #D1D5DB;
+  --color-text: #E5E7EB;
+  --color-text-dark: #F3F4F6;
 
   /* Accent - Mint Green */
   --color-accent-light: #A7F3D0;
-  --color-accent: #6EE7B7;
-  --color-accent-dark: #059669;
+  --color-accent: #5EEAD4;
+  --color-accent-dark: #14B8A6;
 
   /* Calm - Lavender */
   --color-calm-light: #E9D5FF;
-  --color-calm: #DDD6FE;
-  --color-calm-dark: #C4B5FD;
+  --color-calm: #F3E8FF;
+  --color-calm-dark: #EDE9FE;
 
   /* Spacing Grid (8px base unit) */
   --spacing-xs: 8px;
@@ -229,76 +235,16 @@ body {
   --letter-spacing-wide: 0.02em;
   --letter-spacing-wider: 0.04em;
 
-  /* Light mode backgrounds */
-  --background: #FAFAF8;
-  --foreground: #1F2937;
-  --background-secondary: #FFFFFF;
-  --surface: #F3F4F6;
+  /* Backgrounds (dark mode only) */
+  --background: #0F172A;
+  --foreground: #E5E7EB;
+  --background-secondary: #1E293B;
+  --surface: #334155;
 }
 
-/* ============================================================================
-   COLOR PALETTE - Dark Mode
-   ============================================================================ */
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    /* Dark mode primary colors */
-    --color-primary-light: #A78BFA;
-    --color-primary: #9333EA;
-    --color-primary-dark: #6B21A8;
-
-    /* Dark mode secondary colors */
-    --color-secondary-light: #F472B6;
-    --color-secondary: #F43F5E;
-    --color-secondary-dark: #BE185D;
-
-    /* Dark mode success */
-    --color-success-light: #6EE7B7;
-    --color-success: #14B8A6;
-    --color-success-dark: #0D9488;
-
-    /* Dark mode warning */
-    --color-warning-light: #FDBA74;
-    --color-warning: #FB923C;
-    --color-warning-dark: #EA580C;
-
-    /* Dark mode error */
-    --color-error-light: #FCA5A5;
-    --color-error: #F87171;
-    --color-error-dark: #DC2626;
-
-    /* Dark mode info */
-    --color-info-light: #93C5FD;
-    --color-info: #60A5FA;
-    --color-info-dark: #3B82F6;
-
-    /* Dark mode neutral */
-    --color-neutral-light: #F3E8FF;
-    --color-neutral: #E9D5FF;
-    --color-neutral-dark: #DDD6FE;
-
-    /* Dark mode text */
-    --color-text-light: #D1D5DB;
-    --color-text: #E5E7EB;
-    --color-text-dark: #F3F4F6;
-
-    /* Dark mode accent */
-    --color-accent-light: #A7F3D0;
-    --color-accent: #5EEAD4;
-    --color-accent-dark: #14B8A6;
-
-    /* Dark mode calm */
-    --color-calm-light: #E9D5FF;
-    --color-calm: #F3E8FF;
-    --color-calm-dark: #EDE9FE;
-
-    /* Dark mode backgrounds */
-    --background: #0F172A;
-    --foreground: #E5E7EB;
-    --background-secondary: #1E293B;
-    --surface: #334155;
-  }
-}
+/* Light-mode override block removed: the app is dark-only by design.
+   prefers-color-scheme: dark is redundant but kept below for completeness /
+   future re-introduction of themes. */
 
 /* ============================================================================
    BASE STYLES
@@ -765,6 +711,40 @@ tr:hover {
   }
 }
 
+@keyframes reaction-pop {
+  0%   { transform: scale(1); }
+  35%  { transform: scale(1.35); }
+  60%  { transform: scale(0.92); }
+  100% { transform: scale(1); }
+}
+
+.iz-reaction-pop {
+  animation: reaction-pop 420ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes reaction-fly {
+  0%   { opacity: 0; transform: translateY(0) scale(0.8); }
+  20%  { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-28px) scale(1.2); }
+}
+
+.iz-reaction-fly {
+  position: absolute;
+  pointer-events: none;
+  left: 50%;
+  top: 0;
+  transform: translateX(-50%);
+  animation: reaction-fly 650ms ease-out forwards;
+  font-size: 1.1rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .iz-reaction-pop,
+  .iz-reaction-fly {
+    animation: none;
+  }
+}
+
 .animate-fade-in {
   animation: fadeIn 0.3s ease-in;
 }
@@ -798,17 +778,15 @@ tr:hover {
   outline-offset: 2px;
 }
 
-/* High contrast focus indicator for dark mode */
-@media (prefers-color-scheme: dark) {
-  *:focus-visible {
-    outline: 3px solid var(--color-primary-light);
-    box-shadow: 0 0 0 1px var(--background);
-  }
-  
-  *:focus {
-    outline: 3px solid var(--color-primary-light);
-    box-shadow: 0 0 0 1px var(--background);
-  }
+/* Focus indicator (dark-only app) */
+*:focus-visible {
+  outline: 3px solid var(--color-primary-light);
+  box-shadow: 0 0 0 1px var(--background);
+}
+
+*:focus {
+  outline: 3px solid var(--color-primary-light);
+  box-shadow: 0 0 0 1px var(--background);
 }
 
 /* ============================================================================
