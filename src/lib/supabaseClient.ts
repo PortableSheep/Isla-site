@@ -5,9 +5,9 @@
  * into the serverless function. `next/headers` is loaded via a
  * `webpackIgnore`'d dynamic import so the literal `import('next/headers')`
  * survives bundling: Webpack won't try to resolve it (keeping it out of the
- * client bundle), Node resolves it at runtime on the server, and Vercel's
- * output file tracer picks up the string literal and ships the submodule
- * with the lambda.
+ * client bundle), Node resolves it at runtime on the server, and the
+ * `outputFileTracingIncludes` entry in `next.config.ts` guarantees the
+ * package is shipped with every lambda.
  */
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { createServerClient } from '@supabase/ssr';
