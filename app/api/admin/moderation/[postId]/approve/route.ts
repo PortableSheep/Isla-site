@@ -16,6 +16,11 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const { data: adminCheck } = await supabase.rpc('is_admin', { uid: user.id });
+    if (!adminCheck) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
     const { postId } = await params;
 
     const { data: updated, error } = await supabase

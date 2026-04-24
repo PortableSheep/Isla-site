@@ -40,7 +40,7 @@ export async function GET() {
 
     const { data: posts, error } = await supabase
       .from('posts')
-      .select('id, author_id, content, parent_post_id, created_at, moderation_status, family_id')
+      .select('id, author_id, author_name, author_cookie_id, content, parent_post_id, created_at, moderation_status, family_id, spam_score, spam_reasons, client_ip')
       .eq('moderation_status', 'pending')
       .is('deleted_at', null)
       .order('created_at', { ascending: true });
@@ -52,7 +52,9 @@ export async function GET() {
       );
     }
 
-    const authorIds = Array.from(new Set((posts ?? []).map((p) => p.author_id)));
+    const authorIds = Array.from(
+      new Set((posts ?? []).map((p) => p.author_id).filter(Boolean) as string[])
+    );
     let profiles: Record<string, { name?: string; email?: string; role?: string }> = {};
     if (authorIds.length > 0) {
       const { data: profileRows } = await supabase
@@ -71,7 +73,7 @@ export async function GET() {
       success: true,
       pending: (posts ?? []).map((p) => ({
         ...p,
-        author: profiles[p.author_id] ?? null,
+        author: p.author_id ? profiles[p.author_id] ?? null : null,
         kind: p.parent_post_id ? 'comment' : 'post',
       })),
     });
