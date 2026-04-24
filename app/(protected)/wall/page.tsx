@@ -77,27 +77,47 @@ export default function WallPage() {
             setUserApproved(true);
           }
         } else {
-          // User is a child
+          // User has a profile row. Treat parent/isla/moderator roles as
+          // auto-approved moderators; only child roles need explicit approval.
+          const role = profileData.role;
+          const isParentRole =
+            role === 'parent' || role === 'isla' || role === 'moderator' || role === 'admin';
+
           if (profileData.family_id) {
             setFamilyId(profileData.family_id);
 
-            // Check approval status
-            if (profileData.status === 'active') {
+            if (isParentRole) {
+              setIsModerator(true);
+              setUserApproved(true);
+            } else if (
+              profileData.status === 'approved' ||
+              profileData.status === 'active'
+            ) {
               setUserApproved(true);
             }
 
             // Fetch family name
             const familyResult = await supabase
               .from('families')
-              .select('name')
+              .select('name, created_by')
               .eq('id', profileData.family_id)
               .maybeSingle();
 
             const familyError = familyResult.error as DbError;
-            const family = familyResult.data as Pick<FamilyData, 'name'> | null;
+            const family = familyResult.data as
+              | (Pick<FamilyData, 'name'> & { created_by?: string })
+              | null;
 
             if (familyError) throw familyError;
-            if (family) setFamilyName(family.name);
+            if (family) {
+              setFamilyName(family.name);
+              // Creator of the family is always a moderator + approved,
+              // regardless of what role string happens to be on their profile.
+              if (family.created_by === user.id) {
+                setIsModerator(true);
+                setUserApproved(true);
+              }
+            }
           }
         }
       } catch (err) {
