@@ -1,167 +1,192 @@
 'use client';
 
 import { useAuth } from '@/lib/AuthContext';
-import { CreatureDisplay } from '@/components/CreatureDisplay';
 import Link from 'next/link';
-import styles from '@/styles/hand-drawn.module.css';
+import { useEffect, useState } from 'react';
+
+type Family = {
+  id: string;
+  name: string;
+  memberCount: number;
+};
+
+type Profile = {
+  family_id: string | null;
+  role: 'isla' | 'admin' | 'parent' | 'child' | null;
+  status: 'pending_approval' | 'approved' | 'rejected' | null;
+};
 
 export default function DashboardPage() {
   const { user } = useAuth();
   const firstName = user?.user_metadata?.name?.split(' ')[0] || 'Friend';
+  const [families, setFamilies] = useState<Family[] | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [unreadCount, setUnreadCount] = useState<number>(0);
+  const [pendingCount, setPendingCount] = useState<number>(0);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user) return;
+    const load = async () => {
+      try {
+        const [famRes, meRes] = await Promise.all([
+          fetch('/api/families/my-families'),
+          fetch('/api/users/me'),
+        ]);
+
+        if (famRes.ok) {
+          const data = await famRes.json();
+          setFamilies(data.families || []);
+        } else {
+          setFamilies([]);
+        }
+
+        if (meRes.ok) {
+          const data = await meRes.json();
+          setProfile(data.profile || null);
+        }
+
+        try {
+          const n = await fetch('/api/notifications/unread-count');
+          if (n.ok) {
+            const d = await n.json();
+            setUnreadCount(d.count ?? 0);
+          }
+        } catch {}
+
+        try {
+          const p = await fetch('/api/approvals/pending');
+          if (p.ok) {
+            const d = await p.json();
+            setPendingCount(Array.isArray(d.approvals) ? d.approvals.length : 0);
+          }
+        } catch {}
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, [user]);
+
+  const isAdmin = profile?.role === 'admin' || profile?.role === 'isla';
+  const needsApproval = profile?.status === 'pending_approval';
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50 dark:from-gray-950 dark:via-gray-900 dark:to-purple-950 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen iz-grid-bg py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto">
-        {/* Glimmer greeting header */}
-        <div className="mb-12 flex items-start gap-6">
-          <div className="hidden sm:block">
-            <CreatureDisplay
-              creatureId="glimmer"
-              state="happy"
-              animation="bounce"
-              size="medium"
-            />
-          </div>
-          <div className="flex-1">
-            <h1 className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">
-              {firstName}, welcome back!
-            </h1>
-            <p className="text-gray-600 dark:text-gray-400">
-              You have {0} pending approvals and {1} new updates
-            </p>
-          </div>
-        </div>
+        <header className="mb-10">
+          <h1 className="text-4xl sm:text-5xl font-bold iz-gradient-text mb-2">
+            {firstName}, welcome back
+          </h1>
+          <p className="text-slate-400">
+            {loading
+              ? 'Loading your world…'
+              : needsApproval
+                ? 'Your account is awaiting approval from an admin.'
+                : `${unreadCount} new notification${unreadCount === 1 ? '' : 's'}${isAdmin ? ` • ${pendingCount} pending approval${pendingCount === 1 ? '' : 's'}` : ''}`}
+          </p>
+        </header>
 
-        {/* Quick action buttons */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-12">
-          <Link
-            href="/compose"
-            className={`${styles.creatureButton} w-full justify-center bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:shadow-lg`}
-          >
-            <span>✨</span>
-            <span>Create Post</span>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
+          <Link href="/updates" className="iz-btn-ghost text-center py-3">
+            📰 View Updates
           </Link>
-          <Link
-            href="/updates"
-            className={`${styles.creatureButton} w-full justify-center bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:shadow-lg`}
-          >
-            <span>📰</span>
-            <span>View Updates</span>
+          <Link href="/notifications" className="iz-btn-ghost text-center py-3">
+            🔔 Notifications{unreadCount > 0 ? ` (${unreadCount})` : ''}
           </Link>
-          <Link
-            href="/notifications"
-            className={`${styles.creatureButton} w-full justify-center bg-gradient-to-r from-yellow-500 to-orange-600 text-white hover:shadow-lg`}
-          >
-            <span>🔔</span>
-            <span>Notifications</span>
+          <Link href="/settings" className="iz-btn-ghost text-center py-3">
+            ⚙️ Settings
           </Link>
         </div>
 
-        {/* Family cards section */}
-        <div className="mb-12">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
-            <span className="text-2xl">👨‍👩‍👧‍👦</span>
-            Your Families
-          </h2>
+        <section className="mb-12">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+              <span>👨‍👩‍👧‍👦</span>
+              Your Families
+            </h2>
+            {families && families.length === 0 && !needsApproval && (
+              <Link href="/create-family" className="iz-btn-primary">
+                + Create Family
+              </Link>
+            )}
+          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Sample family card - would be rendered from data */}
-            <div
-              className={`${styles.creatureCard} bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 border-blue-300 dark:border-blue-700 p-6 relative overflow-hidden`}
-            >
-              {/* Creature corner decoration */}
-              <div className={`${styles.decorationTL}`}>👨</div>
-              <div className={`${styles.decorationBR}`}>👧</div>
+          {loading && <p className="text-slate-500">Loading…</p>}
 
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                Smith Family
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
-                3 members • Active
-              </p>
-
-              <div className="space-y-2 mb-4">
-                <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-                  <span>📝</span>
-                  <span>12 posts this month</span>
+          {!loading && families && families.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {families.map((f) => (
+                <div key={f.id} className="iz-card p-6">
+                  <h3 className="text-xl font-bold text-white mb-2">{f.name}</h3>
+                  <p className="text-slate-400 text-sm mb-4">
+                    {f.memberCount} member{f.memberCount === 1 ? '' : 's'}
+                  </p>
+                  <div className="flex gap-2">
+                    <Link
+                      href="/wall"
+                      className="iz-btn-primary flex-1 text-center"
+                    >
+                      View Wall
+                    </Link>
+                    {isAdmin && (
+                      <Link
+                        href="/approvals"
+                        className="iz-btn-ghost flex-1 text-center"
+                      >
+                        Manage
+                      </Link>
+                    )}
+                  </div>
                 </div>
-                <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-                  <span>💬</span>
-                  <span>28 interactions</span>
-                </div>
-              </div>
-
-              <button className="w-full py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
-                View Wall
-              </button>
+              ))}
             </div>
-          </div>
+          )}
 
-          {/* Empty state */}
-          <div className={`${styles.emptyStateContainer} mt-8 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30`}>
-            <div className={styles.emptyStateCreature}>🏡</div>
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-              No families yet
-            </h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-4">
-              Create a family or wait for an invitation to join one.
-            </p>
-            <Link
-              href="/create-family"
-              className="inline-block px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"
-            >
-              Create Family
-            </Link>
-          </div>
-        </div>
+          {!loading && families && families.length === 0 && (
+            <div className="iz-card p-10 text-center">
+              <div className="text-5xl mb-4">🏡</div>
+              <h3 className="text-xl font-bold text-white mb-2">
+                No families yet
+              </h3>
+              <p className="text-slate-400 mb-6 max-w-md mx-auto">
+                {needsApproval
+                  ? 'An admin needs to approve your account before you can join a family.'
+                  : 'Create a family or accept an invite to join one.'}
+              </p>
+              {!needsApproval && (
+                <Link href="/create-family" className="iz-btn-primary">
+                  Create Family
+                </Link>
+              )}
+            </div>
+          )}
+        </section>
 
-        {/* Recent activity section */}
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
-            <span className="text-2xl">📅</span>
-            Recent Activity
-          </h2>
-
-          <div className="space-y-3">
-            <ActivityItem
-              timestamp="2 hours ago"
-              event="Sarah shared a photo"
-              family="Smith Family"
-            />
-            <ActivityItem
-              timestamp="Yesterday"
-              event="New member approved: Emma"
-              family="Smith Family"
-            />
-            <ActivityItem
-              timestamp="3 days ago"
-              event="Mike added a memory"
-              family="Smith Family"
-            />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function ActivityItem({
-  timestamp,
-  event,
-  family,
-}: {
-  timestamp: string;
-  event: string;
-  family: string;
-}) {
-  return (
-    <div className="flex items-start gap-4 p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow">
-      <div className="text-2xl mt-1">✨</div>
-      <div className="flex-1 min-w-0">
-        <p className="font-medium text-gray-900 dark:text-white">{event}</p>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          {family} • {timestamp}
-        </p>
+        {isAdmin && (
+          <section className="mb-10">
+            <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+              <span>🛡️</span>
+              Admin
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Link href="/approvals" className="iz-btn-ghost py-3 text-center">
+                Approvals {pendingCount > 0 && `(${pendingCount})`}
+              </Link>
+              <Link
+                href="/approvals/history"
+                className="iz-btn-ghost py-3 text-center"
+              >
+                Approval history
+              </Link>
+              {profile?.role === 'isla' && (
+                <Link href="/compose" className="iz-btn-primary py-3 text-center">
+                  ✨ Compose Update
+                </Link>
+              )}
+            </div>
+          </section>
+        )}
       </div>
     </div>
   );

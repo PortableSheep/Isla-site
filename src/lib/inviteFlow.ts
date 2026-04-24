@@ -198,32 +198,36 @@ export async function acceptInvite(token: string, userId: string): Promise<{
 export async function getMyFamilies(userId: string): Promise<FamilyInfo[]>  {
   const supabase = await getSbClient();
   try {
-    const { data: families, error } = await supabase
-      .from('family_members')
-      .select('families(id, name)')
-      .eq('user_id', userId);
+    // A user_profiles row links a user to one family. The user_profiles
+    // schema has user_id UNIQUE, so we get at most one family here.
+    const { data: profile, error } = await supabase
+      .from('user_profiles')
+      .select('family_id, status, families(id, name)')
+      .eq('user_id', userId)
+      .maybeSingle();
 
-    if (error || !families) {
+    if (error || !profile || !profile.family_id) {
       return [];
     }
 
-    // Get member counts
-    const familiesWithCounts = await Promise.all(
-      families.map(async (fm: any) => {
-        const { count } = await supabase
-          .from('family_members')
-          .select('*', { count: 'exact', head: true })
-          .eq('family_id', fm.families.id);
+    const family = Array.isArray((profile as any).families)
+      ? (profile as any).families[0]
+      : (profile as any).families;
+    if (!family) return [];
 
-        return {
-          id: fm.families.id,
-          name: fm.families.name,
-          memberCount: count || 0,
-        };
-      })
-    );
+    const { count } = await supabase
+      .from('user_profiles')
+      .select('*', { count: 'exact', head: true })
+      .eq('family_id', profile.family_id)
+      .eq('status', 'approved');
 
-    return familiesWithCounts;
+    return [
+      {
+        id: family.id,
+        name: family.name,
+        memberCount: count || 0,
+      },
+    ];
   } catch (error) {
     console.error('Error getting user families:', error);
     return [];

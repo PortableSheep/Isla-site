@@ -26,7 +26,7 @@ export default function ComposePage() {
 
         const isIsla = await isIslaUser(user.id);
         if (!isIsla) {
-          router.push('/');
+          setIsAuthorized(false);
           return;
         }
 
@@ -106,7 +106,23 @@ export default function ComposePage() {
   }
 
   if (!isAuthorized) {
-    return null;
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-16">
+        <div className="iz-card p-8 text-center">
+          <div className="text-5xl mb-4">✨</div>
+          <h1 className="text-2xl font-bold text-white mb-2">
+            Compose is for Isla only
+          </h1>
+          <p className="text-slate-400 mb-6">
+            The Compose page is used by the Isla account to broadcast updates to
+            every family. Your account doesn&apos;t have that role.
+          </p>
+          <a href="/dashboard" className="iz-btn-primary inline-block">
+            Back to dashboard
+          </a>
+        </div>
+      </div>
+    );
   }
 
   return (
