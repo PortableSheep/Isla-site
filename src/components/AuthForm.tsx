@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { signUp, signIn, validateEmail, validatePassword } from '@/lib/auth';
 import { announceToScreenReader } from '@/lib/accessibility';
+import { supabase } from '@/lib/supabase';
 
 interface AuthFormProps {
   type: 'signup' | 'login';
@@ -65,13 +66,24 @@ export function AuthForm({ type, onSuccess }: AuthFormProps) {
         }, 3000);
       } else {
         setLoading(true);
-        await signIn(email, password);
+        const { user } = await signIn(email, password);
         const msg = 'Logged in successfully!';
         setSuccess(msg);
         announceToScreenReader(msg, 'polite');
+        // Admins land on the moderation dashboard; everyone else (Isla) on
+        // the wall. Best-effort: if the admin check fails we still route to /.
+        let destination = '/';
+        if (user?.id) {
+          try {
+            const { data } = await supabase.rpc('is_admin', { uid: user.id });
+            if (data === true) destination = '/admin/moderation';
+          } catch (err) {
+            console.error('[auth] is_admin check failed', err);
+          }
+        }
         setTimeout(() => {
           onSuccess?.();
-          router.push('/');
+          router.push(destination);
         }, 1000);
       }
     } catch (err) {
