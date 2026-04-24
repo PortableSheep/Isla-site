@@ -90,27 +90,27 @@ export function AuthForm({ type, onSuccess }: AuthFormProps) {
   const successId = 'auth-success';
 
   return (
-    <form 
-      onSubmit={handleSubmit} 
-      className="w-full max-w-md mx-auto"
+    <form
+      onSubmit={handleSubmit}
+      className="w-full"
       aria-label={`${type === 'signup' ? 'Sign up' : 'Sign in'} form`}
     >
-      <div className="space-y-4">
+      <div className="space-y-5">
         {error && (
-          <div 
+          <div
             id={errorId}
-            className="bg-red-900/20 border border-red-700 text-red-200 px-4 py-3 rounded-lg text-sm"
+            className="rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200"
             role="alert"
             aria-live="assertive"
             aria-atomic="true"
           >
-            <strong>Error:</strong> {error}
+            <strong className="font-semibold">Error:</strong> {error}
           </div>
         )}
         {success && (
-          <div 
+          <div
             id={successId}
-            className="bg-green-900/20 border border-green-700 text-green-200 px-4 py-3 rounded-lg text-sm"
+            className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200"
             role="status"
             aria-live="polite"
             aria-atomic="true"
@@ -120,19 +120,16 @@ export function AuthForm({ type, onSuccess }: AuthFormProps) {
         )}
 
         <div>
-          <label 
-            htmlFor={emailId}
-            className="block text-sm font-medium text-gray-200 mb-2"
-          >
-            Email <span aria-label="required">*</span>
+          <label htmlFor={emailId} className="block text-sm font-medium text-slate-200 mb-2">
+            Email <span className="text-fuchsia-300" aria-label="required">*</span>
           </label>
           <input
             id={emailId}
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="your@email.com"
-            className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            placeholder="you@example.com"
+            className="iz-input"
             disabled={loading}
             required
             aria-required="true"
@@ -141,11 +138,8 @@ export function AuthForm({ type, onSuccess }: AuthFormProps) {
         </div>
 
         <div>
-          <label 
-            htmlFor={passwordId}
-            className="block text-sm font-medium text-gray-200 mb-2"
-          >
-            Password <span aria-label="required">*</span>
+          <label htmlFor={passwordId} className="block text-sm font-medium text-slate-200 mb-2">
+            Password <span className="text-fuchsia-300" aria-label="required">*</span>
           </label>
           <input
             id={passwordId}
@@ -153,7 +147,7 @@ export function AuthForm({ type, onSuccess }: AuthFormProps) {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••"
-            className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="iz-input"
             disabled={loading}
             required
             aria-required="true"
@@ -163,11 +157,8 @@ export function AuthForm({ type, onSuccess }: AuthFormProps) {
 
         {type === 'signup' && (
           <div>
-            <label 
-              htmlFor={confirmPasswordId}
-              className="block text-sm font-medium text-gray-200 mb-2"
-            >
-              Confirm Password <span aria-label="required">*</span>
+            <label htmlFor={confirmPasswordId} className="block text-sm font-medium text-slate-200 mb-2">
+              Confirm Password <span className="text-fuchsia-300" aria-label="required">*</span>
             </label>
             <input
               id={confirmPasswordId}
@@ -175,7 +166,7 @@ export function AuthForm({ type, onSuccess }: AuthFormProps) {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="iz-input"
               disabled={loading}
               required
               aria-required="true"
@@ -187,41 +178,17 @@ export function AuthForm({ type, onSuccess }: AuthFormProps) {
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900"
+          className="iz-btn-primary w-full h-12 rounded-xl focus:outline-none focus:ring-2 focus:ring-fuchsia-400 focus:ring-offset-2 focus:ring-offset-slate-950"
           aria-busy={loading}
         >
-          {loading ? 'Loading...' : type === 'signup' ? 'Create Account' : 'Sign In'}
+          {loading ? 'Please wait…' : type === 'signup' ? 'Create Account' : 'Sign In'}
         </button>
-
-        <p className="text-center text-sm text-gray-400">
-          {type === 'signup' ? (
-            <>
-              Already have an account?{' '}
-              <a 
-                href="/auth/login" 
-                className="text-blue-400 hover:text-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded px-1"
-              >
-                Sign in
-              </a>
-            </>
-          ) : (
-            <>
-              Don't have an account?{' '}
-              <a 
-                href="/auth/signup" 
-                className="text-blue-400 hover:text-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded px-1"
-              >
-                Create one
-              </a>
-            </>
-          )}
-        </p>
 
         {type === 'login' && (
           <p className="text-center text-sm">
             <a
               href="/auth/reset-password"
-              className="text-blue-400 hover:text-blue-300"
+              className="text-slate-400 hover:text-slate-200 transition-colors"
             >
               Forgot password?
             </a>

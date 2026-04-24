@@ -4,8 +4,8 @@ import { AuthProvider } from "@/lib/AuthContext";
 import { SkipToMainLink } from "@/components/SkipToMainLink";
 
 export const metadata: Metadata = {
-  title: "Isla Zone - Message Wall for Children",
-  description: "A private message wall designed for children to share thoughts and memories",
+  title: "Isla Zone — A private message wall for families",
+  description: "A private, warm, and playful message wall where families share thoughts, memories, and everyday moments.",
 };
 
 export default function RootLayout({
@@ -14,21 +14,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className="h-full antialiased bg-gray-950"
-    >
+    <html lang="en" className="h-full antialiased">
       <head>
-        {/* Accessibility: Skip to main content */}
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta httpEquiv="x-ua-compatible" content="IE=edge" />
       </head>
-      <body className="min-h-full flex flex-col bg-gray-950 text-white">
-        {/* Skip to main content link for keyboard users */}
+      <body className="min-h-full flex flex-col text-slate-100 selection:bg-fuchsia-500/40 selection:text-white">
         <SkipToMainLink />
-        
         <AuthProvider>
-          <main id="main-content" role="main">
+          <main id="main-content" role="main" className="flex flex-col flex-1">
             {children}
           </main>
         </AuthProvider>
@@ -36,3 +30,4 @@ export default function RootLayout({
     </html>
   );
 }
+
