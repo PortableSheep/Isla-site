@@ -17,7 +17,7 @@ export async function getSbClient(): Promise<SupabaseClient> {
   if (typeof window !== 'undefined') {
     return browserClient;
   }
-  const { cookies } = await import(/* webpackIgnore: true */ 'next/headers');
+  const { cookies } = await import(/* webpackIgnore: true */ 'next/headers.js');
   const cookieStore = await cookies();
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
