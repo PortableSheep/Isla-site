@@ -57,23 +57,67 @@ function formatTime(iso: string): string {
 const YT_REGEX =
   /https?:\/\/(?:www\.|m\.)?(?:youtube\.com\/(?:watch\?[^\s]*v=|shorts\/|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{11})(?:[^\s]*)?/gi;
 
-function extractYouTubeIds(text: string): string[] {
-  const ids = new Set<string>();
-  for (const m of text.matchAll(YT_REGEX)) {
-    if (m[1]) ids.add(m[1]);
+const IMG_REGEX =
+  /https?:\/\/[^\s<]+?\.(?:gif|png|jpe?g|webp)(?:\?[^\s<]*)?/gi;
+const TENOR_VIEW_REGEX = /https?:\/\/(?:www\.)?tenor\.com\/view\/[^\s<]*?-(\d+)/gi;
+const GIPHY_VIEW_REGEX = /https?:\/\/(?:www\.)?giphy\.com\/(?:gifs|clips)\/[^\s<]*?-([A-Za-z0-9]+)(?=[^\w]|$)/gi;
+
+type MediaEmbed =
+  | { kind: 'image'; url: string }
+  | { kind: 'youtube'; id: string }
+  | { kind: 'tenor'; id: string }
+  | { kind: 'giphy'; id: string };
+
+function extractMedia(text: string): { embeds: MediaEmbed[]; consumed: Set<string> } {
+  const embeds: MediaEmbed[] = [];
+  const consumed = new Set<string>();
+  const seen = new Set<string>();
+
+  for (const m of text.matchAll(IMG_REGEX)) {
+    const url = m[0];
+    if (seen.has(url)) continue;
+    seen.add(url);
+    consumed.add(url);
+    embeds.push({ kind: 'image', url });
   }
-  return Array.from(ids);
+  for (const m of text.matchAll(YT_REGEX)) {
+    const id = m[1];
+    if (!id || seen.has('yt:' + id)) continue;
+    seen.add('yt:' + id);
+    consumed.add(m[0]);
+    embeds.push({ kind: 'youtube', id });
+  }
+  for (const m of text.matchAll(TENOR_VIEW_REGEX)) {
+    const id = m[1];
+    if (!id || seen.has('tenor:' + id)) continue;
+    seen.add('tenor:' + id);
+    consumed.add(m[0]);
+    embeds.push({ kind: 'tenor', id });
+  }
+  for (const m of text.matchAll(GIPHY_VIEW_REGEX)) {
+    const id = m[1];
+    if (!id || seen.has('giphy:' + id)) continue;
+    seen.add('giphy:' + id);
+    consumed.add(m[0]);
+    embeds.push({ kind: 'giphy', id });
+  }
+
+  return { embeds, consumed };
 }
 
 const URL_REGEX = /(https?:\/\/[^\s<]+)/g;
 
-function Linkified({ text }: { text: string }) {
+function Linkified({ text, hideUrls }: { text: string; hideUrls?: Set<string> }) {
   const parts: (string | { href: string })[] = [];
   let last = 0;
   for (const m of text.matchAll(URL_REGEX)) {
     const start = m.index ?? 0;
     if (start > last) parts.push(text.slice(last, start));
-    parts.push({ href: m[0] });
+    if (hideUrls?.has(m[0])) {
+      // swallow the URL entirely — media embed replaces it
+    } else {
+      parts.push({ href: m[0] });
+    }
     last = start + m[0].length;
   }
   if (last < text.length) parts.push(text.slice(last));
@@ -98,28 +142,143 @@ function Linkified({ text }: { text: string }) {
   );
 }
 
-function YouTubeEmbeds({ content }: { content: string }) {
-  const ids = useMemo(() => extractYouTubeIds(content), [content]);
-  if (ids.length === 0) return null;
+function MediaEmbeds({ embeds }: { embeds: MediaEmbed[] }) {
+  if (embeds.length === 0) return null;
   return (
     <div className="mt-3 flex flex-col gap-3">
-      {ids.slice(0, 3).map((id) => (
-        <div
-          key={id}
-          className="relative w-full overflow-hidden rounded-xl border border-white/10"
-          style={{ paddingBottom: '56.25%' }}
-        >
-          <iframe
-            src={`https://www.youtube-nocookie.com/embed/${id}`}
-            title="YouTube video"
-            loading="lazy"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            referrerPolicy="strict-origin-when-cross-origin"
-            allowFullScreen
-            className="absolute inset-0 h-full w-full"
-          />
-        </div>
-      ))}
+      {embeds.slice(0, 4).map((e, i) => {
+        if (e.kind === 'image') {
+          return (
+            <a
+              key={i}
+              href={e.url}
+              target="_blank"
+              rel="noopener noreferrer nofollow"
+              className="block overflow-hidden rounded-xl border border-white/10 bg-black/30"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={e.url}
+                alt="Shared image"
+                loading="lazy"
+                className="max-h-[480px] w-full object-contain"
+              />
+            </a>
+          );
+        }
+        if (e.kind === 'youtube') {
+          return (
+            <div
+              key={i}
+              className="relative w-full overflow-hidden rounded-xl border border-white/10"
+              style={{ paddingBottom: '56.25%' }}
+            >
+              <iframe
+                src={`https://www.youtube-nocookie.com/embed/${e.id}`}
+                title="YouTube video"
+                loading="lazy"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerPolicy="strict-origin-when-cross-origin"
+                allowFullScreen
+                className="absolute inset-0 h-full w-full"
+              />
+            </div>
+          );
+        }
+        if (e.kind === 'tenor') {
+          return (
+            <div
+              key={i}
+              className="overflow-hidden rounded-xl border border-white/10 bg-black/30"
+            >
+              <iframe
+                src={`https://tenor.com/embed/${e.id}`}
+                title="Tenor GIF"
+                loading="lazy"
+                referrerPolicy="strict-origin-when-cross-origin"
+                className="h-[320px] w-full"
+              />
+            </div>
+          );
+        }
+        // giphy
+        return (
+          <div
+            key={i}
+            className="overflow-hidden rounded-xl border border-white/10 bg-black/30"
+          >
+            <iframe
+              src={`https://giphy.com/embed/${e.id}`}
+              title="Giphy"
+              loading="lazy"
+              referrerPolicy="strict-origin-when-cross-origin"
+              allowFullScreen
+              className="h-[320px] w-full"
+            />
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function PostBody({ post }: { post: Post }) {
+  const { embeds, consumed } = useMemo(() => extractMedia(post.content), [post.content]);
+  const approved = post.moderation_status === 'approved';
+  return (
+    <>
+      <p className="mt-3 whitespace-pre-wrap text-[15px] leading-relaxed text-slate-100">
+        <Linkified text={post.content} hideUrls={approved ? consumed : undefined} />
+      </p>
+      {approved && <MediaEmbeds embeds={embeds} />}
+    </>
+  );
+}
+
+function CommentBody({ comment }: { comment: Comment }) {
+  const { embeds, consumed } = useMemo(() => extractMedia(comment.content), [comment.content]);
+  const approved = comment.moderation_status === 'approved';
+  return (
+    <>
+      <p className="mt-1 whitespace-pre-wrap text-sm text-slate-100">
+        <Linkified text={comment.content} hideUrls={approved ? consumed : undefined} />
+      </p>
+      {approved && <MediaEmbeds embeds={embeds} />}
+    </>
+  );
+}
+
+function MediaHelperBar() {
+  return (
+    <div className="flex flex-wrap items-center gap-2 rounded-lg border border-dashed border-white/10 bg-black/20 px-3 py-2 text-xs text-slate-400">
+      <span className="text-slate-300">Add a GIF or meme:</span>
+      <a
+        href="https://tenor.com/search/gifs"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="rounded-md border border-white/10 bg-white/5 px-2 py-1 text-slate-200 transition hover:border-fuchsia-400/40 hover:text-fuchsia-200"
+      >
+        🔎 Find a GIF (Tenor)
+      </a>
+      <a
+        href="https://giphy.com/search/funny"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="rounded-md border border-white/10 bg-white/5 px-2 py-1 text-slate-200 transition hover:border-fuchsia-400/40 hover:text-fuchsia-200"
+      >
+        🎞️ Giphy
+      </a>
+      <a
+        href="https://www.youtube.com"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="rounded-md border border-white/10 bg-white/5 px-2 py-1 text-slate-200 transition hover:border-fuchsia-400/40 hover:text-fuchsia-200"
+      >
+        📺 YouTube
+      </a>
+      <span className="basis-full text-[11px] text-slate-500">
+        Copy the link and paste it in the box — it&apos;ll show up right on the wall.
+      </span>
     </div>
   );
 }
@@ -193,9 +352,7 @@ function CommentBlock({
             <span>{formatTime(c.created_at)}</span>
             <Badge status={c.moderation_status} />
           </div>
-          <p className="mt-1 whitespace-pre-wrap text-sm text-slate-100">
-            <Linkified text={c.content} />
-          </p>
+          <CommentBody comment={c} />
         </div>
       ))}
 
@@ -226,7 +383,7 @@ function CommentBlock({
             <input
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              placeholder="Leave a comment…"
+              placeholder="Leave a comment… (paste a GIF / meme link too!)"
               maxLength={1000}
               className="flex-1 rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:border-fuchsia-400 focus:outline-none"
             />
@@ -303,11 +460,12 @@ function Composer({
       <textarea
         value={content}
         onChange={(e) => setContent(e.target.value)}
-        placeholder="Say hi, share a YouTube link, tell Isla a joke…"
+        placeholder="Say hi, paste a GIF / meme / YouTube link, or tell Isla a joke…"
         rows={4}
         maxLength={2000}
         className="w-full resize-y rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:border-fuchsia-400 focus:outline-none"
       />
+      <MediaHelperBar />
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-xs text-slate-400">
           Posts are reviewed by Isla&apos;s dad before showing up publicly. You&apos;ll see your own
@@ -647,10 +805,7 @@ export function PublicWall() {
               <span>{formatTime(p.created_at)}</span>
               <Badge status={p.moderation_status} />
             </div>
-            <p className="mt-3 whitespace-pre-wrap text-[15px] leading-relaxed text-slate-100">
-              <Linkified text={p.content} />
-            </p>
-            {p.moderation_status === 'approved' && <YouTubeEmbeds content={p.content} />}
+            <PostBody post={p} />
             <ReactionBar post={p} onReact={(emoji, removing) => submitReaction(p.id, emoji, removing)} />
             <CommentBlock post={p} requireName={requireName} onSubmit={submitComment} />
           </article>
