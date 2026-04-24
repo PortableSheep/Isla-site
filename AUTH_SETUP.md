@@ -309,6 +309,34 @@ If you didn't request this change, ignore this email.
 
 ### Using External Email Services
 
+### Moderation digest cron
+
+Vercel Cron hits `/api/cron/moderation-digest` every 15 minutes (configured
+in `vercel.json`). The endpoint:
+
+1. Reads the `last_alerted_max_created_at` watermark from `system_state`
+   (migration `018_system_state.sql`).
+2. Loads pending posts/comments newer than that watermark.
+3. If any, emails an HTML digest via Resend to `MOD_ALERT_TO` and advances
+   the watermark so the next run won't re-alert.
+
+Required env vars (set in Vercel → Project Settings → Environment Variables):
+
+| Variable | Purpose |
+|---|---|
+| `RESEND_API_KEY` | Resend API key (`re_...`). |
+| `RESEND_FROM_EMAIL` | Optional. Defaults to `Isla Zone <noreply@islazone.app>`. Must be a domain verified in Resend. |
+| `MOD_ALERT_TO` | Comma-separated list of admin emails to notify. If unset, the cron runs but no email is sent. |
+| `CRON_SECRET` | Vercel-generated secret. Vercel automatically sends `Authorization: Bearer $CRON_SECRET`. If unset, the route is open (dev only). |
+| `SUPABASE_SERVICE_ROLE_KEY` | Already required; used to bypass RLS for the pending query and watermark upsert. |
+| `NEXT_PUBLIC_APP_URL` | Used to build the dashboard link in the email. |
+
+Schedule: `*/15 * * * *`. **Vercel Hobby plans only run cron once per day** —
+bump to Pro, or change the schedule to `0 * * * *` / `0 9 * * *` if you're on
+Hobby. Manually trigger for testing: `curl -H "Authorization: Bearer $CRON_SECRET" https://your-app.vercel.app/api/cron/moderation-digest`.
+
+### Using External Email Services (auth emails)
+
 **For Resend** (recommended for Next.js):
 
 ```typescript

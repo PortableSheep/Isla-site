@@ -1,0 +1,205 @@
+import { NextResponse } from 'next/server';
+import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
+import { sendEmail, getAppUrl } from '@/lib/email/resend';
+
+export const dynamic = 'force-dynamic';
+
+// Vercel Cron hits this endpoint. We gate it with a shared secret so it can't
+// be triggered by random internet traffic (Vercel sends `Authorization:
+// Bearer <CRON_SECRET>` when the env var is set).
+function isAuthorized(request: Request): boolean {
+  const secret = process.env.CRON_SECRET;
+  if (!secret) return true; // local/dev: allow
+  const header = request.headers.get('authorization');
+  return header === `Bearer ${secret}`;
+}
+
+const STATE_KEY = 'moderation_digest';
+
+interface DigestState {
+  last_alerted_at: string | null;
+  last_alerted_max_created_at: string | null;
+}
+
+function truncate(text: string, max = 140): string {
+  if (!text) return '';
+  const clean = text.replace(/\s+/g, ' ').trim();
+  return clean.length > max ? `${clean.slice(0, max - 1)}…` : clean;
+}
+
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+export async function GET(request: Request) {
+  if (!isAuthorized(request)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const admin = getSupabaseAdmin();
+  if (!admin) {
+    return NextResponse.json(
+      { error: 'service_role_unavailable' },
+      { status: 500 }
+    );
+  }
+
+  const { data: stateRow } = await admin
+    .from('system_state')
+    .select('value')
+    .eq('key', STATE_KEY)
+    .maybeSingle();
+
+  const state: DigestState =
+    (stateRow?.value as DigestState | undefined) ?? {
+      last_alerted_at: null,
+      last_alerted_max_created_at: null,
+    };
+
+  const { data: pending, error } = await admin
+    .from('posts')
+    .select('id, author_name, content, parent_post_id, created_at')
+    .eq('moderation_status', 'pending')
+    .is('deleted_at', null)
+    .order('created_at', { ascending: true })
+    .limit(100);
+
+  if (error) {
+    console.error('[mod-digest] query failed', error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  const allPending = pending ?? [];
+  const watermark = state.last_alerted_max_created_at
+    ? new Date(state.last_alerted_max_created_at).getTime()
+    : 0;
+  const newItems = allPending.filter(
+    (p) => new Date(p.created_at).getTime() > watermark
+  );
+
+  if (newItems.length === 0) {
+    return NextResponse.json({
+      ok: true,
+      pendingTotal: allPending.length,
+      newSinceLastAlert: 0,
+      emailed: false,
+    });
+  }
+
+  const to = (process.env.MOD_ALERT_TO ?? '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+  if (to.length === 0) {
+    console.warn('[mod-digest] MOD_ALERT_TO not set — skipping email');
+    return NextResponse.json({
+      ok: true,
+      pendingTotal: allPending.length,
+      newSinceLastAlert: newItems.length,
+      emailed: false,
+      reason: 'no_recipients',
+    });
+  }
+
+  const appUrl = getAppUrl();
+  const modUrl = `${appUrl}/admin/moderation`;
+  const totalPending = allPending.length;
+  const subject =
+    newItems.length === 1
+      ? `Isla wall: 1 new post awaiting moderation`
+      : `Isla wall: ${newItems.length} new posts awaiting moderation`;
+
+  const rowsHtml = newItems
+    .slice(0, 20)
+    .map((p) => {
+      const author = escapeHtml(p.author_name || 'anonymous');
+      const kind = p.parent_post_id ? 'comment' : 'post';
+      const snippet = escapeHtml(truncate(p.content || '(no text)'));
+      const when = new Date(p.created_at).toLocaleString('en-US', {
+        timeZone: 'America/Chicago',
+      });
+      return `<tr>
+  <td style="padding:6px 10px;border-bottom:1px solid #1f2937;font-family:monospace;font-size:12px;color:#94a3b8;">${when}</td>
+  <td style="padding:6px 10px;border-bottom:1px solid #1f2937;color:#e2e8f0;">${kind} by <b>${author}</b><br><span style="color:#cbd5e1;">${snippet}</span></td>
+</tr>`;
+    })
+    .join('\n');
+
+  const more =
+    newItems.length > 20
+      ? `<p style="color:#94a3b8;font-size:13px;">…and ${newItems.length - 20} more.</p>`
+      : '';
+
+  const html = `<!doctype html>
+<html><body style="background:#0f172a;color:#e2e8f0;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;padding:24px;">
+  <div style="max-width:640px;margin:0 auto;background:#111827;border:1px solid #1f2937;border-radius:12px;padding:24px;">
+    <h1 style="margin:0 0 8px 0;font-size:20px;color:#f472b6;">Moderation queue</h1>
+    <p style="margin:0 0 16px 0;color:#cbd5e1;">
+      ${newItems.length} new item${newItems.length === 1 ? '' : 's'} since the last alert.
+      ${totalPending} total pending.
+    </p>
+    <p style="margin:0 0 20px 0;">
+      <a href="${modUrl}" style="display:inline-block;background:#a21caf;color:#fff;padding:10px 16px;border-radius:8px;text-decoration:none;font-weight:600;">Open moderation dashboard</a>
+    </p>
+    <table style="width:100%;border-collapse:collapse;font-size:14px;">
+      ${rowsHtml}
+    </table>
+    ${more}
+    <p style="margin:20px 0 0 0;color:#64748b;font-size:12px;">Isla.site • automated digest</p>
+  </div>
+</body></html>`;
+
+  const text =
+    `${newItems.length} new item(s) awaiting moderation (${totalPending} total pending).\n\n` +
+    newItems
+      .slice(0, 20)
+      .map((p) => {
+        const kind = p.parent_post_id ? 'comment' : 'post';
+        return `- ${kind} by ${p.author_name || 'anonymous'}: ${truncate(
+          p.content || '(no text)'
+        )}`;
+      })
+      .join('\n') +
+    `\n\nDashboard: ${modUrl}\n`;
+
+  const result = await sendEmail({ to, subject, html, text });
+
+  if (!result.ok) {
+    return NextResponse.json(
+      { error: 'email_failed', detail: result.error },
+      { status: 500 }
+    );
+  }
+
+  const maxCreatedAt = newItems[newItems.length - 1].created_at;
+  const newState: DigestState = {
+    last_alerted_at: new Date().toISOString(),
+    last_alerted_max_created_at: maxCreatedAt,
+  };
+
+  const { error: upsertError } = await admin
+    .from('system_state')
+    .upsert(
+      { key: STATE_KEY, value: newState, updated_at: new Date().toISOString() },
+      { onConflict: 'key' }
+    );
+
+  if (upsertError) {
+    console.error('[mod-digest] watermark upsert failed', upsertError);
+  }
+
+  return NextResponse.json({
+    ok: true,
+    pendingTotal: totalPending,
+    newSinceLastAlert: newItems.length,
+    emailed: true,
+    skipped: result.skipped === true,
+    recipients: to.length,
+  });
+}

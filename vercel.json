@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/moderation-digest",
+      "schedule": "*/15 * * * *"
+    }
+  ]
+}
