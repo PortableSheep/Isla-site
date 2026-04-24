@@ -115,8 +115,16 @@ export async function checkRateLimit(
 }
 
 /** Resolve the family_id that all public-wall content attaches to. */
+// Stable singleton: this site has exactly one family (Isla's). Env var can override
+// for previews/staging, but production never needs configuring.
+const DEFAULT_ISLA_FAMILY_ID = '5c03b0c0-3c65-4e9a-981a-3edd3dcb015c';
+
 export function getIslaFamilyId(): string | null {
-  return process.env.NEXT_PUBLIC_ISLA_FAMILY_ID || process.env.ISLA_FAMILY_ID || null;
+  return (
+    process.env.NEXT_PUBLIC_ISLA_FAMILY_ID ||
+    process.env.ISLA_FAMILY_ID ||
+    DEFAULT_ISLA_FAMILY_ID
+  );
 }
 
 export type GuestContext = {
