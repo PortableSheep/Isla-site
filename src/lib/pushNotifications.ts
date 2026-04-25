@@ -32,26 +32,49 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array<ArrayBuffer> {
   return output;
 }
 
-export async function subscribeToPush(): Promise<boolean> {
+export type SubscribeResult =
+  | { ok: true }
+  | { ok: false; reason: 'no-vapid-key' | 'permission-denied' | 'sw-failed' | 'subscribe-failed' | 'server-failed'; message?: string };
+
+export async function subscribeToPush(): Promise<SubscribeResult> {
   const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
   if (!publicKey) {
     console.error('NEXT_PUBLIC_VAPID_PUBLIC_KEY is not set');
-    return false;
+    return { ok: false, reason: 'no-vapid-key' };
+  }
+
+  // IMPORTANT: call requestPermission FIRST, synchronously from the user
+  // gesture. Awaiting other things first (e.g. SW registration) can consume
+  // the user-activation token in some browsers (Safari especially) and
+  // cause the prompt to silently never appear.
+  let permission: NotificationPermission;
+  try {
+    permission = await Notification.requestPermission();
+  } catch (err) {
+    console.error('Notification.requestPermission threw:', err);
+    return { ok: false, reason: 'permission-denied', message: String(err) };
+  }
+  if (permission !== 'granted') {
+    return { ok: false, reason: 'permission-denied' };
   }
 
   try {
     const registration = await registerServiceWorker();
-    if (!registration) return false;
+    if (!registration) return { ok: false, reason: 'sw-failed' };
 
-    // Request permission
-    const permission = await Notification.requestPermission();
-    if (permission !== 'granted') return false;
-
-    // Subscribe with VAPID key
-    const subscription = await registration.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array(publicKey),
-    });
+    // Reuse existing subscription if any
+    let subscription = await registration.pushManager.getSubscription();
+    if (!subscription) {
+      try {
+        subscription = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(publicKey),
+        });
+      } catch (err) {
+        console.error('pushManager.subscribe failed:', err);
+        return { ok: false, reason: 'subscribe-failed', message: String(err) };
+      }
+    }
 
     const sub = subscription.toJSON();
     const response = await fetch('/api/push/subscribe', {
@@ -64,10 +87,13 @@ export async function subscribeToPush(): Promise<boolean> {
       }),
     });
 
-    return response.ok;
+    if (!response.ok) {
+      return { ok: false, reason: 'server-failed', message: `HTTP ${response.status}` };
+    }
+    return { ok: true };
   } catch (err) {
     console.error('Push subscription failed:', err);
-    return false;
+    return { ok: false, reason: 'subscribe-failed', message: String(err) };
   }
 }
 
