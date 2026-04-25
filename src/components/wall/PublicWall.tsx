@@ -1249,9 +1249,9 @@ export function PublicWall() {
                 ×
               </button>
             </div>
-            <ul className="space-y-1">
+            <ul className="m-0 list-none space-y-1 p-0">
               {presenceUsers.map((name) => (
-                <li key={name} className="flex items-center gap-1.5 text-sm text-emerald-200">
+                <li key={name} className="flex items-center gap-1.5 text-xs text-emerald-200">
                   <span className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-emerald-400" />
                   <span className="max-w-[140px] truncate">{name}</span>
                 </li>
