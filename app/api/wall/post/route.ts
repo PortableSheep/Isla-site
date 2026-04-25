@@ -8,6 +8,8 @@ import {
   getIslaFamilyId,
 } from '@/lib/wallGuest';
 import { scoreSpam } from '@/lib/spamScore';
+import { moderateContent } from '@/lib/contentModeration';
+import { checkUrls } from '@/lib/urlSafety';
 import { linkAttachmentsToPost } from '@/lib/wallAttachments';
 
 export const dynamic = 'force-dynamic';
@@ -55,6 +57,15 @@ export async function POST(request: NextRequest) {
 
     const { score, reasons } = scoreSpam(content);
 
+    // AI moderation (3 s timeout, fail open) + URL safety check.
+    // Both checks inject tags into spam_reasons; the DB trigger forces
+    // moderation_status = 'pending' when any block-tag is present.
+    const [aiResult, urlResult] = await Promise.all([
+      moderateContent(content),
+      Promise.resolve(checkUrls(content)),
+    ]);
+    const allReasons = [...reasons, ...aiResult.reasons, ...urlResult.reasons];
+
     const admin = getSupabaseAdmin();
     if (!admin) {
       return NextResponse.json({ error: 'server_misconfigured' }, { status: 500 });
@@ -93,7 +104,7 @@ export async function POST(request: NextRequest) {
         client_ip: guest.ip,
         user_agent: guest.userAgent,
         spam_score: score,
-        spam_reasons: reasons,
+        spam_reasons: allReasons,
       })
       .select('id, moderation_status, created_at')
       .single();

@@ -8,6 +8,8 @@ import {
   getIslaFamilyId,
 } from '@/lib/wallGuest';
 import { scoreSpam } from '@/lib/spamScore';
+import { moderateContent } from '@/lib/contentModeration';
+import { checkUrls } from '@/lib/urlSafety';
 import { linkAttachmentsToPost } from '@/lib/wallAttachments';
 
 export const dynamic = 'force-dynamic';
@@ -93,6 +95,13 @@ export async function POST(request: NextRequest) {
 
     const { score, reasons } = scoreSpam(content);
 
+    // AI moderation (3 s timeout, fail open) + URL safety check.
+    const [aiResult, urlResult] = await Promise.all([
+      moderateContent(content),
+      Promise.resolve(checkUrls(content)),
+    ]);
+    const allReasons = [...reasons, ...aiResult.reasons, ...urlResult.reasons];
+
     // Name-in-use check: reject if this name has been used by a different cookie
     // AND a different IP in the last 24 hours. Prevents impersonation while
     // allowing the same person to reclaim their name if their cookie was cleared
@@ -126,7 +135,7 @@ export async function POST(request: NextRequest) {
         client_ip: guest.ip,
         user_agent: guest.userAgent,
         spam_score: score,
-        spam_reasons: reasons,
+        spam_reasons: allReasons,
       })
       .select('id, moderation_status, created_at, parent_post_id')
       .single();
