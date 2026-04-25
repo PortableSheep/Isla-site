@@ -28,6 +28,7 @@ export async function moderateContent(text: string): Promise<ModerationResult> {
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
   try {
+    console.log('[content-moderation] checking content, length=%d', text.length);
     const res = await fetch(OPENAI_MODERATION_URL, {
       method: 'POST',
       headers: {
@@ -39,6 +40,7 @@ export async function moderateContent(text: string): Promise<ModerationResult> {
     });
 
     if (!res.ok) {
+      console.warn('[content-moderation] API error status=%d', res.status);
       return { flagged: false, reasons: [], error: `api_status_${res.status}` };
     }
 
@@ -48,10 +50,12 @@ export async function moderateContent(text: string): Promise<ModerationResult> {
 
     const result = data.results?.[0];
     if (!result) {
+      console.warn('[content-moderation] no result in response');
       return { flagged: false, reasons: [], error: 'no_result' };
     }
 
     if (!result.flagged) {
+      console.log('[content-moderation] clean');
       return { flagged: false, reasons: [] };
     }
 
@@ -64,9 +68,11 @@ export async function moderateContent(text: string): Promise<ModerationResult> {
       }
     }
 
+    console.log('[content-moderation] FLAGGED reasons=%s', reasons.join(', '));
     return { flagged: true, reasons };
   } catch (err) {
     const isTimeout = err instanceof Error && err.name === 'AbortError';
+    console.warn('[content-moderation] %s', isTimeout ? 'timeout' : 'fetch_error');
     return {
       flagged: false,
       reasons: [],
