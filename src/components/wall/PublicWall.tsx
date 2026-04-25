@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { supabase } from '@/lib/supabase';
 import { CreatureDisplay } from '@/components/CreatureDisplay';
 import { extractMedia, Linkified, MediaEmbeds } from '@/components/wall/media';
@@ -15,6 +16,18 @@ import {
   ModeratedImageList,
   type FeedAttachment,
 } from '@/components/wall/ModeratedImage';
+
+// Portals fixed-positioned children to document.body so they escape any
+// ancestor stacking context. Creature animations use transform/filter which
+// create stacking contexts that can hide sibling fixed elements.
+function BodyPortal({ children }: { children: React.ReactNode }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  if (!mounted || typeof document === 'undefined') return <>{children}</>;
+  return createPortal(children, document.body);
+}
 
 type Comment = {
   id: string;
@@ -1116,32 +1129,12 @@ export function PublicWall() {
         </div>
       )}
 
-      <div className="fixed top-3 right-3 z-30 flex items-center gap-2">
-        <button
-          type="button"
-          onClick={openSettings}
-          aria-label="Settings (change your display name)"
-          title={savedName ? `Posting as ${savedName}` : 'Set your display name'}
-          className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-slate-900/60 text-slate-500 backdrop-blur-md transition hover:border-fuchsia-400/40 hover:bg-slate-900/80 hover:text-fuchsia-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-400"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.8"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="h-4 w-4"
-            aria-hidden="true"
-          >
-            <circle cx="12" cy="12" r="3" />
-            <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34H9a1.7 1.7 0 0 0 1.03-1.56V3a2 2 0 1 1 4 0v.09A1.7 1.7 0 0 0 15 4.6a1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87V9c.15.37.53.6.93.6H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1Z" />
-          </svg>
-        </button>
-        <WallCornerAuthLink />
-        <NotificationBell />
-      </div>
+      <BodyPortal>
+        <div className="fixed top-3 right-3 z-30 flex items-center gap-2">
+          <WallCornerAuthLink />
+          <NotificationBell />
+        </div>
+      </BodyPortal>
 
       <header className="relative text-center">
         <div className="pointer-events-none absolute -top-2 left-0 hidden md:block">
@@ -1229,6 +1222,7 @@ export function PublicWall() {
 
     {/* Who's online badge — fixed top-left, compact count pill with tap-to-expand popover */}
     {presenceUsers.length > 0 && (
+    <BodyPortal>
     <div className="fixed left-4 top-3 z-30" ref={onlineBadgeRef}>
         <button
           type="button"
@@ -1266,6 +1260,7 @@ export function PublicWall() {
           </div>
         )}
     </div>
+    </BodyPortal>
     )}
     </>
   );
