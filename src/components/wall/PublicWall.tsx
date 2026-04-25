@@ -751,9 +751,11 @@ export function PublicWall() {
   const { user } = useAuth();
   const verified = !!user;
   const verifiedRef = useRef(verified);
+  const userIdRef = useRef<string | null>(user?.id ?? null);
   useEffect(() => {
     verifiedRef.current = verified;
-  }, [verified]);
+    userIdRef.current = user?.id ?? null;
+  }, [verified, user?.id]);
 
   const [feed, setFeed] = useState<Post[] | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -776,7 +778,11 @@ export function PublicWall() {
   const newPostCleanupRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
   // Presence: users currently on the wall, with verified flag for those
   // signed in via magic link.
-  type PresenceEntry = { name: string; verified: boolean };
+  type PresenceEntry = {
+    name: string;
+    verified: boolean;
+    userId: string | null;
+  };
   const [presenceUsers, setPresenceUsers] = useState<PresenceEntry[]>([]);
   const presenceChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   // Presence popover open/close state.
@@ -853,7 +859,11 @@ export function PublicWall() {
     const ch = presenceChannelRef.current;
     if (ch) {
       void Promise.resolve(ch.untrack()).finally(() => {
-        void ch.track({ name: name || null, verified: verifiedRef.current });
+        void ch.track({
+          name: name || null,
+          verified: verifiedRef.current,
+          userId: userIdRef.current,
+        });
       });
     }
     // If they're already signed in (e.g. they came back via magic link
@@ -1083,20 +1093,39 @@ export function PublicWall() {
 
     const trackSelf = () => {
       const name = readSavedName();
-      void ch.track({ name: name || null, verified: verifiedRef.current });
+      void ch.track({
+        name: name || null,
+        verified: verifiedRef.current,
+        userId: userIdRef.current,
+      });
     };
 
     ch.on('presence', { event: 'sync' }, () => {
-      const state = ch.presenceState<{ name: string | null; verified?: boolean }>();
+      const state = ch.presenceState<{
+        name: string | null;
+        verified?: boolean;
+        userId?: string | null;
+      }>();
       const entries = Object.values(state).flat();
-      // Keep unnamed users (rendered as "Someone" in the popover) so the
-      // badge still shows for anonymous visitors.
-      const list: PresenceEntry[] = entries.map((u) => ({
-        name:
-          typeof u.name === 'string' && u.name.length > 0 ? u.name : 'Someone',
-        verified: !!u.verified,
-      }));
-      setPresenceUsers(list);
+      // Collapse rows that share a non-null userId so a single signed-in
+      // person across multiple tabs/devices renders as one entry. Keep
+      // the last entry seen for each user so a recent name change wins.
+      const byUser = new Map<string, PresenceEntry>();
+      const anonymous: PresenceEntry[] = [];
+      for (const u of entries) {
+        const entry: PresenceEntry = {
+          name:
+            typeof u.name === 'string' && u.name.length > 0 ? u.name : 'Someone',
+          verified: !!u.verified,
+          userId: typeof u.userId === 'string' ? u.userId : null,
+        };
+        if (entry.userId) {
+          byUser.set(entry.userId, entry);
+        } else {
+          anonymous.push(entry);
+        }
+      }
+      setPresenceUsers([...byUser.values(), ...anonymous]);
     });
 
     ch.subscribe((status) => {
@@ -1127,8 +1156,12 @@ export function PublicWall() {
     const ch = presenceChannelRef.current;
     if (!ch) return;
     const name = readSavedName();
-    void ch.track({ name: name || null, verified });
-  }, [verified]);
+    void ch.track({
+      name: name || null,
+      verified,
+      userId: user?.id ?? null,
+    });
+  }, [verified, user?.id]);
 
   // Close the online list on outside click or Escape.
   useEffect(() => {
