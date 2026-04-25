@@ -108,6 +108,41 @@ export function WallModerationDashboard() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
 
+  // Maintenance mode toggle
+  const [maintenance, setMaintenance] = useState<boolean | null>(null);
+  const [maintenanceBusy, setMaintenanceBusy] = useState(false);
+  const [maintenanceMsg, setMaintenanceMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch('/api/admin/settings', { credentials: 'include' })
+      .then((r) => r.json())
+      .then((json) => setMaintenance(json.settings?.maintenance_mode === 'true'))
+      .catch(() => setMaintenance(false));
+  }, []);
+
+  const toggleMaintenance = useCallback(async () => {
+    if (maintenance === null || maintenanceBusy) return;
+    setMaintenanceBusy(true);
+    setMaintenanceMsg(null);
+    try {
+      const next = !maintenance;
+      const res = await fetch('/api/admin/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ key: 'maintenance_mode', value: String(next) }),
+      });
+      if (!res.ok) throw new Error(`Failed (${res.status})`);
+      setMaintenance(next);
+      setMaintenanceMsg(next ? 'Site is now in maintenance mode.' : 'Site is live again.');
+      setTimeout(() => setMaintenanceMsg(null), 3000);
+    } catch (e) {
+      setMaintenanceMsg(e instanceof Error ? e.message : 'Failed to save');
+    } finally {
+      setMaintenanceBusy(false);
+    }
+  }, [maintenance, maintenanceBusy]);
+
   const load = useCallback(async (status: Status) => {
     setItems(null);
     setError(null);
@@ -185,12 +220,43 @@ export function WallModerationDashboard() {
             Approve or reject posts and comments, or ban an IP.
           </p>
         </div>
-        <button
-          onClick={() => load(tab)}
-          className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-sm hover:border-white/25"
-        >
-          Refresh
-        </button>
+        <div className="flex items-center gap-2">
+          {/* Maintenance mode toggle */}
+          <div className="flex flex-col items-end gap-1">
+            <button
+              onClick={toggleMaintenance}
+              disabled={maintenance === null || maintenanceBusy}
+              title={maintenance ? 'Disable maintenance mode' : 'Enable maintenance mode'}
+              className={`inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-sm font-medium transition disabled:opacity-50 ${
+                maintenance
+                  ? 'border-amber-400/40 bg-amber-500/15 text-amber-300 hover:bg-amber-500/25'
+                  : 'border-emerald-400/30 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20'
+              }`}
+            >
+              <span
+                className={`h-2 w-2 rounded-full ${
+                  maintenance ? 'bg-amber-400' : 'bg-emerald-400'
+                }`}
+              />
+              {maintenanceBusy
+                ? 'Saving…'
+                : maintenance === null
+                ? 'Loading…'
+                : maintenance
+                ? 'Maintenance ON'
+                : 'Site Live'}
+            </button>
+            {maintenanceMsg && (
+              <p className="text-[11px] text-slate-400">{maintenanceMsg}</p>
+            )}
+          </div>
+          <button
+            onClick={() => load(tab)}
+            className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-sm hover:border-white/25"
+          >
+            Refresh
+          </button>
+        </div>
       </header>
 
       <div className="flex gap-2 border-b border-white/5">
