@@ -60,6 +60,23 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'server_misconfigured' }, { status: 500 });
     }
 
+    // Name-in-use check: reject if this name has been used by a different cookie
+    // in the last 24 hours. Prevents guests from impersonating each other.
+    if (authorName !== 'Anonymous') {
+      const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      const { data: nameTaken } = await admin
+        .from('posts')
+        .select('id')
+        .ilike('author_name', authorName)
+        .neq('author_cookie_id', guest.cookieId)
+        .gte('created_at', since)
+        .limit(1)
+        .maybeSingle();
+      if (nameTaken) {
+        return NextResponse.json({ error: 'name_taken' }, { status: 409 });
+      }
+    }
+
     const { data: inserted, error } = await admin
       .from('posts')
       .insert({

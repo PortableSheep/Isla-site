@@ -108,19 +108,78 @@ function CommentBody({ comment }: { comment: Comment }) {
   );
 }
 
-function MediaHelperBar({ onPickGif }: { onPickGif: () => void }) {
+function MediaHelperBar({ onPickGif, onInsert }: { onPickGif: () => void; onInsert: (url: string) => void }) {
+  const [ytOpen, setYtOpen] = useState(false);
+  const [ytUrl, setYtUrl] = useState('');
+  const ytInputRef = useRef<HTMLInputElement>(null);
+
+  const isYouTubeUrl = (url: string) =>
+    /https?:\/\/(?:www\.|m\.)?(?:youtube\.com\/(?:watch|shorts|embed)|youtu\.be\/)/i.test(url);
+
+  const handleEmbed = () => {
+    const trimmed = ytUrl.trim();
+    if (!trimmed || !isYouTubeUrl(trimmed)) return;
+    onInsert(trimmed);
+    setYtUrl('');
+    setYtOpen(false);
+  };
+
   return (
-    <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-400">
-      <button
-        type="button"
-        onClick={onPickGif}
-        className="inline-flex items-center gap-1 rounded-md border border-white/10 bg-white/5 px-2 py-1 text-slate-200 transition hover:border-fuchsia-400/40 hover:text-fuchsia-200"
-      >
-        🔎 Add a GIF
-      </button>
-      <span className="text-[11px] text-slate-500">
-        Or paste any GIF / meme / YouTube link and it&apos;ll embed automatically.
-      </span>
+    <div className="flex flex-col gap-2">
+      <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400">
+        <button
+          type="button"
+          onClick={onPickGif}
+          className="inline-flex items-center gap-1 rounded-md border border-white/10 bg-white/5 px-2 py-1 text-slate-200 transition hover:border-fuchsia-400/40 hover:text-fuchsia-200"
+        >
+          🔎 Add a GIF
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setYtOpen((o) => !o);
+            if (!ytOpen) setTimeout(() => ytInputRef.current?.focus(), 50);
+          }}
+          className={`inline-flex items-center gap-1 rounded-md border px-2 py-1 transition ${
+            ytOpen
+              ? 'border-rose-400/50 bg-rose-500/10 text-rose-200'
+              : 'border-white/10 bg-white/5 text-slate-200 hover:border-rose-400/40 hover:text-rose-200'
+          }`}
+        >
+          🎬 YouTube
+        </button>
+        <span className="text-[11px] text-slate-500">
+          Or paste any GIF / meme / YouTube link and it&apos;ll embed automatically.
+        </span>
+      </div>
+      {ytOpen && (
+        <div className="flex items-center gap-2">
+          <input
+            ref={ytInputRef}
+            type="url"
+            value={ytUrl}
+            onChange={(e) => setYtUrl(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleEmbed(); } }}
+            placeholder="Paste a YouTube link…"
+            className="flex-1 rounded-lg border border-white/10 bg-black/20 px-3 py-1.5 text-sm text-white placeholder:text-slate-500 focus:border-rose-400 focus:outline-none"
+          />
+          <button
+            type="button"
+            onClick={handleEmbed}
+            disabled={!isYouTubeUrl(ytUrl.trim())}
+            className="rounded-lg border border-rose-400/40 bg-rose-500/10 px-3 py-1.5 text-xs text-rose-200 transition hover:border-rose-400/70 hover:bg-rose-500/20 disabled:opacity-40"
+          >
+            Embed
+          </button>
+          <button
+            type="button"
+            onClick={() => { setYtOpen(false); setYtUrl(''); }}
+            className="text-xs text-slate-500 hover:text-slate-300"
+          >
+            Cancel
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -139,21 +198,16 @@ function ReactionBar({
   onReact,
 }: {
   post: Post;
-  onReact: (emoji: string, removing: boolean) => void;
+  onReact: (emoji: string, removing: boolean) => Promise<void> | void;
 }) {
-  // Optimistic overrides keyed by emoji. Each entry flips `mine` locally,
-  // adjusts the count relative to server values, and carries an animKey so
-  // we can retrigger the pop animation on every click.
   const [overrides, setOverrides] = useState<
     Record<string, { mine: boolean; delta: number; animKey: number }>
   >({});
+  // Per-emoji in-flight tracking prevents race conditions from rapid clicks.
+  const [inflight, setInflight] = useState<Set<string>>(new Set());
 
-  // Reset overrides whenever the server-side reactions change, so subsequent
-  // feed refreshes become the source of truth again.
   useEffect(() => {
     setOverrides({});
-    // Intentionally depend on the stringified values — arrays/objects would
-    // cause a reset on every render.
   }, [JSON.stringify(post.reactions), JSON.stringify(post.my_reactions)]);
 
   if (post.moderation_status !== 'approved') return null;
@@ -167,8 +221,10 @@ function ReactionBar({
         const mine = ov ? ov.mine : serverMine;
         const count = Math.max(0, serverCount + (ov?.delta ?? 0));
         const animKey = ov?.animKey ?? 0;
+        const pending = inflight.has(e);
 
         const handleClick = () => {
+          if (pending) return;
           const currentlyMine = mine;
           const nextMine = !currentlyMine;
           const delta = nextMine
@@ -186,7 +242,10 @@ function ReactionBar({
               animKey: (prev[e]?.animKey ?? 0) + 1,
             },
           }));
-          onReact(e, currentlyMine);
+          setInflight((prev) => new Set([...prev, e]));
+          Promise.resolve(onReact(e, currentlyMine)).finally(() => {
+            setInflight((prev) => { const s = new Set(prev); s.delete(e); return s; });
+          });
         };
 
         return (
@@ -194,8 +253,8 @@ function ReactionBar({
             key={e}
             type="button"
             onClick={handleClick}
-            // re-mount animation target on every click via keyed span below
-            className={`relative inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-sm transition active:scale-95 ${
+            disabled={pending}
+            className={`relative inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-sm transition active:scale-95 disabled:cursor-wait disabled:opacity-60 ${
               mine
                 ? 'border-fuchsia-400/60 bg-fuchsia-500/15 text-white'
                 : 'border-white/10 bg-white/5 text-slate-200 hover:border-white/25'
@@ -436,7 +495,7 @@ function Composer({
         maxLength={2000}
         className="w-full resize-y rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:border-fuchsia-400 focus:outline-none"
       />
-      <MediaHelperBar onPickGif={() => setGifOpen(true)} />
+      <MediaHelperBar onPickGif={() => setGifOpen(true)} onInsert={insertAtCursor} />
       <ImageUploadButton
         attachment={attachment}
         onChange={setAttachment}
@@ -558,6 +617,12 @@ export function PublicWall() {
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   // Track the IDs we've already shown so we can detect truly new posts.
   const knownPostIds = useRef<Set<string>>(new Set());
+  // New-post animation: IDs in this set get a slide-in CSS class for 2.5 s.
+  const [newPostIds, setNewPostIds] = useState<Set<string>>(new Set());
+  const newPostCleanupRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
+  // Presence: named users currently on the wall.
+  const [presenceUsers, setPresenceUsers] = useState<string[]>([]);
+  const presenceChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogFirstTime, setDialogFirstTime] = useState(false);
@@ -589,6 +654,8 @@ export function PublicWall() {
     saveName(name);
     setSavedName(name);
     setDialogOpen(false);
+    // Update presence with the new name.
+    presenceChannelRef.current?.track({ name: name || null });
     if (pendingResolver.current) {
       pendingResolver.current(name);
       pendingResolver.current = null;
@@ -630,6 +697,18 @@ export function PublicWall() {
         if (!silent && newFromOthers.length > 0) {
           const count = newFromOthers.length;
           showToast(count === 1 ? '✨ 1 new post on the wall!' : `✨ ${count} new posts on the wall!`);
+          // Trigger slide-in animation for each newly arrived post.
+          const newIds = new Set(newFromOthers.map((p) => p.id));
+          setNewPostIds((prev) => new Set([...prev, ...newIds]));
+          for (const id of newIds) {
+            const existing = newPostCleanupRef.current.get(id);
+            if (existing) clearTimeout(existing);
+            const t = setTimeout(() => {
+              setNewPostIds((prev) => { const s = new Set(prev); s.delete(id); return s; });
+              newPostCleanupRef.current.delete(id);
+            }, 2500);
+            newPostCleanupRef.current.set(id, t);
+          }
         }
         for (const p of incoming) knownPostIds.current.add(p.id);
 
@@ -683,6 +762,30 @@ export function PublicWall() {
     };
   }, [refresh]);
 
+  // Supabase Realtime presence — tracks named users currently on the wall.
+  useEffect(() => {
+    const ch = supabase.channel('wall-presence');
+    presenceChannelRef.current = ch;
+    ch.on('presence', { event: 'sync' }, () => {
+      const state = ch.presenceState<{ name: string | null }>();
+      const names = Object.values(state)
+        .flat()
+        .map((u) => u.name)
+        .filter((n): n is string => typeof n === 'string' && n.length > 0);
+      setPresenceUsers([...new Set(names)]);
+    });
+    ch.subscribe(async (status) => {
+      if (status === 'SUBSCRIBED') {
+        const name = readSavedName();
+        await ch.track({ name: name || null });
+      }
+    });
+    return () => {
+      supabase.removeChannel(ch);
+      presenceChannelRef.current = null;
+    };
+  }, []);
+
   const scheduleReload = useCallback(() => {
     if (reloadTimer.current) clearTimeout(reloadTimer.current);
     reloadTimer.current = setTimeout(refresh, 400);
@@ -724,6 +827,8 @@ export function PublicWall() {
           // remove the optimistic row
           setFeed((prev) => prev?.filter((p) => p.id !== tempId) ?? null);
           if (res.status === 429) throw new Error('You\u2019re posting a bit too fast — try again in a bit.');
+          if (res.status === 409 && body?.error === 'name_taken')
+            throw new Error('That name is being used by someone else right now. Try a different one!');
           if (res.status === 403 && body?.error === 'banned')
             throw new Error('This device has been banned from posting.');
           throw new Error(body?.detail || body?.error || `Failed (${res.status})`);
@@ -750,6 +855,8 @@ export function PublicWall() {
       });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
+        if (res.status === 409 && body?.error === 'name_taken')
+          throw new Error('That name is being used by someone else right now. Try a different one!');
         throw new Error(body?.detail || body?.error || `Failed (${res.status})`);
       }
       scheduleReload();
@@ -774,7 +881,18 @@ export function PublicWall() {
   const items = useMemo(() => feed ?? [], [feed]);
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 py-10 lg:max-w-3xl">
+    <div className="mx-auto flex w-full max-w-lg flex-col gap-6 px-4 py-4 sm:max-w-2xl sm:py-8 lg:max-w-3xl">
+      {/* Arrival animation keyframes — scoped to this component */}
+      <style>{`
+        @keyframes iz-post-arrive {
+          from { opacity: 0; transform: translateY(18px) scale(0.98); }
+          to   { opacity: 1; transform: translateY(0)    scale(1);    }
+        }
+        .iz-post-arrive {
+          animation: iz-post-arrive 0.45s cubic-bezier(0.22,1,0.36,1) both;
+          box-shadow: 0 0 0 2px rgba(192,132,252,0.25);
+        }
+      `}</style>
       <NameDialog
         open={dialogOpen}
         initialName={savedName}
@@ -855,7 +973,9 @@ export function PublicWall() {
         {items.map((p) => (
           <article
             key={p.id}
-            className={`rounded-2xl border p-4 backdrop-blur ${
+            className={`rounded-2xl border p-3 backdrop-blur sm:p-4 ${
+              newPostIds.has(p.id) ? 'iz-post-arrive' : ''
+            } ${
               p.is_mine && p.moderation_status !== 'approved'
                 ? 'border-amber-400/30 bg-amber-500/5'
                 : 'border-white/10 bg-white/5'
@@ -881,6 +1001,17 @@ export function PublicWall() {
           </div>
         )}
       </div>
+
+      {/* Active users presence indicator — only shows named users */}
+      {presenceUsers.length > 0 && (
+        <div className="flex items-center justify-center gap-2 text-xs text-slate-500">
+          <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.6)]" />
+          <span>
+            {presenceUsers.slice(0, 3).join(', ')}
+            {presenceUsers.length > 3 ? ` +${presenceUsers.length - 3} more` : ''} online
+          </span>
+        </div>
+      )}
     </div>
   );
 }

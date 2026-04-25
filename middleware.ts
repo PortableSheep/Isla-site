@@ -12,19 +12,56 @@ import { recordPageView } from '@/lib/analyticsCapture';
  * so it never delays the response and failures are swallowed — analytics
  * must never break the user-visible request path.
  */
-export async function middleware(request: NextRequest, event: NextFetchEvent) {
-  // Maintenance mode: set MAINTENANCE_MODE=true in env vars to redirect all
-  // non-exempt traffic to /maintenance. Admins can still reach /api and /auth.
-  if (process.env.MAINTENANCE_MODE === 'true') {
-    const { pathname } = request.nextUrl;
-    const exempt =
-      pathname.startsWith('/maintenance') ||
-      pathname.startsWith('/api/') ||
-      pathname.startsWith('/auth') ||
-      pathname.startsWith('/_next/');
-    if (!exempt) {
-      return NextResponse.redirect(new URL('/maintenance', request.url));
+
+// ---------------------------------------------------------------------------
+// Maintenance mode cache — checked at most once every 30 seconds so we don't
+// hit the database on every single request while still reacting quickly to
+// admin toggles. Falls back to the MAINTENANCE_MODE env var when the DB is
+// unavailable.
+// ---------------------------------------------------------------------------
+let maintenanceCacheValue = false;
+let maintenanceCacheExpiry = 0;
+const MAINTENANCE_CACHE_TTL_MS = 30_000;
+
+async function isMaintenanceMode(): Promise<boolean> {
+  // Fast path: env var override (legacy / emergency).
+  if (process.env.MAINTENANCE_MODE === 'true') return true;
+
+  const now = Date.now();
+  if (now < maintenanceCacheExpiry) return maintenanceCacheValue;
+
+  // Refresh from DB using the service-role client (anon policy allows SELECT).
+  try {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (!url || !key) return false;
+    const res = await fetch(
+      `${url}/rest/v1/site_settings?key=eq.maintenance_mode&select=value`,
+      { headers: { apikey: key, Authorization: `Bearer ${key}` }, cache: 'no-store' }
+    );
+    if (res.ok) {
+      const rows: Array<{ value: string }> = await res.json();
+      maintenanceCacheValue = rows[0]?.value === 'true';
     }
+  } catch {
+    // Leave cached value unchanged on error.
+  }
+  maintenanceCacheExpiry = Date.now() + MAINTENANCE_CACHE_TTL_MS;
+  return maintenanceCacheValue;
+}
+
+export async function middleware(request: NextRequest, event: NextFetchEvent) {
+  // Maintenance mode: redirect all non-exempt traffic to /maintenance.
+  // Controlled via admin panel (site_settings table) or MAINTENANCE_MODE env var.
+  const { pathname } = request.nextUrl;
+  const maintenanceExempt =
+    pathname.startsWith('/maintenance') ||
+    pathname.startsWith('/api/') ||
+    pathname.startsWith('/auth') ||
+    pathname.startsWith('/_next/');
+
+  if (!maintenanceExempt && (await isMaintenanceMode())) {
+    return NextResponse.redirect(new URL('/maintenance', request.url));
   }
 
   let response = NextResponse.next({ request });
