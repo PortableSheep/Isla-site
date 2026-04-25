@@ -49,7 +49,7 @@ export async function GET(request: Request) {
     let query = supabase
       .from('posts')
       .select(
-        'id, author_id, author_name, author_cookie_id, content, parent_post_id, created_at, moderation_status, family_id, spam_score, spam_reasons, client_ip'
+        'id, author_id, author_name, author_cookie_id, content, parent_post_id, created_at, moderation_status, family_id, spam_score, spam_reasons, client_ip, approved_by'
       )
       .is('deleted_at', null)
       .order('created_at', { ascending: status === 'pending' });

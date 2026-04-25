@@ -15,6 +15,7 @@ type ModItem = {
   spam_score: number | null;
   spam_reasons: string[] | null;
   client_ip: string | null;
+  approved_by: string | null;
   kind: 'post' | 'comment';
   author: { name?: string; email?: string; role?: string } | null;
   attachments?: Array<{
@@ -44,20 +45,63 @@ function fmt(iso: string) {
   }
 }
 
-function SpamTag({ score, reasons }: { score: number | null; reasons: string[] | null }) {
-  if (score == null || score <= 0) return null;
-  const color =
-    score >= 6
+function ScoreBadge({ score, reasons }: { score: number | null; reasons: string[] | null }) {
+  const hasScore = score != null && score > 0;
+  const hasReasons = reasons && reasons.length > 0;
+  if (!hasScore && !hasReasons) return null;
+
+  const scoreColor =
+    (score ?? 0) >= 6
       ? 'bg-rose-500/15 text-rose-300 border-rose-400/30'
-      : score >= 3
+      : (score ?? 0) >= 3
       ? 'bg-amber-500/15 text-amber-300 border-amber-400/30'
       : 'bg-slate-500/15 text-slate-300 border-slate-400/20';
+
   return (
-    <span
-      title={reasons?.join(', ') || ''}
-      className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide ${color}`}
-    >
-      Spam {score}
+    <span className="flex flex-wrap items-center gap-1">
+      {hasScore && (
+        <span
+          className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide ${scoreColor}`}
+        >
+          Score {score}
+        </span>
+      )}
+      {hasReasons &&
+        reasons!.map((r) => {
+          const isAi = r.startsWith('ai_flagged');
+          const isUrl = r === 'flagged_url';
+          const tagColor = isAi
+            ? 'bg-violet-500/15 text-violet-300 border-violet-400/30'
+            : isUrl
+            ? 'bg-orange-500/15 text-orange-300 border-orange-400/30'
+            : 'bg-slate-500/15 text-slate-300 border-slate-400/20';
+          return (
+            <span
+              key={r}
+              className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium ${tagColor}`}
+            >
+              {r}
+            </span>
+          );
+        })}
+    </span>
+  );
+}
+
+function ApprovalBadge({ item }: { item: ModItem }) {
+  if (item.moderation_status !== 'approved') return null;
+  // approved_by set = human/admin approved; null = system/trust auto-approved
+  const isSystem = item.approved_by === null;
+  if (isSystem) {
+    return (
+      <span className="inline-flex items-center rounded-full border border-emerald-400/25 bg-emerald-500/10 px-2 py-0.5 text-[11px] font-medium text-emerald-300">
+        auto-approved
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center rounded-full border border-sky-400/25 bg-sky-500/10 px-2 py-0.5 text-[11px] font-medium text-sky-300">
+      admin-approved
     </span>
   );
 }
@@ -331,7 +375,8 @@ export function WallModerationDashboard() {
               </span>
               <span>·</span>
               <span>{fmt(it.created_at)}</span>
-              <SpamTag score={it.spam_score} reasons={it.spam_reasons} />
+              <ApprovalBadge item={it} />
+              <ScoreBadge score={it.spam_score} reasons={it.spam_reasons} />
               {it.client_ip && (
                 <span className="ml-auto font-mono text-[11px] text-slate-500">
                   {it.client_ip}
