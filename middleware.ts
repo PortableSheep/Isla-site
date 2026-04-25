@@ -56,6 +56,7 @@ export async function middleware(request: NextRequest, event: NextFetchEvent) {
   const { pathname } = request.nextUrl;
   const maintenanceExempt =
     pathname.startsWith('/maintenance') ||
+    pathname.startsWith('/admin') ||
     pathname.startsWith('/api/') ||
     pathname.startsWith('/auth') ||
     pathname.startsWith('/_next/');
