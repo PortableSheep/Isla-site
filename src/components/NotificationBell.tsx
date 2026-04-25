@@ -112,7 +112,7 @@ export default function NotificationBell() {
   if (state === 'unsupported') {
     return (
       <div
-        className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-500/30 bg-slate-900/90 text-slate-500 shadow-md backdrop-blur-md"
+        className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-slate-900/80 text-slate-600 backdrop-blur-md"
         title="Push notifications not supported on this browser"
         aria-label="Push notifications not supported"
       >
@@ -186,18 +186,18 @@ export default function NotificationBell() {
         disabled={busy}
         aria-label={label}
         title={label}
-        className={`flex h-8 w-8 items-center justify-center rounded-full border shadow-md backdrop-blur-md transition disabled:opacity-60 ${
+        className={`flex h-9 w-9 items-center justify-center rounded-full border backdrop-blur-md transition focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-400 disabled:opacity-60 ${
           state === 'subscribed'
-            ? 'border-fuchsia-400/40 bg-slate-900/90 text-fuchsia-300 hover:border-fuchsia-400/70'
+            ? 'border-fuchsia-400/40 bg-slate-900/80 text-fuchsia-300 hover:border-fuchsia-300 hover:bg-slate-900/90 hover:text-fuchsia-100'
             : state === 'denied'
-            ? 'border-slate-500/30 bg-slate-900/90 text-slate-500'
-            : 'border-slate-400/25 bg-slate-900/90 text-slate-300 hover:border-slate-300/50 hover:text-slate-100'
+            ? 'border-white/10 bg-slate-900/80 text-slate-600'
+            : 'border-white/10 bg-slate-900/60 text-slate-500 hover:border-fuchsia-400/40 hover:bg-slate-900/80 hover:text-fuchsia-300'
         }`}
       >
         <Icon className={iconClass} />
       </button>
       {hint && (
-        <div className="absolute left-0 top-10 z-40 w-max max-w-[calc(100vw-2rem)] rounded-lg border border-slate-700 bg-slate-900/95 px-3 py-2 text-xs text-slate-200 shadow-xl backdrop-blur-md">
+        <div className="absolute right-0 top-11 z-40 w-max max-w-[calc(100vw-2rem)] rounded-lg border border-slate-700 bg-slate-900/95 px-3 py-2 text-xs text-slate-200 shadow-xl backdrop-blur-md">
           {hint}
         </div>
       )}

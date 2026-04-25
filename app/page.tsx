@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { PublicWall } from '@/components/wall/PublicWall';
-import { WallCornerAuthLink } from '@/components/WallCornerAuthLink';
 
 export default function Home() {
   return (
@@ -11,8 +10,6 @@ export default function Home() {
       <div aria-hidden className="pointer-events-none absolute bottom-0 left-1/3 w-72 h-72 rounded-full bg-orange-500/10 blur-3xl" />
 
       <PublicWall />
-
-      <WallCornerAuthLink />
 
       <footer className="relative mt-auto border-t border-white/5 py-6 text-center text-xs text-slate-500">
         <Link href="/auth/login" className="hover:text-slate-300">

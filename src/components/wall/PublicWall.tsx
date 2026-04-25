@@ -6,6 +6,7 @@ import { CreatureDisplay } from '@/components/CreatureDisplay';
 import { extractMedia, Linkified, MediaEmbeds } from '@/components/wall/media';
 import { GifPicker } from '@/components/wall/GifPicker';
 import NotificationBell from '@/components/NotificationBell';
+import { WallCornerAuthLink } from '@/components/WallCornerAuthLink';
 import {
   ImageUploadButton,
   type PendingAttachment,
@@ -1115,28 +1116,32 @@ export function PublicWall() {
         </div>
       )}
 
-      <button
-        type="button"
-        onClick={openSettings}
-        aria-label="Settings (change your display name)"
-        title={savedName ? `Posting as ${savedName}` : 'Set your display name'}
-        className="fixed top-3 right-14 z-30 flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-slate-900/60 text-slate-500 backdrop-blur-md transition hover:border-fuchsia-400/40 hover:bg-slate-900/80 hover:text-fuchsia-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-400"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.8"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="h-4 w-4"
-          aria-hidden="true"
+      <div className="fixed top-3 right-3 z-30 flex items-center gap-2">
+        <button
+          type="button"
+          onClick={openSettings}
+          aria-label="Settings (change your display name)"
+          title={savedName ? `Posting as ${savedName}` : 'Set your display name'}
+          className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-slate-900/60 text-slate-500 backdrop-blur-md transition hover:border-fuchsia-400/40 hover:bg-slate-900/80 hover:text-fuchsia-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-400"
         >
-          <circle cx="12" cy="12" r="3" />
-          <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34H9a1.7 1.7 0 0 0 1.03-1.56V3a2 2 0 1 1 4 0v.09A1.7 1.7 0 0 0 15 4.6a1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87V9c.15.37.53.6.93.6H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1Z" />
-        </svg>
-      </button>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="h-4 w-4"
+            aria-hidden="true"
+          >
+            <circle cx="12" cy="12" r="3" />
+            <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34H9a1.7 1.7 0 0 0 1.03-1.56V3a2 2 0 1 1 4 0v.09A1.7 1.7 0 0 0 15 4.6a1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87V9c.15.37.53.6.93.6H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1Z" />
+          </svg>
+        </button>
+        <WallCornerAuthLink />
+        <NotificationBell />
+      </div>
 
       <header className="relative text-center">
         <div className="pointer-events-none absolute -top-2 left-0 hidden md:block">
@@ -1223,21 +1228,20 @@ export function PublicWall() {
     </div>
 
     {/* Who's online badge — fixed top-left, compact count pill with tap-to-expand popover */}
-    <div className="fixed left-4 top-3 z-30 flex items-center gap-2">
-      {presenceUsers.length > 0 && (
-      <div ref={onlineBadgeRef}>
+    {presenceUsers.length > 0 && (
+    <div className="fixed left-4 top-3 z-30" ref={onlineBadgeRef}>
         <button
           type="button"
           onClick={() => setShowOnlineList((o) => !o)}
           aria-expanded={showOnlineList}
           aria-label={`${presenceUsers.length} people online — tap to see who`}
-          className="flex items-center gap-1.5 rounded-full border border-emerald-400/25 bg-slate-900/90 px-2.5 py-1 text-xs text-emerald-300 shadow-md backdrop-blur-md transition hover:border-emerald-400/50"
+          className="flex h-9 items-center gap-1.5 rounded-full border border-white/10 bg-slate-900/60 px-3 text-xs font-medium text-slate-300 backdrop-blur-md transition hover:border-fuchsia-400/40 hover:bg-slate-900/80 hover:text-fuchsia-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-400"
         >
           <span className="h-2 w-2 flex-shrink-0 animate-pulse rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.7)]" />
-          <span className="font-medium">{presenceUsers.length}</span>
+          <span>{presenceUsers.length}</span>
         </button>
         {showOnlineList && (
-          <div className="absolute left-0 top-9 w-max min-w-[160px] rounded-xl border border-emerald-400/20 bg-slate-900/95 px-3 py-2 shadow-xl backdrop-blur-md">
+          <div className="absolute left-0 top-11 w-max min-w-[160px] rounded-xl border border-white/10 bg-slate-900/95 px-3 py-2 shadow-xl backdrop-blur-md">
             <div className="flex items-center justify-between gap-3">
               <span className="whitespace-nowrap text-[10px] font-semibold uppercase tracking-wider text-slate-500">
                 Online now
@@ -1253,7 +1257,7 @@ export function PublicWall() {
             </div>
             <ul className="m-0 list-none pl-2">
               {presenceUsers.map((name) => (
-                <li key={name} className="flex items-center gap-1.5 py-0.5 text-xs text-emerald-200">
+                <li key={name} className="flex items-center gap-1.5 py-0.5 text-xs text-slate-300">
                   <span className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-emerald-400" />
                   <span className="max-w-[180px] truncate">{name}</span>
                 </li>
@@ -1261,10 +1265,8 @@ export function PublicWall() {
             </ul>
           </div>
         )}
-      </div>
-      )}
-      <NotificationBell />
     </div>
+    )}
     </>
   );
 }

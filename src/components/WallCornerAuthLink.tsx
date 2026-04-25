@@ -52,7 +52,7 @@ export function WallCornerAuthLink() {
         href="/admin/moderation"
         aria-label="Open moderation dashboard"
         title="Moderation"
-        className="fixed top-3 right-3 z-30 flex h-9 items-center gap-1.5 rounded-full border border-fuchsia-400/40 bg-slate-900/70 px-3 text-xs font-medium text-fuchsia-200 backdrop-blur-md transition hover:border-fuchsia-300 hover:bg-slate-900/90 hover:text-fuchsia-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-400"
+        className="flex h-9 items-center gap-1.5 rounded-full border border-fuchsia-400/40 bg-slate-900/80 px-3 text-xs font-medium text-fuchsia-200 backdrop-blur-md transition hover:border-fuchsia-300 hover:bg-slate-900/90 hover:text-fuchsia-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-400"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -79,7 +79,7 @@ export function WallCornerAuthLink() {
       href="/auth/login"
       aria-label="Sign in (Isla &amp; admins)"
       title="Sign in"
-      className="fixed top-3 right-3 z-30 flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-slate-900/60 text-slate-500 backdrop-blur-md transition hover:border-fuchsia-400/40 hover:bg-slate-900/80 hover:text-fuchsia-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-400"
+      className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-slate-900/60 text-slate-500 backdrop-blur-md transition hover:border-fuchsia-400/40 hover:bg-slate-900/80 hover:text-fuchsia-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-400"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
