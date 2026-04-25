@@ -112,11 +112,11 @@ export default function NotificationBell() {
   if (state === 'unsupported') {
     return (
       <div
-        className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-slate-900/80 text-slate-600 backdrop-blur-md"
+        className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-600/60 bg-slate-900/90 text-slate-400 backdrop-blur-md"
         title="Push notifications not supported on this browser"
         aria-label="Push notifications not supported"
       >
-        <BellOffIcon className="h-4 w-4" />
+        <BellOffIcon className="h-5 w-5" />
       </div>
     );
   }
@@ -169,7 +169,7 @@ export default function NotificationBell() {
       ? 'Notifications blocked'
       : 'Get notified of new posts';
 
-  const iconClass = `h-4 w-4 ${busy ? 'animate-spin' : ''}`;
+  const iconClass = `h-5 w-5 ${busy ? 'animate-spin' : ''}`;
   const Icon = busy
     ? SpinnerIcon
     : state === 'subscribed'
@@ -188,10 +188,10 @@ export default function NotificationBell() {
         title={label}
         className={`flex h-9 w-9 items-center justify-center rounded-full border backdrop-blur-md transition focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-400 disabled:opacity-60 ${
           state === 'subscribed'
-            ? 'border-fuchsia-400/40 bg-slate-900/80 text-fuchsia-300 hover:border-fuchsia-300 hover:bg-slate-900/90 hover:text-fuchsia-100'
+            ? 'border-fuchsia-400/60 bg-slate-900/90 text-fuchsia-200 hover:border-fuchsia-300 hover:bg-slate-900 hover:text-fuchsia-100 shadow-lg shadow-fuchsia-500/20'
             : state === 'denied'
-            ? 'border-white/10 bg-slate-900/80 text-slate-600'
-            : 'border-white/10 bg-slate-900/60 text-slate-500 hover:border-fuchsia-400/40 hover:bg-slate-900/80 hover:text-fuchsia-300'
+            ? 'border-slate-600/60 bg-slate-900/90 text-slate-400'
+            : 'border-fuchsia-400/40 bg-slate-900/90 text-fuchsia-300 hover:border-fuchsia-300 hover:bg-slate-900 hover:text-fuchsia-100 shadow-lg shadow-fuchsia-500/10'
         }`}
       >
         <Icon className={iconClass} />

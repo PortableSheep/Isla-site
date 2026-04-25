@@ -25,7 +25,7 @@ function BodyPortal({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     setMounted(true);
   }, []);
-  if (!mounted || typeof document === 'undefined') return <>{children}</>;
+  if (!mounted) return null;
   return createPortal(children, document.body);
 }
 
@@ -1130,7 +1130,7 @@ export function PublicWall() {
       )}
 
       <BodyPortal>
-        <div className="fixed top-3 right-3 z-30 flex items-center gap-2">
+        <div className="fixed top-3 right-3 z-50 flex items-center gap-2">
           <WallCornerAuthLink />
           <NotificationBell />
         </div>
@@ -1223,7 +1223,7 @@ export function PublicWall() {
     {/* Who's online badge — fixed top-left, compact count pill with tap-to-expand popover */}
     {presenceUsers.length > 0 && (
     <BodyPortal>
-    <div className="fixed left-4 top-3 z-30" ref={onlineBadgeRef}>
+    <div className="fixed left-4 top-3 z-50" ref={onlineBadgeRef}>
         <button
           type="button"
           onClick={() => setShowOnlineList((o) => !o)}
