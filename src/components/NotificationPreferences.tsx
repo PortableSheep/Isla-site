@@ -4,6 +4,13 @@ import React, { useState, useEffect } from 'react';
 import { NotificationPreference, NotificationPreferencesInput } from '@/types/notifications';
 import { NotificationSection } from './NotificationSection';
 import { FrequencySelector } from './FrequencySelector';
+import {
+  getPushPermissionState,
+  subscribeToPush,
+  unsubscribeFromPush,
+  getCurrentPushSubscription,
+  type PushPermissionState,
+} from '@/lib/pushNotifications';
 
 interface NotificationPreferencesProps {
   preferences: NotificationPreference | null;
@@ -20,10 +27,18 @@ export function NotificationPreferences({
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [pushPermission, setPushPermission] = useState<PushPermissionState>('default');
+  const [isPushSubscribed, setIsPushSubscribed] = useState(false);
+  const [isPushWorking, setIsPushWorking] = useState(false);
 
   useEffect(() => {
     setPreferences(initialPreferences);
   }, [initialPreferences]);
+
+  useEffect(() => {
+    setPushPermission(getPushPermissionState());
+    getCurrentPushSubscription().then((sub) => setIsPushSubscribed(!!sub));
+  }, []);
 
   if (!preferences) {
     return (
@@ -67,6 +82,37 @@ export function NotificationPreferences({
     setSuccess(false);
   };
 
+  const handleEnablePush = async () => {
+    setIsPushWorking(true);
+    setError(null);
+    try {
+      const ok = await subscribeToPush();
+      if (ok) {
+        setIsPushSubscribed(true);
+        setPushPermission('granted');
+        setPreferences({ ...preferences, push_notifications_enabled: true });
+      } else {
+        setPushPermission(getPushPermissionState());
+        if (Notification.permission === 'denied') {
+          setError('Push notifications were blocked. Please allow them in your browser settings.');
+        }
+      }
+    } finally {
+      setIsPushWorking(false);
+    }
+  };
+
+  const handleDisablePush = async () => {
+    setIsPushWorking(true);
+    try {
+      await unsubscribeFromPush();
+      setIsPushSubscribed(false);
+      setPreferences({ ...preferences, push_notifications_enabled: false });
+    } finally {
+      setIsPushWorking(false);
+    }
+  };
+
   const handleSave = async () => {
     setIsSaving(true);
     setError(null);
@@ -88,6 +134,7 @@ export function NotificationPreferences({
           email_frequency: preferences.email_frequency,
           digest_day: preferences.digest_day,
           digest_time: preferences.digest_time,
+          push_notifications_enabled: preferences.push_notifications_enabled,
         } as NotificationPreferencesInput),
       });
 
@@ -191,6 +238,57 @@ export function NotificationPreferences({
           onDigestTimeChange={handleDigestTimeChange}
           disabled={isSaving}
         />
+      </NotificationSection>
+
+      {/* Push Notifications */}
+      <NotificationSection
+        title="Push Notifications"
+        description="Get notified about new posts and replies even when you're not on the site"
+      >
+        {pushPermission === 'unsupported' ? (
+          <p className="text-sm text-gray-500">
+            Push notifications are not supported in this browser.
+          </p>
+        ) : pushPermission === 'denied' ? (
+          <p className="text-sm text-amber-700">
+            Push notifications are blocked by your browser. To enable them, open your browser
+            settings, find this site&apos;s permissions, and allow notifications.
+          </p>
+        ) : isPushSubscribed ? (
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-900">Push Notifications</p>
+              <p className="text-sm text-gray-500 mt-1">
+                You&apos;re subscribed. You&apos;ll receive push notifications for new posts and
+                replies.
+              </p>
+            </div>
+            <button
+              onClick={handleDisablePush}
+              disabled={isPushWorking}
+              className="text-sm text-red-600 hover:text-red-800 underline disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isPushWorking ? 'Working...' : 'Disable'}
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-900">Push Notifications</p>
+              <p className="text-sm text-gray-500 mt-1">
+                Allow push notifications so you&apos;re notified even when you&apos;re away from the
+                site.
+              </p>
+            </div>
+            <button
+              onClick={handleEnablePush}
+              disabled={isPushWorking}
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isPushWorking ? 'Enabling...' : 'Enable'}
+            </button>
+          </div>
+        )}
       </NotificationSection>
 
       {/* Save Button */}

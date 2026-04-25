@@ -13,6 +13,7 @@ const DEFAULT_PREFERENCES: Omit<NotificationPreference, 'id' | 'user_id' | 'crea
   in_app_updates: true,
   in_app_replies: true,
   in_app_children: true,
+  push_notifications_enabled: false,
   email_frequency: 'immediate',
   digest_day: 'Monday',
   digest_time: '09:00',

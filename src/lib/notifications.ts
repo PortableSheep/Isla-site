@@ -6,6 +6,7 @@ import {
   NotificationQueue,
 } from '@/types/notifications';
 import { NotificationPreference } from '@/types/notifications';
+import { sendPushToUser } from './webPush';
 
 // Create a notification for a user
 export async function createNotification(
@@ -278,6 +279,17 @@ export async function createUpdateNotifications(
         }
         // If digest, we'll batch later
       }
+
+      // Send push notification if enabled
+      if (prefs.push_notifications_enabled) {
+        const preview = postContent.substring(0, 100) + (postContent.length > 100 ? '...' : '');
+        sendPushToUser(parentId, {
+          title: '📢 New Update from Isla',
+          body: preview,
+          link: '/wall',
+          tag: `update-${postId}`,
+        }).catch((err) => console.error(`Push failed for user ${parentId}:`, err));
+      }
     } catch (err) {
       console.error(`Failed to create notification for parent ${parentId}:`, err);
     }
@@ -391,6 +403,16 @@ export async function notifyReplyToPost(
       } catch (err) {
         console.error('Failed to queue email notification:', err);
       }
+    }
+
+    // Send push notification if enabled
+    if (prefs.push_notifications_enabled) {
+      sendPushToUser(post.author_id, {
+        title: `${replyAuthorName} replied to your post`,
+        body: replyPreview,
+        link: `/wall/${originalPostId}?reply=${replyId}`,
+        tag: `reply-${replyId}`,
+      }).catch((err) => console.error(`Push reply failed for user ${post.author_id}:`, err));
     }
   } catch (error) {
     console.error('Error in notifyReplyToPost:', error);

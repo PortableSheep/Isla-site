@@ -19,6 +19,9 @@ export interface NotificationPreference {
   // Frequency settings
   email_frequency: NotificationFrequency;
   
+  // Push notification opt-in
+  push_notifications_enabled: boolean;
+
   // Digest preferences
   digest_day: DigestDay;
   digest_time: string; // HH:MM format
@@ -38,6 +41,7 @@ export interface NotificationPreferencesInput {
   email_frequency?: NotificationFrequency;
   digest_day?: DigestDay;
   digest_time?: string;
+  push_notifications_enabled?: boolean;
 }
 
 export interface Notification {
