@@ -1,6 +1,16 @@
 // Service Worker for Web Push Notifications
 // Handles incoming push events and notification click actions
 
+// Take over from any older SW immediately so PWA users get fixes without
+// having to fully close every window first.
+self.addEventListener('install', function (event) {
+  event.waitUntil(self.skipWaiting());
+});
+
+self.addEventListener('activate', function (event) {
+  event.waitUntil(self.clients.claim());
+});
+
 self.addEventListener('push', function (event) {
   if (!event.data) return;
 

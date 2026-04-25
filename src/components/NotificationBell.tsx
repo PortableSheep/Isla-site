@@ -182,7 +182,7 @@ export default function NotificationBell() {
 
   const label =
     state === 'subscribed'
-      ? 'Turn off notifications'
+      ? 'Notifications on — tap to turn off'
       : state === 'denied'
       ? 'Notifications blocked — tap for help'
       : state === 'ios-install'
@@ -199,15 +199,21 @@ export default function NotificationBell() {
         disabled={busy}
         aria-label={label}
         title={label}
-        className={`flex h-9 w-9 items-center justify-center rounded-full border-2 backdrop-blur-md transition focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-400 disabled:opacity-60 ${
+        className={`relative flex h-9 w-9 items-center justify-center rounded-full border-2 backdrop-blur-md transition focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-400 disabled:opacity-60 ${
           state === 'subscribed'
-            ? 'border-fuchsia-400/80 bg-slate-900/90 hover:border-fuchsia-300 hover:bg-slate-900 shadow-lg shadow-fuchsia-500/30'
+            ? 'border-emerald-400/80 bg-slate-900/90 hover:border-emerald-300 hover:bg-slate-900 shadow-lg shadow-emerald-500/30'
             : state === 'denied'
             ? 'border-amber-400/70 bg-slate-900/90 hover:border-amber-300 hover:bg-slate-900 shadow-lg shadow-amber-500/20'
             : 'border-fuchsia-400/70 bg-slate-900/90 hover:border-fuchsia-300 hover:bg-slate-900 shadow-lg shadow-fuchsia-500/20'
         }`}
       >
         <Glyph spin={busy}>{glyph}</Glyph>
+        {state === 'subscribed' && !busy && (
+          <span
+            aria-hidden="true"
+            className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-slate-900 bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.8)]"
+          />
+        )}
       </button>
       {hint && (
         <div className="absolute right-0 top-11 z-50 w-[280px] max-w-[calc(100vw-2rem)] rounded-lg border border-slate-700 bg-slate-900/95 px-3 py-2 text-xs leading-relaxed text-slate-200 shadow-xl backdrop-blur-md">

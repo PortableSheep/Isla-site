@@ -931,25 +931,48 @@ export function PublicWall() {
     };
   }, [refresh]);
 
-  // Supabase Realtime presence — tracks named users currently on the wall.
+  // Supabase Realtime presence — tracks users currently on the wall.
+  // Re-tracks on visibilitychange and channel re-subscribe so iOS PWAs
+  // (which pause WebSockets when the system handles a permission action,
+  // briefly causing the user to be dropped from the server-side presence
+  // state) recover automatically when the document becomes visible again.
   useEffect(() => {
     const ch = supabase.channel('wall-presence');
     presenceChannelRef.current = ch;
+
+    const trackSelf = () => {
+      const name = readSavedName();
+      void ch.track({ name: name || null });
+    };
+
     ch.on('presence', { event: 'sync' }, () => {
       const state = ch.presenceState<{ name: string | null }>();
-      const names = Object.values(state)
-        .flat()
-        .map((u) => u.name)
-        .filter((n): n is string => typeof n === 'string' && n.length > 0);
-      setPresenceUsers([...new Set(names)]);
+      const entries = Object.values(state).flat();
+      // Keep unnamed users (rendered as "Someone" in the popover) so the
+      // badge still shows for anonymous visitors.
+      const names = entries.map((u) =>
+        typeof u.name === 'string' && u.name.length > 0 ? u.name : 'Someone',
+      );
+      setPresenceUsers(names);
     });
-    ch.subscribe(async (status) => {
+
+    ch.subscribe((status) => {
       if (status === 'SUBSCRIBED') {
-        const name = readSavedName();
-        await ch.track({ name: name || null });
+        trackSelf();
       }
     });
+
+    const onVisibility = () => {
+      if (document.visibilityState !== 'visible') return;
+      // Re-track so the server restores us in presence after any pause.
+      trackSelf();
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    window.addEventListener('focus', onVisibility);
+
     return () => {
+      document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('focus', onVisibility);
       supabase.removeChannel(ch);
       presenceChannelRef.current = null;
     };
@@ -1257,8 +1280,8 @@ export function PublicWall() {
               </button>
             </div>
             <ul className="m-0 list-none pl-2">
-              {presenceUsers.map((name) => (
-                <li key={name} className="flex items-center gap-1.5 py-0.5 text-xs text-slate-300">
+              {presenceUsers.map((name, i) => (
+                <li key={`${name}-${i}`} className="flex items-center gap-1.5 py-0.5 text-xs text-slate-300">
                   <span className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-emerald-400" />
                   <span className="max-w-[180px] truncate">{name}</span>
                 </li>
