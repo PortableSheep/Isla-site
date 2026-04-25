@@ -305,11 +305,37 @@ function CommentBlock({
   const [attachment, setAttachment] = useState<PendingAttachment | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Collapse logic: show last 2 by default, auto-expand if thread is active.
+  const isActive = useMemo(
+    () => post.comments.some(
+      (c) => Date.now() - new Date(c.created_at).getTime() < 10 * 60 * 1000
+    ),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [post.comments]
+  );
+  const [expanded, setExpanded] = useState(isActive);
+  useEffect(() => {
+    if (isActive) setExpanded(true);
+  }, [isActive]);
+  const hiddenCount = Math.max(0, post.comments.length - 2);
+  const visibleComments = expanded || hiddenCount === 0
+    ? post.comments
+    : post.comments.slice(-2);
+
   if (post.moderation_status !== 'approved' && !post.is_mine) return null;
 
   return (
-    <div className="mt-4 space-y-3 border-t border-white/5 pt-3">
-      {post.comments.map((c) => (
+    <div className="mt-4 space-y-2 border-t border-white/5 pt-3">
+      {hiddenCount > 0 && !expanded && (
+        <button
+          type="button"
+          onClick={() => setExpanded(true)}
+          className="w-full rounded-lg py-1 text-xs text-slate-500 transition hover:text-fuchsia-400"
+        >
+          ↑ See {hiddenCount} earlier {hiddenCount === 1 ? 'comment' : 'comments'}
+        </button>
+      )}
+      {visibleComments.map((c) => (
         <div key={c.id} className="rounded-xl bg-white/5 px-3 py-2">
           <div className="flex items-center gap-2 text-xs text-slate-400">
             <span className="font-medium text-slate-200">{c.author_name || 'Anonymous'}</span>
@@ -623,6 +649,11 @@ export function PublicWall() {
   // Presence: named users currently on the wall.
   const [presenceUsers, setPresenceUsers] = useState<string[]>([]);
   const presenceChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  // Infinite scroll: cursor-based pagination.
+  const [canLoadMore, setCanLoadMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const sentinelRef = useRef<HTMLDivElement>(null);
+  const loadMoreCursor = useRef<string | null>(null);
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogFirstTime, setDialogFirstTime] = useState(false);
@@ -631,6 +662,12 @@ export function PublicWall() {
   useEffect(() => {
     setSavedName(readSavedName());
   }, []);
+
+  // Keep loadMoreCursor pointing at the oldest non-optimistic post in the feed.
+  useEffect(() => {
+    const nonOptimistic = (feed ?? []).filter((p) => !p._optimistic);
+    loadMoreCursor.current = nonOptimistic.at(-1)?.created_at ?? null;
+  }, [feed]);
 
   const requireName = useCallback((): Promise<string | null> => {
     const existing = readSavedName();
@@ -678,7 +715,7 @@ export function PublicWall() {
 
   const refresh = useCallback(async ({ silent = false } = {}) => {
     try {
-      const res = await fetch('/api/wall/feed', { cache: 'no-store', credentials: 'include' });
+      const res = await fetch('/api/wall/feed?limit=10', { cache: 'no-store', credentials: 'include' });
       if (!res.ok) throw new Error(`Feed failed (${res.status})`);
       const json = await res.json();
       const incoming = (json.feed as Post[]) ?? [];
@@ -690,14 +727,13 @@ export function PublicWall() {
           return incoming;
         }
 
-        // Detect posts that are genuinely new (not mine / not already seen).
-        const newFromOthers = incoming.filter(
-          (p) => !p.is_mine && !knownPostIds.current.has(p.id)
-        );
+        // All posts not previously seen (includes my newly approved posts + others' new posts).
+        const trulyNew = incoming.filter((p) => !knownPostIds.current.has(p.id));
+        // Notifications/animation: only posts from others.
+        const newFromOthers = trulyNew.filter((p) => !p.is_mine);
         if (!silent && newFromOthers.length > 0) {
           const count = newFromOthers.length;
           showToast(count === 1 ? '✨ 1 new post on the wall!' : `✨ ${count} new posts on the wall!`);
-          // Trigger slide-in animation for each newly arrived post.
           const newIds = new Set(newFromOthers.map((p) => p.id));
           setNewPostIds((prev) => new Set([...prev, ...newIds]));
           for (const id of newIds) {
@@ -712,13 +748,20 @@ export function PublicWall() {
         }
         for (const p of incoming) knownPostIds.current.add(p.id);
 
-        // Keep optimistic items that don't yet exist server-side.
+        // Keep optimistic items not yet confirmed server-side.
         const keepers = prev.filter(
           (p) =>
             p._optimistic &&
             !incoming.some((q) => q.content === p.content && q.is_mine && q.parent_post_id === null)
         );
-        return [...keepers, ...incoming];
+
+        // Merge: update existing visible posts with fresh data, preserve older loaded pages.
+        const incomingMap = new Map(incoming.map((p) => [p.id, p]));
+        const updatedPrev = prev
+          .filter((p) => !p._optimistic)
+          .map((p) => incomingMap.get(p.id) ?? p);
+
+        return [...keepers, ...trulyNew, ...updatedPrev];
       });
       setLoadError(null);
     } catch (e) {
@@ -730,6 +773,43 @@ export function PublicWall() {
   useEffect(() => {
     refresh({ silent: true });
   }, [refresh]);
+
+  const loadMore = useCallback(async () => {
+    const cursor = loadMoreCursor.current;
+    if (!canLoadMore || loadingMore || !cursor) return;
+    setLoadingMore(true);
+    try {
+      const res = await fetch(
+        `/api/wall/feed?limit=10&before=${encodeURIComponent(cursor)}`,
+        { cache: 'no-store', credentials: 'include' }
+      );
+      if (!res.ok) return;
+      const json = await res.json();
+      const incoming = (json.feed as Post[]) ?? [];
+      if (incoming.length < 10) setCanLoadMore(false);
+      for (const p of incoming) knownPostIds.current.add(p.id);
+      setFeed((prev) => {
+        if (!prev) return incoming;
+        const existingIds = new Set(prev.map((p) => p.id));
+        const toAdd = incoming.filter((p) => !existingIds.has(p.id));
+        return toAdd.length > 0 ? [...prev, ...toAdd] : prev;
+      });
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [canLoadMore, loadingMore]);
+
+  // Trigger loadMore when the sentinel scrolls into view.
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel || !canLoadMore) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) loadMore(); },
+      { rootMargin: '200px' }
+    );
+    obs.observe(sentinel);
+    return () => obs.disconnect();
+  }, [loadMore, canLoadMore]);
 
   // 15-second fallback poll (handles missed realtime events)
   useEffect(() => {
@@ -881,6 +961,7 @@ export function PublicWall() {
   const items = useMemo(() => feed ?? [], [feed]);
 
   return (
+    <>
     <div className="mx-auto flex w-full max-w-lg flex-col gap-6 px-4 py-4 sm:max-w-2xl sm:py-8 lg:max-w-3xl">
       {/* Arrival animation keyframes — scoped to this component */}
       <style>{`
@@ -1000,18 +1081,34 @@ export function PublicWall() {
             </p>
           </div>
         )}
-      </div>
 
-      {/* Active users presence indicator — only shows named users */}
-      {presenceUsers.length > 0 && (
-        <div className="flex items-center justify-center gap-2 text-xs text-slate-500">
-          <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.6)]" />
-          <span>
-            {presenceUsers.slice(0, 3).join(', ')}
-            {presenceUsers.length > 3 ? ` +${presenceUsers.length - 3} more` : ''} online
-          </span>
-        </div>
-      )}
+        {/* Infinite scroll: loading spinner */}
+        {loadingMore && (
+          <div className="flex justify-center py-4">
+            <div className="h-5 w-5 animate-spin rounded-full border-2 border-white/10 border-t-fuchsia-400" />
+          </div>
+        )}
+
+        {/* Sentinel element — IntersectionObserver triggers loadMore when visible */}
+        {canLoadMore && <div ref={sentinelRef} className="h-1" />}
+
+        {/* End of feed */}
+        {!canLoadMore && feed !== null && items.length > 0 && (
+          <p className="py-6 text-center text-xs text-slate-600">You&apos;ve seen it all 🎉</p>
+        )}
+      </div>
     </div>
+
+    {/* Floating presence pill — fixed bottom-right, always on top of content */}
+    {presenceUsers.length > 0 && (
+      <div className="fixed bottom-4 right-4 z-40 flex items-center gap-2 rounded-full border border-emerald-400/25 bg-slate-900/90 px-3 py-1.5 text-xs text-emerald-300 shadow-lg backdrop-blur-md">
+        <span className="h-2 w-2 flex-shrink-0 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.7)]" />
+        <span className="truncate max-w-[160px]">
+          {presenceUsers.slice(0, 3).join(', ')}
+          {presenceUsers.length > 3 ? ` +${presenceUsers.length - 3}` : ''} online
+        </span>
+      </div>
+    )}
+    </>
   );
 }
