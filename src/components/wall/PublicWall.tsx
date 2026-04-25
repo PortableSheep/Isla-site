@@ -1107,9 +1107,9 @@ export function PublicWall() {
         userId?: string | null;
       }>();
       const entries = Object.values(state).flat();
-      // Collapse rows that share a non-null userId so a single signed-in
-      // person across multiple tabs/devices renders as one entry. Keep
-      // the last entry seen for each user so a recent name change wins.
+      // Stage 1: collapse rows that share a non-null userId so a single
+      // signed-in person across multiple tabs/devices renders as one
+      // entry. Keep the last entry seen so a recent name change wins.
       const byUser = new Map<string, PresenceEntry>();
       const anonymous: PresenceEntry[] = [];
       for (const u of entries) {
@@ -1125,7 +1125,26 @@ export function PublicWall() {
           anonymous.push(entry);
         }
       }
-      setPresenceUsers([...byUser.values(), ...anonymous]);
+      // Stage 2: collapse same-named entries (case-insensitive) across
+      // signed-in and anonymous rows so a person whose other tab/device
+      // shares their localStorage name doesn't appear twice. Prefer the
+      // verified entry. "Someone" (unnamed) rows are never merged — we
+      // can't tell distinct anonymous visitors apart.
+      const all = [...byUser.values(), ...anonymous];
+      const byName = new Map<string, PresenceEntry>();
+      const unnamed: PresenceEntry[] = [];
+      for (const e of all) {
+        const key = e.name === 'Someone' ? null : e.name.trim().toLowerCase();
+        if (!key) {
+          unnamed.push(e);
+          continue;
+        }
+        const prior = byName.get(key);
+        if (!prior || (e.verified && !prior.verified)) {
+          byName.set(key, e);
+        }
+      }
+      setPresenceUsers([...byName.values(), ...unnamed]);
     });
 
     ch.subscribe((status) => {

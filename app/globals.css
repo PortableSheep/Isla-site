@@ -412,9 +412,17 @@ a:focus-visible {
   cursor: pointer;
   transition: all var(--transition-normal);
   letter-spacing: var(--letter-spacing-wide);
-  min-height: 48px;
-  min-width: 48px;
   box-shadow: var(--shadow-sm);
+}
+
+/* Enforce the WCAG 48×48 touch-target minimum only on coarse pointers
+   (phones, tablets). On precise pointers (mouse/trackpad), let utility
+   classes like `px-2 py-1 text-xs` produce small inline buttons. */
+@media (pointer: coarse) {
+  :where(button) {
+    min-height: 48px;
+    min-width: 48px;
+  }
 }
 
 :where(button):focus-visible {
