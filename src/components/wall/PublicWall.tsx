@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { CreatureDisplay } from '@/components/CreatureDisplay';
 import { extractMedia, Linkified, MediaEmbeds } from '@/components/wall/media';
 import { GifPicker } from '@/components/wall/GifPicker';
+import NotificationBell from '@/components/NotificationBell';
 import {
   ImageUploadButton,
   type PendingAttachment,
@@ -1222,8 +1223,9 @@ export function PublicWall() {
     </div>
 
     {/* Who's online badge — fixed top-left, compact count pill with tap-to-expand popover */}
-    {presenceUsers.length > 0 && (
-      <div ref={onlineBadgeRef} className="fixed left-4 top-3 z-30">
+    <div className="fixed left-4 top-3 z-30 flex items-center gap-2">
+      {presenceUsers.length > 0 && (
+      <div ref={onlineBadgeRef}>
         <button
           type="button"
           onClick={() => setShowOnlineList((o) => !o)}
@@ -1260,7 +1262,9 @@ export function PublicWall() {
           </div>
         )}
       </div>
-    )}
+      )}
+      <NotificationBell />
+    </div>
     </>
   );
 }

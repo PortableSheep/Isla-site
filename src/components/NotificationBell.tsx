@@ -2,15 +2,12 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/lib/AuthContext';
 import { Notification } from '@/types/notifications';
 import { Bell, CheckCheck, Trash2 } from 'lucide-react';
 
-interface NotificationBellProps {
-  userId: string;
-}
-
-export default function NotificationBell({ userId }: NotificationBellProps) {
+export default function NotificationBell() {
+  const { user } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
@@ -32,8 +29,8 @@ export default function NotificationBell({ userId }: NotificationBellProps) {
         const unreadResponse = await fetch('/api/notifications/unread-count');
 
         if (unreadResponse.ok) {
-          const { unread_count } = await unreadResponse.json();
-          setUnreadCount(unread_count);
+          const { count } = await unreadResponse.json();
+          setUnreadCount(count);
         }
       }
     } catch (error) {
@@ -43,15 +40,16 @@ export default function NotificationBell({ userId }: NotificationBellProps) {
     }
   };
 
-  // Initialize and setup polling
+  // Initialize and setup polling — only when logged in
   useEffect(() => {
+    if (!user) return;
     fetchNotifications();
 
     // Poll every 30 seconds
     const interval = setInterval(fetchNotifications, 30000);
 
     return () => clearInterval(interval);
-  }, [userId]);
+  }, [user?.id]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -69,6 +67,9 @@ export default function NotificationBell({ userId }: NotificationBellProps) {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isOpen]);
+
+  // Don't render if not logged in
+  if (!user) return null;
 
   const handleMarkAsRead = async (notificationId: string) => {
     try {
