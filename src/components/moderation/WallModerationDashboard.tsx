@@ -188,6 +188,29 @@ export function WallModerationDashboard() {
     []
   );
 
+  const deletePost = useCallback(
+    async (id: string) => {
+      if (!confirm('Permanently delete this post? This cannot be undone.')) return;
+      setBusy(id + ':delete');
+      try {
+        const res = await fetch(`/api/admin/moderation/${id}/delete`, {
+          method: 'POST',
+          credentials: 'include',
+        });
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          throw new Error(body?.detail || body?.error || `Failed (${res.status})`);
+        }
+        setItems((prev) => prev?.filter((x) => x.id !== id) ?? null);
+      } catch (e) {
+        alert(e instanceof Error ? e.message : 'Delete failed');
+      } finally {
+        setBusy(null);
+      }
+    },
+    []
+  );
+
   const banIp = useCallback(
     async (postId: string) => {
       if (!confirm('Ban the IP behind this post? They will not be able to post again.')) return;
@@ -345,6 +368,13 @@ export function WallModerationDashboard() {
                   Ban IP
                 </button>
               )}
+              <button
+                disabled={busy?.startsWith(it.id)}
+                onClick={() => deletePost(it.id)}
+                className={`rounded-lg border border-rose-500/40 bg-rose-500/15 px-3 py-1.5 text-sm text-rose-300 hover:bg-rose-500/25 disabled:opacity-50 ${it.client_ip ? '' : 'ml-auto'}`}
+              >
+                {busy === it.id + ':delete' ? 'Deleting…' : 'Delete'}
+              </button>
             </div>
           </li>
         ))}

@@ -48,13 +48,14 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const limit = Math.min(Math.max(parseInt(searchParams.get('limit') || '30', 10) || 30, 1), 100);
+    const before = searchParams.get('before') ?? null;
 
     // Top-level posts: approved OR caller's own pending/rejected.
     const filter = cookieId
       ? `moderation_status.eq.approved,author_cookie_id.eq.${cookieId}`
       : `moderation_status.eq.approved`;
 
-    const { data: topRows, error: topErr } = await admin
+    let query = admin
       .from('posts')
       .select('id, parent_post_id, author_name, author_cookie_id, content, moderation_status, created_at')
       .is('parent_post_id', null)
@@ -64,6 +65,12 @@ export async function GET(request: NextRequest) {
       .or(filter)
       .order('created_at', { ascending: false })
       .limit(limit);
+
+    if (before) {
+      query = query.lt('created_at', before);
+    }
+
+    const { data: topRows, error: topErr } = await query;
 
     if (topErr) {
       return NextResponse.json(
