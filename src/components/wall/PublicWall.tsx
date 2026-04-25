@@ -74,7 +74,7 @@ function PostBody({ post }: { post: Post }) {
   const isAuthorPending = post.is_mine && post.moderation_status !== 'approved';
   return (
     <>
-      <p className="mt-3 whitespace-pre-wrap text-[15px] leading-relaxed text-slate-100">
+      <p className="mt-3 break-words whitespace-pre-wrap text-[15px] leading-relaxed text-slate-100">
         <Linkified text={post.content} hideUrls={showEmbeds ? consumed : undefined} />
       </p>
       {showEmbeds && <MediaEmbeds embeds={embeds} />}
@@ -94,7 +94,7 @@ function CommentBody({ comment }: { comment: Comment }) {
   const isAuthorPending = comment.is_mine && comment.moderation_status !== 'approved';
   return (
     <>
-      <p className="mt-1 whitespace-pre-wrap text-sm text-slate-100">
+      <p className="mt-1 break-words whitespace-pre-wrap text-sm text-slate-100">
         <Linkified text={comment.content} hideUrls={showEmbeds ? consumed : undefined} />
       </p>
       {showEmbeds && <MediaEmbeds embeds={embeds} />}
@@ -774,7 +774,7 @@ export function PublicWall() {
   const items = useMemo(() => feed ?? [], [feed]);
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 py-10">
+    <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 px-4 py-10 lg:max-w-3xl">
       <NameDialog
         open={dialogOpen}
         initialName={savedName}

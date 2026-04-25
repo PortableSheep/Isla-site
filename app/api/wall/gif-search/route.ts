@@ -97,12 +97,23 @@ function mapResults(results: GiphyResult[]): PickerItem[] {
         img.fixed_height ??
         img.downsized ??
         img.original;
-      if (!preview?.url || !r.url || !r.id) return null;
+      if (!preview?.url || !r.id) return null;
+
+      // Use a direct Giphy CDN image URL so the wall can display it as <img>
+      // rather than relying on the embed iframe (which breaks for multi-word slugs
+      // and may show "Oops" errors). Strip tracking query params for a clean URL.
+      const cdnVariant =
+        img.downsized ??
+        img.fixed_height ??
+        img.fixed_width ??
+        img.original;
+      const rawCdnUrl = cdnVariant?.url ?? `https://media.giphy.com/media/${r.id}/giphy.gif`;
+      const shareUrl = rawCdnUrl.split('?')[0];
+
       return {
         id: r.id,
         preview_url: preview.url,
-        // Giphy share URL form: https://giphy.com/gifs/<slug>-<id> (sometimes slugless).
-        share_url: r.url,
+        share_url: shareUrl,
         description: (r.title || r.alt_text || 'GIF').slice(0, 140),
         width: parseDim(preview.width),
         height: parseDim(preview.height),

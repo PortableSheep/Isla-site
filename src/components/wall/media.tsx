@@ -14,7 +14,7 @@ export const TENOR_VIEW_REGEX =
 //   https://giphy.com/clips/<slug>-<id>    ← video clip variant
 // The ID is always the trailing [A-Za-z0-9]{6,} segment.
 export const GIPHY_VIEW_REGEX =
-  /https?:\/\/(?:www\.|media\.)?giphy\.com\/(?:gifs|clips|embed)\/(?:[^\s<]*?-)?([A-Za-z0-9]{6,})(?=[^\w]|$)/gi;
+  /https?:\/\/(?:www\.|media\.)?giphy\.com\/(?:gifs|clips|embed)\/(?:[^\s<]*-)?([A-Za-z0-9]{6,})(?=[^\w]|$)/gi;
 
 export const URL_REGEX = /(https?:\/\/[^\s<]+)/g;
 
@@ -94,7 +94,7 @@ export function Linkified({
             href={p.href}
             target="_blank"
             rel="noopener noreferrer nofollow"
-            className="text-fuchsia-300 underline decoration-dotted underline-offset-2 hover:text-fuchsia-200"
+            className="break-all text-fuchsia-300 underline decoration-dotted underline-offset-2 hover:text-fuchsia-200"
           >
             {p.href}
           </a>

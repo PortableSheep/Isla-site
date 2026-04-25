@@ -13,6 +13,20 @@ import { recordPageView } from '@/lib/analyticsCapture';
  * must never break the user-visible request path.
  */
 export async function middleware(request: NextRequest, event: NextFetchEvent) {
+  // Maintenance mode: set MAINTENANCE_MODE=true in env vars to redirect all
+  // non-exempt traffic to /maintenance. Admins can still reach /api and /auth.
+  if (process.env.MAINTENANCE_MODE === 'true') {
+    const { pathname } = request.nextUrl;
+    const exempt =
+      pathname.startsWith('/maintenance') ||
+      pathname.startsWith('/api/') ||
+      pathname.startsWith('/auth') ||
+      pathname.startsWith('/_next/');
+    if (!exempt) {
+      return NextResponse.redirect(new URL('/maintenance', request.url));
+    }
+  }
+
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(
