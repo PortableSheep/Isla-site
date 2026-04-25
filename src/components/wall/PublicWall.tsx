@@ -686,8 +686,16 @@ export function PublicWall() {
   const pendingResolver = useRef<((name: string | null) => void) | null>(null);
 
   useEffect(() => {
-    setSavedName(readSavedName());
+    const existing = readSavedName();
+    setSavedName(existing);
     setHideToasts(localStorage.getItem('iz-wall-hide-toasts') === 'true');
+    if (!existing) {
+      // Prompt for a display name immediately so visitors aren't shown as
+      // "Someone" in presence and don't get surprised by a modal the first
+      // time they try to post.
+      setDialogFirstTime(true);
+      setDialogOpen(true);
+    }
   }, []);
 
   // Keep loadMoreCursor pointing at the oldest non-optimistic post in the feed.
@@ -718,8 +726,15 @@ export function PublicWall() {
     saveName(name);
     setSavedName(name);
     setDialogOpen(false);
-    // Update presence with the new name.
-    presenceChannelRef.current?.track({ name: name || null });
+    // Force a clean presence reconcile: drop any prior {name:null} entry
+    // before re-tracking so the online roster doesn't flicker through a
+    // brief "Someone + Maya" state.
+    const ch = presenceChannelRef.current;
+    if (ch) {
+      void Promise.resolve(ch.untrack()).finally(() => {
+        void ch.track({ name: name || null });
+      });
+    }
     if (pendingResolver.current) {
       pendingResolver.current(name);
       pendingResolver.current = null;
