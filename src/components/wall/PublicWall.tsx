@@ -1235,16 +1235,16 @@ export function PublicWall() {
           <span className="font-medium">{presenceUsers.length}</span>
         </button>
         {showOnlineList && (
-          <div className="absolute left-0 top-9 min-w-[140px] max-w-[200px] rounded-xl border border-emerald-400/20 bg-slate-900/95 px-2.5 py-2 shadow-xl backdrop-blur-md">
-            <div className="mb-1 flex items-center justify-between">
-              <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+          <div className="absolute left-0 top-9 w-max min-w-[160px] rounded-xl border border-emerald-400/20 bg-slate-900/95 px-3 py-2 shadow-xl backdrop-blur-md">
+            <div className="mb-1 flex items-center justify-between gap-3">
+              <span className="whitespace-nowrap text-[10px] font-semibold uppercase tracking-wider text-slate-500">
                 Online now
               </span>
               <button
                 type="button"
                 onClick={() => setShowOnlineList(false)}
                 aria-label="Close"
-                className="ml-2 flex h-4 w-4 items-center justify-center rounded-full text-slate-500 transition hover:bg-white/10 hover:text-slate-200"
+                className="flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full text-slate-500 transition hover:bg-white/10 hover:text-slate-200"
               >
                 ×
               </button>
@@ -1253,7 +1253,7 @@ export function PublicWall() {
               {presenceUsers.map((name) => (
                 <li key={name} className="flex items-center gap-1.5 py-0.5 text-xs text-emerald-200">
                   <span className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-emerald-400" />
-                  <span className="truncate">{name}</span>
+                  <span className="max-w-[180px] truncate">{name}</span>
                 </li>
               ))}
             </ul>
