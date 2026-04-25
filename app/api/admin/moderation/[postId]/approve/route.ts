@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabaseServer';
+import { sendPushToAll } from '@/lib/webPush';
 
 export const dynamic = 'force-dynamic';
 
@@ -34,7 +35,7 @@ export async function POST(
         rejected_reason: null,
       })
       .eq('id', postId)
-      .select('id, moderation_status')
+      .select('id, moderation_status, author_name, content')
       .maybeSingle();
 
     if (error) {
@@ -58,6 +59,20 @@ export async function POST(
       subject_id: postId,
       reason: 'Moderator approved',
     });
+
+    // Broadcast push notification now that the post is publicly visible.
+    if (updated.content) {
+      const preview =
+        updated.content.length > 80
+          ? updated.content.slice(0, 77) + '...'
+          : updated.content;
+      sendPushToAll({
+        title: `${updated.author_name || 'Someone'} posted on the wall`,
+        body: preview,
+        link: '/',
+        tag: `post-${updated.id}`,
+      }).catch((err) => console.error('[moderation/approve] push broadcast failed', err));
+    }
 
     return NextResponse.json({ success: true, post: updated });
   } catch (err) {

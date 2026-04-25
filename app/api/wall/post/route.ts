@@ -11,6 +11,7 @@ import { scoreSpam } from '@/lib/spamScore';
 import { moderateContent } from '@/lib/contentModeration';
 import { checkUrls } from '@/lib/urlSafety';
 import { linkAttachmentsToPost } from '@/lib/wallAttachments';
+import { sendPushToAll } from '@/lib/webPush';
 
 export const dynamic = 'force-dynamic';
 
@@ -130,6 +131,17 @@ export async function POST(request: NextRequest) {
         { error: attachmentLinkError.code, detail: attachmentLinkError.detail },
         { status: attachmentLinkError.status }
       );
+    }
+
+    // Broadcast push notification only when the post is publicly visible.
+    if (inserted.moderation_status === 'approved') {
+      const preview = content.length > 80 ? content.slice(0, 77) + '...' : content;
+      sendPushToAll({
+        title: `${authorName} posted on the wall`,
+        body: preview,
+        link: '/',
+        tag: `post-${inserted.id}`,
+      }).catch((err) => console.error('[wall/post] push broadcast failed', err));
     }
 
     return NextResponse.json({ success: true, post: inserted }, { status: 201 });

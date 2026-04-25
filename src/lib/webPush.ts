@@ -71,3 +71,50 @@ export async function sendPushToUser(userId: string, payload: PushPayload): Prom
     await supabase.from('push_subscriptions').delete().in('id', staleIds);
   }
 }
+
+/**
+ * Send a push notification to ALL subscribers (authenticated + anonymous).
+ * Used for wall-wide broadcasts (e.g., new post on the public wall).
+ */
+export async function sendPushToAll(payload: PushPayload): Promise<void> {
+  ensureConfigured();
+
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+
+  const { data: subscriptions, error } = await supabase
+    .from('push_subscriptions')
+    .select('id, endpoint, p256dh, auth');
+
+  if (error) {
+    console.error('Failed to fetch push subscriptions:', error);
+    return;
+  }
+
+  if (!subscriptions || subscriptions.length === 0) return;
+
+  const staleIds: string[] = [];
+
+  await Promise.allSettled(
+    subscriptions.map(async (sub) => {
+      try {
+        await webPush.sendNotification(
+          { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
+          JSON.stringify(payload)
+        );
+      } catch (err: any) {
+        if (err.statusCode === 410 || err.statusCode === 404) {
+          staleIds.push(sub.id);
+        } else {
+          console.error(`Push send failed for endpoint ${sub.endpoint}:`, err.message);
+        }
+      }
+    })
+  );
+
+  if (staleIds.length > 0) {
+    await supabase.from('push_subscriptions').delete().in('id', staleIds);
+  }
+}
