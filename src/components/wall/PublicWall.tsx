@@ -376,37 +376,37 @@ function CommentBlock({
           }}
           className="space-y-2"
         >
-          <div className="flex flex-col gap-2 sm:flex-row">
-            <input
-              ref={inputRef}
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder="Leave a comment… (paste a GIF / meme link too!)"
-              maxLength={1000}
-              className="flex-1 rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:border-fuchsia-400 focus:outline-none"
-            />
+          <input
+            ref={inputRef}
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            placeholder="Leave a comment… (paste a GIF / meme link too!)"
+            maxLength={1000}
+            className="w-full rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:border-fuchsia-400 focus:outline-none"
+          />
+          <div className="flex items-center gap-1.5">
             <button
               type="button"
               onClick={() => setGifOpen(true)}
-              className="inline-flex h-9 items-center gap-1 rounded-lg border border-fuchsia-400/40 bg-fuchsia-500/10 px-3 text-xs text-fuchsia-200 transition hover:border-fuchsia-400/70 hover:bg-fuchsia-500/20"
+              className="inline-flex items-center gap-1 rounded-lg border border-fuchsia-400/40 bg-fuchsia-500/10 px-2 py-1 text-xs text-fuchsia-200 transition hover:border-fuchsia-400/70 hover:bg-fuchsia-500/20 sm:px-3"
               aria-label="Add a GIF"
             >
               🔎 GIF
             </button>
+            <ImageUploadButton
+              attachment={attachment}
+              onChange={setAttachment}
+              disabled={busy}
+              compact
+            />
             <button
               type="submit"
               disabled={busy || (!content.trim() && !attachment)}
-              className="iz-btn-primary h-9 rounded-lg px-4 text-sm disabled:opacity-50"
+              className="iz-btn-primary ml-auto rounded-lg px-2 py-1 text-xs disabled:opacity-50 sm:px-4 sm:py-1.5 sm:text-sm"
             >
               {busy ? 'Sending…' : 'Send'}
             </button>
           </div>
-          <ImageUploadButton
-            attachment={attachment}
-            onChange={setAttachment}
-            disabled={busy}
-            compact
-          />
           {err && <p className="text-xs text-rose-300">{err}</p>}
           <GifPicker
             open={gifOpen}
@@ -657,6 +657,9 @@ export function PublicWall() {
   // Presence: named users currently on the wall.
   const [presenceUsers, setPresenceUsers] = useState<string[]>([]);
   const presenceChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  // Presence popover open/close state.
+  const [showOnlineList, setShowOnlineList] = useState(false);
+  const onlineBadgeRef = useRef<HTMLDivElement>(null);
   // Infinite scroll: cursor-based pagination.
   const [canLoadMore, setCanLoadMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -937,6 +940,25 @@ export function PublicWall() {
     };
   }, []);
 
+  // Close the online list on outside click or Escape.
+  useEffect(() => {
+    if (!showOnlineList) return;
+    const handleDown = (e: MouseEvent) => {
+      if (onlineBadgeRef.current && !onlineBadgeRef.current.contains(e.target as Node)) {
+        setShowOnlineList(false);
+      }
+    };
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setShowOnlineList(false);
+    };
+    document.addEventListener('mousedown', handleDown);
+    document.addEventListener('keydown', handleKey);
+    return () => {
+      document.removeEventListener('mousedown', handleDown);
+      document.removeEventListener('keydown', handleKey);
+    };
+  }, [showOnlineList]);
+
   const scheduleReload = useCallback(() => {
     if (reloadTimer.current) clearTimeout(reloadTimer.current);
     reloadTimer.current = setTimeout(refresh, 400);
@@ -1062,10 +1084,10 @@ export function PublicWall() {
         <div
           role="status"
           aria-live="polite"
-          className="fixed bottom-5 left-1/2 z-50 flex -translate-x-1/2 flex-col items-center gap-1"
+          className="fixed bottom-5 left-1/2 z-50 flex w-auto max-w-[calc(100vw-2rem)] -translate-x-1/2 flex-col items-center gap-1"
           style={{ animation: 'iz-toast-up 0.3s cubic-bezier(0.22,1,0.36,1) both' }}
         >
-          <div className="flex items-center gap-2 rounded-full border border-fuchsia-400/30 bg-slate-900/95 pl-5 pr-2 py-2.5 shadow-lg backdrop-blur">
+          <div className="flex items-center gap-2 rounded-full border border-fuchsia-400/30 bg-slate-900/95 pl-3 pr-1.5 py-1.5 shadow-lg backdrop-blur sm:pl-5 sm:pr-2 sm:py-2.5">
             <button
               type="button"
               onClick={() => { scrollToTarget(toast.targetId); dismissToast(); }}
@@ -1199,14 +1221,44 @@ export function PublicWall() {
       </div>
     </div>
 
-    {/* Floating presence pill — fixed bottom-right, always on top of content */}
+    {/* Who's online badge — fixed top-left, compact count pill with tap-to-expand popover */}
     {presenceUsers.length > 0 && (
-      <div className="fixed bottom-4 right-4 z-40 flex items-center gap-2 rounded-full border border-emerald-400/25 bg-slate-900/90 px-3 py-1.5 text-xs text-emerald-300 shadow-lg backdrop-blur-md">
-        <span className="h-2 w-2 flex-shrink-0 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.7)]" />
-        <span className="truncate max-w-[160px]">
-          {presenceUsers.slice(0, 3).join(', ')}
-          {presenceUsers.length > 3 ? ` +${presenceUsers.length - 3}` : ''} online
-        </span>
+      <div ref={onlineBadgeRef} className="fixed left-4 top-3 z-30">
+        <button
+          type="button"
+          onClick={() => setShowOnlineList((o) => !o)}
+          aria-expanded={showOnlineList}
+          aria-label={`${presenceUsers.length} people online — tap to see who`}
+          className="flex items-center gap-1.5 rounded-full border border-emerald-400/25 bg-slate-900/90 px-2.5 py-1 text-xs text-emerald-300 shadow-md backdrop-blur-md transition hover:border-emerald-400/50"
+        >
+          <span className="h-2 w-2 flex-shrink-0 animate-pulse rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.7)]" />
+          <span className="font-medium">{presenceUsers.length}</span>
+        </button>
+        {showOnlineList && (
+          <div className="absolute left-0 top-9 min-w-[160px] rounded-xl border border-emerald-400/20 bg-slate-900/95 p-3 shadow-xl backdrop-blur-md">
+            <div className="mb-2 flex items-center justify-between">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                Online now
+              </span>
+              <button
+                type="button"
+                onClick={() => setShowOnlineList(false)}
+                aria-label="Close"
+                className="ml-3 flex h-5 w-5 items-center justify-center rounded-full text-slate-500 transition hover:bg-white/10 hover:text-slate-200"
+              >
+                ×
+              </button>
+            </div>
+            <ul className="space-y-1">
+              {presenceUsers.map((name) => (
+                <li key={name} className="flex items-center gap-1.5 text-sm text-emerald-200">
+                  <span className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-emerald-400" />
+                  <span className="max-w-[140px] truncate">{name}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
     )}
     </>

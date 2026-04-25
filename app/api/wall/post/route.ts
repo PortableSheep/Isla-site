@@ -61,17 +61,21 @@ export async function POST(request: NextRequest) {
     }
 
     // Name-in-use check: reject if this name has been used by a different cookie
-    // in the last 24 hours. Prevents guests from impersonating each other.
+    // AND a different IP in the last 24 hours. Prevents impersonation while
+    // allowing the same person to reclaim their name if their cookie was cleared
+    // (e.g. browser switch) but they're on the same network.
     if (authorName !== 'Anonymous') {
       const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-      const { data: nameTaken } = await admin
+      let nameCheckQuery = admin
         .from('posts')
         .select('id')
         .ilike('author_name', authorName)
         .neq('author_cookie_id', guest.cookieId)
-        .gte('created_at', since)
-        .limit(1)
-        .maybeSingle();
+        .gte('created_at', since);
+      if (guest.ip) {
+        nameCheckQuery = nameCheckQuery.neq('client_ip', guest.ip);
+      }
+      const { data: nameTaken } = await nameCheckQuery.limit(1).maybeSingle();
       if (nameTaken) {
         return NextResponse.json({ error: 'name_taken' }, { status: 409 });
       }

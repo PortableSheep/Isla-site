@@ -71,8 +71,8 @@ function ModBody({
 }) {
   const { embeds, consumed } = useMemo(() => extractMedia(content), [content]);
   return (
-    <div className="mt-3">
-      <p className="whitespace-pre-wrap text-[14px] text-slate-100">
+    <div className="mt-3 min-w-0 overflow-hidden">
+      <p className="whitespace-pre-wrap break-all text-[14px] text-slate-100">
         <Linkified text={content} hideUrls={consumed} />
       </p>
       <MediaEmbeds embeds={embeds} />
@@ -320,7 +320,7 @@ export function WallModerationDashboard() {
         {items?.map((it) => (
           <li
             key={it.id}
-            className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur"
+            className="overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur"
           >
             <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400">
               <span className="rounded-full bg-white/10 px-2 py-0.5 font-semibold uppercase text-slate-200">
