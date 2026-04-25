@@ -638,11 +638,19 @@ export function PublicWall() {
   const [feed, setFeed] = useState<Post[] | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [savedName, setSavedName] = useState('');
-  const [toast, setToast] = useState<string | null>(null);
+
+  // Toast: rich object with optional scroll target.
+  type ToastInfo = { message: string; targetId: string | null };
+  const [toast, setToast] = useState<ToastInfo | null>(null);
+  // Whether to suppress all future toasts (persisted to localStorage).
+  const [hideToasts, setHideToasts] = useState(false);
+
   const reloadTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   // Track the IDs we've already shown so we can detect truly new posts.
   const knownPostIds = useRef<Set<string>>(new Set());
+  // Track comment counts per post so we can detect new comments on existing posts.
+  const knownCommentCounts = useRef<Map<string, number>>(new Map());
   // New-post animation: IDs in this set get a slide-in CSS class for 2.5 s.
   const [newPostIds, setNewPostIds] = useState<Set<string>>(new Set());
   const newPostCleanupRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
@@ -661,6 +669,7 @@ export function PublicWall() {
 
   useEffect(() => {
     setSavedName(readSavedName());
+    setHideToasts(localStorage.getItem('iz-wall-hide-toasts') === 'true');
   }, []);
 
   // Keep loadMoreCursor pointing at the oldest non-optimistic post in the feed.
@@ -707,8 +716,32 @@ export function PublicWall() {
     }
   }, []);
 
-  const showToast = useCallback((message: string) => {
-    setToast(message);
+  /** Returns true if the post card is fully or partially in the viewport. */
+  const isPostVisible = useCallback((id: string): boolean => {
+    const el = document.getElementById(`post-${id}`);
+    if (!el) return false;
+    const { top, bottom } = el.getBoundingClientRect();
+    return top < window.innerHeight && bottom > 0;
+  }, []);
+
+  const scrollToTarget = useCallback((id: string | null) => {
+    if (!id) return;
+    document.getElementById(`post-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, []);
+
+  const dismissToast = useCallback(() => {
+    setToast(null);
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+  }, []);
+
+  const hideToastsForever = useCallback(() => {
+    localStorage.setItem('iz-wall-hide-toasts', 'true');
+    setHideToasts(true);
+    dismissToast();
+  }, [dismissToast]);
+
+  const showToast = useCallback((message: string, targetId: string | null = null) => {
+    setToast({ message, targetId });
     if (toastTimer.current) clearTimeout(toastTimer.current);
     toastTimer.current = setTimeout(() => setToast(null), TOAST_DURATION_MS);
   }, []);
@@ -722,8 +755,11 @@ export function PublicWall() {
 
       setFeed((prev) => {
         if (!prev) {
-          // First load — seed known IDs.
-          for (const p of incoming) knownPostIds.current.add(p.id);
+          // First load — seed known IDs and comment counts.
+          for (const p of incoming) {
+            knownPostIds.current.add(p.id);
+            knownCommentCounts.current.set(p.id, p.comments?.length ?? 0);
+          }
           return incoming;
         }
 
@@ -732,8 +768,13 @@ export function PublicWall() {
         // Notifications/animation: only posts from others.
         const newFromOthers = trulyNew.filter((p) => !p.is_mine);
         if (!silent && newFromOthers.length > 0) {
+          const targetId = newFromOthers[0].id;
           const count = newFromOthers.length;
-          showToast(count === 1 ? '✨ 1 new post on the wall!' : `✨ ${count} new posts on the wall!`);
+          const msg = count === 1 ? '✨ 1 new post on the wall!' : `✨ ${count} new posts on the wall!`;
+          // Only toast if the first new post is off-screen.
+          if (!hideToasts && !isPostVisible(targetId)) {
+            showToast(msg, targetId);
+          }
           const newIds = new Set(newFromOthers.map((p) => p.id));
           setNewPostIds((prev) => new Set([...prev, ...newIds]));
           for (const id of newIds) {
@@ -746,7 +787,37 @@ export function PublicWall() {
             newPostCleanupRef.current.set(id, t);
           }
         }
-        for (const p of incoming) knownPostIds.current.add(p.id);
+
+        // Detect new comments on existing posts.
+        if (!silent) {
+          for (const p of incoming) {
+            if (knownPostIds.current.has(p.id) && !p.is_mine) {
+              const prevCount = knownCommentCounts.current.get(p.id) ?? 0;
+              const newCount = p.comments?.length ?? 0;
+              if (newCount > prevCount) {
+                // New comment(s) arrived on this post — animate the card.
+                setNewPostIds((prev) => new Set([...prev, p.id]));
+                const existing = newPostCleanupRef.current.get(p.id);
+                if (existing) clearTimeout(existing);
+                const t = setTimeout(() => {
+                  setNewPostIds((prev) => { const s = new Set(prev); s.delete(p.id); return s; });
+                  newPostCleanupRef.current.delete(p.id);
+                }, 2500);
+                newPostCleanupRef.current.set(p.id, t);
+                // Toast only if the post card is off-screen.
+                if (!hideToasts && !isPostVisible(p.id)) {
+                  showToast('💬 New comment on the wall!', p.id);
+                }
+              }
+            }
+          }
+        }
+
+        // Update known comment counts for all visible posts.
+        for (const p of incoming) {
+          knownPostIds.current.add(p.id);
+          knownCommentCounts.current.set(p.id, p.comments?.length ?? 0);
+        }
 
         // Keep optimistic items not yet confirmed server-side.
         const keepers = prev.filter(
@@ -767,7 +838,7 @@ export function PublicWall() {
     } catch (e) {
       setLoadError(e instanceof Error ? e.message : 'Could not load wall');
     }
-  }, [showToast]);
+  }, [showToast, hideToasts, isPostVisible]);
 
   // Initial load
   useEffect(() => {
@@ -973,6 +1044,10 @@ export function PublicWall() {
           animation: iz-post-arrive 0.45s cubic-bezier(0.22,1,0.36,1) both;
           box-shadow: 0 0 0 2px rgba(192,132,252,0.25);
         }
+        @keyframes iz-toast-up {
+          from { opacity: 0; transform: translateX(-50%) translateY(12px); }
+          to   { opacity: 1; transform: translateX(-50%) translateY(0);    }
+        }
       `}</style>
       <NameDialog
         open={dialogOpen}
@@ -982,14 +1057,38 @@ export function PublicWall() {
         onSubmit={handleDialogSubmit}
       />
 
-      {/* Live-update toast */}
+      {/* Live-update toast — clickable, dismissable, with opt-out */}
       {toast && (
         <div
           role="status"
           aria-live="polite"
-          className="fixed bottom-5 left-1/2 z-50 -translate-x-1/2 rounded-full border border-fuchsia-400/30 bg-slate-900/90 px-5 py-2.5 text-sm font-medium text-fuchsia-200 shadow-lg backdrop-blur"
+          className="fixed bottom-5 left-1/2 z-50 flex -translate-x-1/2 flex-col items-center gap-1"
+          style={{ animation: 'iz-toast-up 0.3s cubic-bezier(0.22,1,0.36,1) both' }}
         >
-          {toast}
+          <div className="flex items-center gap-2 rounded-full border border-fuchsia-400/30 bg-slate-900/95 pl-5 pr-2 py-2.5 shadow-lg backdrop-blur">
+            <button
+              type="button"
+              onClick={() => { scrollToTarget(toast.targetId); dismissToast(); }}
+              className="text-sm font-medium text-fuchsia-200 hover:text-white focus:outline-none"
+            >
+              {toast.message}
+            </button>
+            <button
+              type="button"
+              onClick={dismissToast}
+              aria-label="Dismiss"
+              className="ml-1 flex h-6 w-6 items-center justify-center rounded-full text-slate-500 transition hover:bg-white/10 hover:text-slate-200 focus:outline-none"
+            >
+              ×
+            </button>
+          </div>
+          <button
+            type="button"
+            onClick={hideToastsForever}
+            className="text-xs text-slate-600 transition hover:text-slate-400 focus:outline-none"
+          >
+            Hide these
+          </button>
         </div>
       )}
 
@@ -1054,6 +1153,7 @@ export function PublicWall() {
         {items.map((p) => (
           <article
             key={p.id}
+            id={`post-${p.id}`}
             className={`rounded-2xl border p-3 backdrop-blur sm:p-4 ${
               newPostIds.has(p.id) ? 'iz-post-arrive' : ''
             } ${
