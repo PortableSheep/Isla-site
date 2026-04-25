@@ -10,82 +10,15 @@ import {
 
 type State = 'unsupported' | 'denied' | 'unsubscribed' | 'subscribed';
 
-function BellIcon({ className }: { className?: string }) {
+function Glyph({ children, spin = false }: { children: string; spin?: boolean }) {
   return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
+    <span
       aria-hidden="true"
+      className={`text-lg leading-none ${spin ? 'inline-block animate-spin' : ''}`}
+      style={{ fontFamily: '"Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif' }}
     >
-      <path d="M10.268 21a2 2 0 0 0 3.464 0" />
-      <path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326" />
-    </svg>
-  );
-}
-
-function BellPlusIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden="true"
-    >
-      <path d="M10.268 21a2 2 0 0 0 3.464 0" />
-      <path d="M15 8h6" />
-      <path d="M18 5v6" />
-      <path d="M20.002 14.464a9 9 0 0 0 .738.863A1 1 0 0 1 20 17H4a1 1 0 0 1-.74-1.673C4.59 13.956 6 12.499 6 8a6 6 0 0 1 8.75-5.332" />
-    </svg>
-  );
-}
-
-function BellOffIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden="true"
-    >
-      <path d="M10.268 21a2 2 0 0 0 3.464 0" />
-      <path d="M17 17H4a1 1 0 0 1-.74-1.673C4.59 13.956 6 12.499 6 8a6 6 0 0 1 .258-1.742" />
-      <path d="m2 2 20 20" />
-      <path d="M8.668 3.01A6 6 0 0 1 18 8c0 2.687.77 4.653 1.707 6.05" />
-    </svg>
-  );
-}
-
-function SpinnerIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-      aria-hidden="true"
-    >
-      <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-    </svg>
+      {children}
+    </span>
   );
 }
 
@@ -112,11 +45,11 @@ export default function NotificationBell() {
   if (state === 'unsupported') {
     return (
       <div
-        className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-600/60 bg-slate-900/90 text-slate-400 backdrop-blur-md"
+        className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-600/60 bg-slate-900/90 backdrop-blur-md"
         title="Push notifications not supported on this browser"
         aria-label="Push notifications not supported"
       >
-        <BellOffIcon className="h-5 w-5" />
+        <Glyph>🔕</Glyph>
       </div>
     );
   }
@@ -169,14 +102,13 @@ export default function NotificationBell() {
       ? 'Notifications blocked'
       : 'Get notified of new posts';
 
-  const iconClass = `h-5 w-5 ${busy ? 'animate-spin' : ''}`;
-  const Icon = busy
-    ? SpinnerIcon
+  const glyph = busy
+    ? '⏳'
     : state === 'subscribed'
-    ? BellIcon
+    ? '🔔'
     : state === 'denied'
-    ? BellOffIcon
-    : BellPlusIcon;
+    ? '🔕'
+    : '🔔';
 
   return (
     <div className="relative">
@@ -188,16 +120,16 @@ export default function NotificationBell() {
         title={label}
         className={`flex h-9 w-9 items-center justify-center rounded-full border backdrop-blur-md transition focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-400 disabled:opacity-60 ${
           state === 'subscribed'
-            ? 'border-fuchsia-400/60 bg-slate-900/90 text-fuchsia-200 hover:border-fuchsia-300 hover:bg-slate-900 hover:text-fuchsia-100 shadow-lg shadow-fuchsia-500/20'
+            ? 'border-fuchsia-400/70 bg-slate-900/90 hover:border-fuchsia-300 hover:bg-slate-900 shadow-lg shadow-fuchsia-500/30'
             : state === 'denied'
-            ? 'border-slate-600/60 bg-slate-900/90 text-slate-400'
-            : 'border-fuchsia-400/40 bg-slate-900/90 text-fuchsia-300 hover:border-fuchsia-300 hover:bg-slate-900 hover:text-fuchsia-100 shadow-lg shadow-fuchsia-500/10'
+            ? 'border-slate-600/60 bg-slate-900/90 opacity-70'
+            : 'border-fuchsia-400/40 bg-slate-900/90 hover:border-fuchsia-300 hover:bg-slate-900 shadow-lg shadow-fuchsia-500/10'
         }`}
       >
-        <Icon className={iconClass} />
+        <Glyph spin={busy}>{glyph}</Glyph>
       </button>
       {hint && (
-        <div className="absolute right-0 top-11 z-40 w-max max-w-[calc(100vw-2rem)] rounded-lg border border-slate-700 bg-slate-900/95 px-3 py-2 text-xs text-slate-200 shadow-xl backdrop-blur-md">
+        <div className="absolute right-0 top-11 z-50 w-max max-w-[calc(100vw-2rem)] rounded-lg border border-slate-700 bg-slate-900/95 px-3 py-2 text-xs text-slate-200 shadow-xl backdrop-blur-md">
           {hint}
         </div>
       )}
