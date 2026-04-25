@@ -1129,8 +1129,11 @@ export function PublicWall() {
         </div>
       )}
 
-      <BodyPortal>
-        <div className="fixed top-3 right-3 z-50 flex items-center gap-2">
+    <BodyPortal>
+        <div
+          className="fixed right-3 z-50 flex items-center gap-2"
+          style={{ top: 'calc(env(safe-area-inset-top, 0px) + 0.75rem)' }}
+        >
           <WallCornerAuthLink />
           <NotificationBell />
         </div>
@@ -1223,7 +1226,11 @@ export function PublicWall() {
     {/* Who's online badge — fixed top-left, compact count pill with tap-to-expand popover */}
     {presenceUsers.length > 0 && (
     <BodyPortal>
-    <div className="fixed left-4 top-3 z-50" ref={onlineBadgeRef}>
+    <div
+      className="fixed left-4 z-50"
+      style={{ top: 'calc(env(safe-area-inset-top, 0px) + 0.75rem)' }}
+      ref={onlineBadgeRef}
+    >
         <button
           type="button"
           onClick={() => setShowOnlineList((o) => !o)}

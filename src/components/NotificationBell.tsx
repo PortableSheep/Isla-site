@@ -37,10 +37,39 @@ function isStandalone(): boolean {
   return (window.navigator as unknown as { standalone?: boolean }).standalone === true;
 }
 
+type Browser = 'ios-pwa' | 'safari' | 'firefox' | 'chromium' | 'unknown';
+
+function detectBrowser(): Browser {
+  if (typeof navigator === 'undefined') return 'unknown';
+  if (isIOS() && isStandalone()) return 'ios-pwa';
+  const ua = navigator.userAgent;
+  if (/Firefox\//.test(ua)) return 'firefox';
+  // Edge/Chrome/Brave/Opera all match Chrome substring
+  if (/Edg\/|Chrome\/|Chromium\//.test(ua)) return 'chromium';
+  if (/Safari\//.test(ua)) return 'safari';
+  return 'unknown';
+}
+
+function deniedResetHint(): string {
+  switch (detectBrowser()) {
+    case 'ios-pwa':
+      return 'Open the Settings app → Notifications → scroll to Isla → turn on Allow Notifications. Then come back here and tap the bell again.';
+    case 'safari':
+      return 'Safari → Settings → Websites → Notifications → select isla.zone → Remove. Then click the bell again.';
+    case 'firefox':
+      return 'Click the lock icon 🔒 in the address bar → Connection secure → More info → Permissions → reset Receive Notifications. Then click the bell again.';
+    case 'chromium':
+      return 'Click the lock icon 🔒 in the address bar → Site settings → reset Notifications. Then click the bell again.';
+    default:
+      return 'Notifications are blocked. Re-enable them in your browser or device settings, then click the bell again.';
+  }
+}
+
 export default function NotificationBell() {
   const [state, setState] = useState<State>('unsubscribed');
   const [busy, setBusy] = useState(false);
   const [hint, setHint] = useState<string | null>(null);
+  const [hintSticky, setHintSticky] = useState(false);
 
   useEffect(() => {
     const perm = getPushPermissionState();
@@ -62,6 +91,18 @@ export default function NotificationBell() {
     });
   }, []);
 
+  // Auto-dismiss only non-sticky hints.
+  useEffect(() => {
+    if (!hint || hintSticky) return;
+    const t = setTimeout(() => setHint(null), 6000);
+    return () => clearTimeout(t);
+  }, [hint, hintSticky]);
+
+  const showHint = (msg: string, sticky = false) => {
+    setHint(msg);
+    setHintSticky(sticky);
+  };
+
   if (state === 'unsupported') {
     return (
       <div
@@ -76,19 +117,20 @@ export default function NotificationBell() {
 
   const handleClick = async () => {
     if (busy) return;
+    // Always clear any prior hint on click.
     setHint(null);
+    setHintSticky(false);
 
     if (state === 'ios-install') {
-      setHint(
+      showHint(
         'On iPhone/iPad, tap the Share button in Safari, then "Add to Home Screen". Open Isla from your home screen icon to enable notifications.',
+        true,
       );
-      setTimeout(() => setHint(null), 9000);
       return;
     }
 
     if (state === 'denied') {
-      setHint('Notifications are blocked. Enable them in your browser settings.');
-      setTimeout(() => setHint(null), 5000);
+      showHint(deniedResetHint(), true);
       return;
     }
 
@@ -98,36 +140,43 @@ export default function NotificationBell() {
         const ok = await unsubscribeFromPush();
         if (ok) {
           setState('unsubscribed');
-          setHint('Notifications turned off.');
+          showHint('Notifications turned off.');
         } else {
-          setHint('Could not unsubscribe. Try again.');
+          showHint('Could not unsubscribe. Try again.');
         }
       } else {
         const result = await subscribeToPush();
         if (result.ok) {
           setState('subscribed');
-          setHint("You're subscribed! You'll get a ping when new posts arrive.");
-        } else if (result.reason === 'permission-denied') {
-          const perm = getPushPermissionState();
-          if (perm === 'denied') {
-            setState('denied');
-            setHint('Permission denied. Enable notifications in your browser settings.');
-          } else {
-            setHint('Permission was not granted.');
-          }
-        } else if (result.reason === 'no-vapid-key') {
-          setHint('Notifications are not configured on this server.');
-        } else if (result.reason === 'sw-failed') {
-          setHint('Could not register the service worker.');
-        } else if (result.reason === 'server-failed') {
-          setHint('Server rejected the subscription. Try again later.');
+          showHint("You're subscribed! You'll get a ping when new posts arrive.");
         } else {
-          setHint('Subscription failed. Try again.');
+          // Re-check permission to detect "default → denied" transitions.
+          const perm = getPushPermissionState();
+          if (perm === 'denied' || result.reason === 'permission-denied') {
+            setState('denied');
+            showHint(deniedResetHint(), true);
+          } else if (result.reason === 'no-vapid-key') {
+            showHint('Notifications are not configured on this server.', true);
+          } else if (result.reason === 'sw-failed') {
+            showHint(
+              `Could not register the service worker.${result.message ? ' (' + result.message.slice(0, 120) + ')' : ''}`,
+              true,
+            );
+          } else if (result.reason === 'server-failed') {
+            showHint(
+              `Server rejected the subscription.${result.message ? ' (' + result.message + ')' : ''} Try again later.`,
+              true,
+            );
+          } else {
+            showHint(
+              `Subscription failed.${result.message ? ' ' + result.message.slice(0, 160) : ''} Try again.`,
+              true,
+            );
+          }
         }
       }
     } finally {
       setBusy(false);
-      setTimeout(() => setHint(null), 6000);
     }
   };
 
@@ -135,7 +184,7 @@ export default function NotificationBell() {
     state === 'subscribed'
       ? 'Turn off notifications'
       : state === 'denied'
-      ? 'Notifications blocked'
+      ? 'Notifications blocked — tap for help'
       : state === 'ios-install'
       ? 'Install Isla to enable notifications'
       : 'Get notified of new posts';
@@ -154,15 +203,27 @@ export default function NotificationBell() {
           state === 'subscribed'
             ? 'border-fuchsia-400/80 bg-slate-900/90 hover:border-fuchsia-300 hover:bg-slate-900 shadow-lg shadow-fuchsia-500/30'
             : state === 'denied'
-            ? 'border-slate-600/60 bg-slate-900/90 opacity-70'
+            ? 'border-amber-400/70 bg-slate-900/90 hover:border-amber-300 hover:bg-slate-900 shadow-lg shadow-amber-500/20'
             : 'border-fuchsia-400/70 bg-slate-900/90 hover:border-fuchsia-300 hover:bg-slate-900 shadow-lg shadow-fuchsia-500/20'
         }`}
       >
         <Glyph spin={busy}>{glyph}</Glyph>
       </button>
       {hint && (
-        <div className="absolute right-0 top-11 z-50 w-[260px] max-w-[calc(100vw-2rem)] rounded-lg border border-slate-700 bg-slate-900/95 px-3 py-2 text-xs leading-relaxed text-slate-200 shadow-xl backdrop-blur-md">
-          {hint}
+        <div className="absolute right-0 top-11 z-50 w-[280px] max-w-[calc(100vw-2rem)] rounded-lg border border-slate-700 bg-slate-900/95 px-3 py-2 text-xs leading-relaxed text-slate-200 shadow-xl backdrop-blur-md">
+          <div>{hint}</div>
+          {hintSticky && (
+            <button
+              type="button"
+              onClick={() => {
+                setHint(null);
+                setHintSticky(false);
+              }}
+              className="mt-2 text-[10px] uppercase tracking-wider text-slate-400 hover:text-slate-200"
+            >
+              Dismiss
+            </button>
+          )}
         </div>
       )}
     </div>
