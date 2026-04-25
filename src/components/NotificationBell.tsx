@@ -109,7 +109,17 @@ export default function NotificationBell() {
     });
   }, []);
 
-  if (state === 'unsupported') return null;
+  if (state === 'unsupported') {
+    return (
+      <div
+        className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-500/30 bg-slate-900/90 text-slate-500 shadow-md backdrop-blur-md"
+        title="Push notifications not supported on this browser"
+        aria-label="Push notifications not supported"
+      >
+        <BellOffIcon className="h-4 w-4" />
+      </div>
+    );
+  }
 
   const handleClick = async () => {
     if (busy) return;
