@@ -1238,7 +1238,7 @@ export function PublicWall() {
         </button>
         {showOnlineList && (
           <div className="absolute left-0 top-9 w-max min-w-[160px] rounded-xl border border-emerald-400/20 bg-slate-900/95 px-3 py-2 shadow-xl backdrop-blur-md">
-            <div className="mb-1 flex items-center justify-between gap-3">
+            <div className="flex items-center justify-between gap-3">
               <span className="whitespace-nowrap text-[10px] font-semibold uppercase tracking-wider text-slate-500">
                 Online now
               </span>
@@ -1251,7 +1251,7 @@ export function PublicWall() {
                 ×
               </button>
             </div>
-            <ul className="m-0 list-none p-0">
+            <ul className="m-0 list-none pl-2">
               {presenceUsers.map((name) => (
                 <li key={name} className="flex items-center gap-1.5 py-0.5 text-xs text-emerald-200">
                   <span className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-emerald-400" />
