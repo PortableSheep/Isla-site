@@ -12,10 +12,12 @@ type WallPost = {
   parent_post_id: string | null;
   author_name: string | null;
   author_cookie_id: string | null;
+  author_id: string | null;
   content: string;
   moderation_status: 'pending' | 'approved' | 'rejected';
   created_at: string;
   is_mine: boolean;
+  verified: boolean;
 };
 
 type FeedAttachment = {
@@ -26,10 +28,10 @@ type FeedAttachment = {
   signed_url: string | null;
 };
 
-type FeedPost = Omit<WallPost, 'author_cookie_id'> & {
+type FeedPost = Omit<WallPost, 'author_cookie_id' | 'author_id'> & {
   reactions: Record<string, number>;
   my_reactions: string[];
-  comments: (Omit<WallPost, 'author_cookie_id'> & { attachments: FeedAttachment[] })[];
+  comments: (Omit<WallPost, 'author_cookie_id' | 'author_id'> & { attachments: FeedAttachment[] })[];
   attachments: FeedAttachment[];
 };
 
@@ -57,7 +59,7 @@ export async function GET(request: NextRequest) {
 
     let query = admin
       .from('posts')
-      .select('id, parent_post_id, author_name, author_cookie_id, content, moderation_status, created_at')
+      .select('id, parent_post_id, author_name, author_cookie_id, author_id, content, moderation_status, created_at')
       .is('parent_post_id', null)
       .is('deleted_at', null)
       .eq('hidden', false)
@@ -86,7 +88,7 @@ export async function GET(request: NextRequest) {
     if (postIds.length > 0) {
       const { data: cRows, error: cErr } = await admin
         .from('posts')
-        .select('id, parent_post_id, author_name, author_cookie_id, content, moderation_status, created_at')
+        .select('id, parent_post_id, author_name, author_cookie_id, author_id, content, moderation_status, created_at')
         .in('parent_post_id', postIds)
         .is('deleted_at', null)
         .eq('hidden', false)
@@ -101,6 +103,7 @@ export async function GET(request: NextRequest) {
       commentRows = (cRows ?? []).map((r) => ({
         ...r,
         is_mine: Boolean(cookieId && r.author_cookie_id === cookieId),
+        verified: !!r.author_id,
       })) as WallPost[];
     }
 
@@ -213,12 +216,13 @@ export async function GET(request: NextRequest) {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const strip = ({ author_cookie_id: _c, ...rest }: WallPost) => rest;
+    const strip = ({ author_cookie_id: _c, author_id: _a, ...rest }: WallPost) => rest;
 
     const feed: FeedPost[] = (topRows ?? []).map((p) => {
       const withMine: WallPost = {
         ...p,
         is_mine: Boolean(cookieId && p.author_cookie_id === cookieId),
+        verified: !!p.author_id,
       } as WallPost;
       return {
         ...strip(withMine),

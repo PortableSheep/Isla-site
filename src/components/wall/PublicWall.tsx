@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { supabase } from '@/lib/supabase';
+import { useAuth } from '@/lib/AuthContext';
+import { signInWithMagicLink, updateDisplayName } from '@/lib/auth';
 import { CreatureDisplay } from '@/components/CreatureDisplay';
 import { extractMedia, Linkified, MediaEmbeds } from '@/components/wall/media';
 import { GifPicker } from '@/components/wall/GifPicker';
@@ -37,6 +39,7 @@ type Comment = {
   moderation_status: 'pending' | 'approved' | 'rejected';
   created_at: string;
   is_mine: boolean;
+  verified?: boolean;
   attachments?: FeedAttachment[];
   _optimistic?: boolean;
 };
@@ -354,6 +357,11 @@ function CommentBlock({
         <div key={c.id} className="rounded-xl bg-white/5 px-3 py-2">
           <div className="flex items-center gap-2 text-xs text-slate-400">
             <span className="font-medium text-slate-200">{c.author_name || 'Anonymous'}</span>
+            {c.verified && (
+              <span aria-label="verified" title="Signed in" className="-ml-1">
+                ✨
+              </span>
+            )}
             <span>·</span>
             <span>{formatTime(c.created_at)}</span>
             <Badge status={c.moderation_status} />
@@ -573,22 +581,58 @@ function NameDialog({
   open,
   initialName,
   firstTime,
+  alreadySignedIn,
   onCancel,
   onSubmit,
 }: {
   open: boolean;
   initialName: string;
   firstTime: boolean;
+  alreadySignedIn: boolean;
   onCancel: () => void;
   onSubmit: (name: string) => void;
 }) {
   const [value, setValue] = useState(initialName);
+  const [showMagicLink, setShowMagicLink] = useState(false);
+  const [email, setEmail] = useState('');
+  const [linkState, setLinkState] = useState<
+    | { kind: 'idle' }
+    | { kind: 'sending' }
+    | { kind: 'sent' }
+    | { kind: 'error'; message: string }
+  >({ kind: 'idle' });
 
   useEffect(() => {
-    if (open) setValue(initialName);
+    if (open) {
+      setValue(initialName);
+      setShowMagicLink(false);
+      setEmail('');
+      setLinkState({ kind: 'idle' });
+    }
   }, [open, initialName]);
 
   if (!open) return null;
+
+  async function handleSendLink() {
+    const e = email.trim();
+    const n = value.trim();
+    if (!n) {
+      setLinkState({ kind: 'error', message: 'Pick a display name first.' });
+      return;
+    }
+    if (!e || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) {
+      setLinkState({ kind: 'error', message: 'Enter a valid email.' });
+      return;
+    }
+    setLinkState({ kind: 'sending' });
+    try {
+      await signInWithMagicLink(e, n);
+      setLinkState({ kind: 'sent' });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Could not send link.';
+      setLinkState({ kind: 'error', message });
+    }
+  }
 
   return (
     <div
@@ -641,6 +685,60 @@ function NameDialog({
             Save
           </button>
         </div>
+
+        {!alreadySignedIn && (
+          <div className="border-t border-white/10 pt-3">
+            {!showMagicLink ? (
+              <button
+                type="button"
+                onClick={() => setShowMagicLink(true)}
+                className="text-xs text-fuchsia-300 underline-offset-2 hover:underline"
+              >
+                ✨ Want to keep this name on your other devices?
+              </button>
+            ) : (
+              <div className="space-y-2">
+                <p className="text-xs text-slate-400">
+                  We&apos;ll email you a one-tap sign-in link. After you click it, this
+                  name follows you to any browser or device.
+                </p>
+                <div className="flex gap-2">
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(ev) => setEmail(ev.target.value)}
+                    placeholder="you@example.com"
+                    autoComplete="email"
+                    inputMode="email"
+                    disabled={linkState.kind === 'sending' || linkState.kind === 'sent'}
+                    className="flex-1 rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:border-fuchsia-400 focus:outline-none disabled:opacity-60"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleSendLink}
+                    disabled={linkState.kind === 'sending' || linkState.kind === 'sent'}
+                    className="iz-btn-primary rounded-lg px-3 py-2 text-xs disabled:opacity-50"
+                  >
+                    {linkState.kind === 'sending' ? 'Sending…' : 'Send link'}
+                  </button>
+                </div>
+                {linkState.kind === 'sent' && (
+                  <p className="text-xs text-emerald-300">
+                    ✉️ Check your email for the sign-in link!
+                  </p>
+                )}
+                {linkState.kind === 'error' && (
+                  <p className="text-xs text-rose-300">{linkState.message}</p>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+        {alreadySignedIn && (
+          <p className="border-t border-white/10 pt-3 text-xs text-fuchsia-300">
+            ✨ Signed in — this name follows you across devices.
+          </p>
+        )}
       </form>
     </div>
   );
@@ -650,6 +748,13 @@ const POLL_INTERVAL_MS = 15_000;
 const TOAST_DURATION_MS = 2_500;
 
 export function PublicWall() {
+  const { user } = useAuth();
+  const verified = !!user;
+  const verifiedRef = useRef(verified);
+  useEffect(() => {
+    verifiedRef.current = verified;
+  }, [verified]);
+
   const [feed, setFeed] = useState<Post[] | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [savedName, setSavedName] = useState('');
@@ -669,8 +774,10 @@ export function PublicWall() {
   // New-post animation: IDs in this set get a slide-in CSS class for 2.5 s.
   const [newPostIds, setNewPostIds] = useState<Set<string>>(new Set());
   const newPostCleanupRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
-  // Presence: named users currently on the wall.
-  const [presenceUsers, setPresenceUsers] = useState<string[]>([]);
+  // Presence: users currently on the wall, with verified flag for those
+  // signed in via magic link.
+  type PresenceEntry = { name: string; verified: boolean };
+  const [presenceUsers, setPresenceUsers] = useState<PresenceEntry[]>([]);
   const presenceChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   // Presence popover open/close state.
   const [showOnlineList, setShowOnlineList] = useState(false);
@@ -687,16 +794,30 @@ export function PublicWall() {
 
   useEffect(() => {
     const existing = readSavedName();
-    setSavedName(existing);
+    const metaName =
+      typeof user?.user_metadata?.display_name === 'string'
+        ? (user.user_metadata.display_name as string).trim()
+        : '';
+    // Auth metadata wins — it's the cross-device source of truth.
+    const initial = metaName || existing;
+    setSavedName(initial);
+    if (initial && initial !== existing) {
+      saveName(initial);
+    }
     setHideToasts(localStorage.getItem('iz-wall-hide-toasts') === 'true');
-    if (!existing) {
+    if (!initial) {
       // Prompt for a display name immediately so visitors aren't shown as
       // "Someone" in presence and don't get surprised by a modal the first
       // time they try to post.
       setDialogFirstTime(true);
       setDialogOpen(true);
+    } else if (user && !metaName) {
+      // Just-signed-in user whose magic link didn't carry a name (or who
+      // chose their name after sending the link) — backfill metadata so
+      // future devices see it.
+      void updateDisplayName(initial).catch(() => {});
     }
-  }, []);
+  }, [user]);
 
   // Keep loadMoreCursor pointing at the oldest non-optimistic post in the feed.
   useEffect(() => {
@@ -732,8 +853,13 @@ export function PublicWall() {
     const ch = presenceChannelRef.current;
     if (ch) {
       void Promise.resolve(ch.untrack()).finally(() => {
-        void ch.track({ name: name || null });
+        void ch.track({ name: name || null, verified: verifiedRef.current });
       });
+    }
+    // If they're already signed in (e.g. they came back via magic link
+    // and then changed their name), keep the auth metadata in sync.
+    if (verifiedRef.current) {
+      void updateDisplayName(name).catch(() => {});
     }
     if (pendingResolver.current) {
       pendingResolver.current(name);
@@ -957,18 +1083,20 @@ export function PublicWall() {
 
     const trackSelf = () => {
       const name = readSavedName();
-      void ch.track({ name: name || null });
+      void ch.track({ name: name || null, verified: verifiedRef.current });
     };
 
     ch.on('presence', { event: 'sync' }, () => {
-      const state = ch.presenceState<{ name: string | null }>();
+      const state = ch.presenceState<{ name: string | null; verified?: boolean }>();
       const entries = Object.values(state).flat();
       // Keep unnamed users (rendered as "Someone" in the popover) so the
       // badge still shows for anonymous visitors.
-      const names = entries.map((u) =>
-        typeof u.name === 'string' && u.name.length > 0 ? u.name : 'Someone',
-      );
-      setPresenceUsers(names);
+      const list: PresenceEntry[] = entries.map((u) => ({
+        name:
+          typeof u.name === 'string' && u.name.length > 0 ? u.name : 'Someone',
+        verified: !!u.verified,
+      }));
+      setPresenceUsers(list);
     });
 
     ch.subscribe((status) => {
@@ -992,6 +1120,15 @@ export function PublicWall() {
       presenceChannelRef.current = null;
     };
   }, []);
+
+  // Re-track when verified status flips (e.g. magic-link sign-in completes
+  // while the user is still on the page) so the ✨ updates live.
+  useEffect(() => {
+    const ch = presenceChannelRef.current;
+    if (!ch) return;
+    const name = readSavedName();
+    void ch.track({ name: name || null, verified });
+  }, [verified]);
 
   // Close the online list on outside click or Escape.
   useEffect(() => {
@@ -1029,6 +1166,7 @@ export function PublicWall() {
         moderation_status: 'pending',
         created_at: new Date().toISOString(),
         is_mine: true,
+        verified: verifiedRef.current,
         reactions: {},
         my_reactions: [],
         comments: [],
@@ -1128,6 +1266,7 @@ export function PublicWall() {
         open={dialogOpen}
         initialName={savedName}
         firstTime={dialogFirstTime}
+        alreadySignedIn={verified}
         onCancel={handleDialogCancel}
         onSubmit={handleDialogSubmit}
       />
@@ -1226,6 +1365,11 @@ export function PublicWall() {
           >
             <div className="flex flex-wrap items-center gap-2 text-sm text-slate-400">
               <span className="font-medium text-slate-100">{p.author_name || 'Anonymous'}</span>
+              {p.verified && (
+                <span aria-label="verified" title="Signed in" className="-ml-1">
+                  ✨
+                </span>
+              )}
               <span>·</span>
               <span>{formatTime(p.created_at)}</span>
               <Badge status={p.moderation_status} />
@@ -1295,10 +1439,17 @@ export function PublicWall() {
               </button>
             </div>
             <ul className="m-0 list-none pl-2">
-              {presenceUsers.map((name, i) => (
-                <li key={`${name}-${i}`} className="flex items-center gap-1.5 py-0.5 text-xs text-slate-300">
+              {presenceUsers.map((u, i) => (
+                <li key={`${u.name}-${i}`} className="flex items-center gap-1.5 py-0.5 text-xs text-slate-300">
                   <span className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-emerald-400" />
-                  <span className="max-w-[180px] truncate">{name}</span>
+                  <span className="max-w-[180px] truncate">
+                    {u.name}
+                    {u.verified && (
+                      <span aria-label="verified" title="Signed in" className="ml-1">
+                        ✨
+                      </span>
+                    )}
+                  </span>
                 </li>
               ))}
             </ul>

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
+import { getSbClient } from '@/lib/supabaseClient';
 import {
   resolveGuest,
   isSameOriginWrite,
@@ -43,6 +44,17 @@ export async function POST(request: NextRequest) {
     }
 
     const guest = await resolveGuest(request);
+
+    // If the visitor signed in via the wall's magic-link flow, attach
+    // their auth user id so the feed can mark the post as verified.
+    let authUserId: string | null = null;
+    try {
+      const sb = await getSbClient();
+      const { data: userResp } = await sb.auth.getUser();
+      authUserId = userResp.user?.id ?? null;
+    } catch {
+      authUserId = null;
+    }
 
     if (await isIpBanned(guest.ip)) {
       return NextResponse.json({ error: 'banned' }, { status: 403 });
@@ -97,7 +109,7 @@ export async function POST(request: NextRequest) {
       .from('posts')
       .insert({
         family_id: familyId,
-        author_id: null,
+        author_id: authUserId,
         author_cookie_id: guest.cookieId,
         author_name: authorName,
         content,

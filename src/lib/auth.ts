@@ -76,3 +76,32 @@ export async function validatePassword(password: string): Promise<string | null>
   }
   return null;
 }
+
+// Sends a passwordless magic-link email used by the public wall to let
+// visitors persist their display name across devices. The chosen name is
+// passed via auth metadata so it lands on the user record on first sign-in.
+export async function signInWithMagicLink(email: string, displayName: string) {
+  const supabase = await getSbClient();
+  const redirectTo =
+    typeof window !== 'undefined' ? `${window.location.origin}/` : undefined;
+  const { error } = await supabase.auth.signInWithOtp({
+    email,
+    options: {
+      shouldCreateUser: true,
+      data: { display_name: displayName },
+      emailRedirectTo: redirectTo,
+    },
+  });
+  if (error) throw error;
+}
+
+// Updates the signed-in user's display_name in auth.users.user_metadata.
+// Used to backfill the metadata after a magic-link sign-in completes when
+// the local name was set after the link was sent.
+export async function updateDisplayName(name: string) {
+  const supabase = await getSbClient();
+  const { error } = await supabase.auth.updateUser({
+    data: { display_name: name },
+  });
+  if (error) throw error;
+}
