@@ -56,6 +56,7 @@ export async function POST(request: NextRequest) {
           body: 'If you can see this, push notifications are working on this device.',
           link: '/debug/push',
           tag: 'isla-test-push',
+          force: true,
         }),
       );
     } catch (err: unknown) {

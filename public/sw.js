@@ -31,17 +31,19 @@ self.addEventListener('push', function (event) {
     renotify: true,
   };
 
-  // Suppress the push notification if the user is already looking at the site
+  // Suppress the push notification if the user is already looking at the site.
+  // `force: true` bypasses this — used by /debug/push so manual tests always
+  // produce a visible notification even when the tab is in the foreground.
   event.waitUntil(
-    self.clients
-      .matchAll({ type: 'window', includeUncontrolled: true })
-      .then(function (clients) {
-        const isVisible = clients.some(
-          (client) => client.visibilityState === 'visible'
-        );
-        if (isVisible) return;
+    (async () => {
+      if (payload.force === true) {
         return self.registration.showNotification(title, options);
-      })
+      }
+      const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+      const isVisible = clients.some((client) => client.visibilityState === 'visible');
+      if (isVisible) return;
+      return self.registration.showNotification(title, options);
+    })()
   );
 });
 
