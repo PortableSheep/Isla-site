@@ -3,6 +3,7 @@ import "./globals.css";
 import { AuthProvider } from "@/lib/AuthContext";
 import { SkipToMainLink } from "@/components/SkipToMainLink";
 import BuildVersionWatcher from "@/components/BuildVersionWatcher";
+import ServiceWorkerRegistrar from "@/components/ServiceWorkerRegistrar";
 
 export const metadata: Metadata = {
   title: "Isla Zone — A private message wall for families",
@@ -38,6 +39,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col text-slate-100 selection:bg-fuchsia-500/40 selection:text-white">
         <SkipToMainLink />
         <BuildVersionWatcher />
+        <ServiceWorkerRegistrar />
         <AuthProvider>
           <main id="main-content" role="main" className="flex flex-col flex-1">
             {children}

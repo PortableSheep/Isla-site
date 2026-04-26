@@ -72,23 +72,48 @@ export default function NotificationBell() {
   const [hintSticky, setHintSticky] = useState(false);
 
   useEffect(() => {
-    const perm = getPushPermissionState();
-    if (perm === 'unsupported') {
-      // iOS Safari supports push only when installed as a PWA (16.4+).
-      if (isIOS() && !isStandalone()) {
-        setState('ios-install');
-      } else {
-        setState('unsupported');
+    let cancelled = false;
+
+    const refresh = async () => {
+      const perm = getPushPermissionState();
+      if (perm === 'unsupported') {
+        if (cancelled) return;
+        // iOS Safari supports push only when installed as a PWA (16.4+).
+        if (isIOS() && !isStandalone()) {
+          setState('ios-install');
+        } else {
+          setState('unsupported');
+        }
+        return;
       }
-      return;
-    }
-    if (perm === 'denied') {
-      setState('denied');
-      return;
-    }
-    getCurrentPushSubscription().then((sub) => {
-      setState(sub ? 'subscribed' : 'unsubscribed');
-    });
+      // Even if perm is currently 'denied', check for an existing subscription —
+      // and if the OS-level setting has been re-enabled (e.g. iOS Settings),
+      // allow the bell to leave the denied state so a tap can re-subscribe.
+      const sub = await getCurrentPushSubscription();
+      if (cancelled) return;
+      if (sub) {
+        setState('subscribed');
+        return;
+      }
+      setState(perm === 'denied' ? 'denied' : 'unsubscribed');
+    };
+
+    refresh();
+
+    // iOS PWAs persist JS state across background/foreground transitions, so
+    // re-check permission whenever the page becomes visible or focused. This
+    // recovers from the "denied → enabled in iOS Settings" flow without a
+    // full reload.
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') refresh();
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    window.addEventListener('focus', refresh);
+    return () => {
+      cancelled = true;
+      document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('focus', refresh);
+    };
   }, []);
 
   // Auto-dismiss only non-sticky hints.
@@ -129,10 +154,13 @@ export default function NotificationBell() {
       return;
     }
 
-    if (state === 'denied') {
-      showHint(deniedResetHint(), true);
-      return;
-    }
+    // NOTE: We deliberately do NOT short-circuit here on `state === 'denied'`.
+    // If the user re-enabled notifications in OS settings (iOS Settings →
+    // Notifications → Isla), Notification.requestPermission() will resolve
+    // to 'granted' synchronously without showing a prompt, and we can
+    // subscribe successfully. Only fall back to the help hint if it really
+    // is still denied. This makes the bell self-heal after the iOS Settings
+    // dance with no app reload required.
 
     setBusy(true);
     try {

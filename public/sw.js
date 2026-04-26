@@ -45,6 +45,49 @@ self.addEventListener('push', function (event) {
   );
 });
 
+// Browsers (especially iOS) occasionally rotate or invalidate the push
+// subscription endpoint. When that happens this event fires inside the SW
+// and we have a brief window to silently re-subscribe. Without this the
+// row in `push_subscriptions` goes stale and the device stops getting
+// pushes until the user manually re-enables them.
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = atob(base64);
+  const output = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; i++) output[i] = rawData.charCodeAt(i);
+  return output;
+}
+
+self.addEventListener('pushsubscriptionchange', function (event) {
+  event.waitUntil(
+    (async () => {
+      try {
+        const res = await fetch('/api/push/vapid-key');
+        if (!res.ok) return;
+        const { key } = await res.json();
+        if (!key) return;
+        const newSub = await self.registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(key),
+        });
+        const json = newSub.toJSON();
+        await fetch('/api/push/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            endpoint: json.endpoint,
+            p256dh: json.keys && json.keys.p256dh,
+            auth: json.keys && json.keys.auth,
+          }),
+        });
+      } catch (err) {
+        // Best-effort recovery; nothing more we can do from the SW.
+      }
+    })()
+  );
+});
+
 self.addEventListener('notificationclick', function (event) {
   event.notification.close();
 

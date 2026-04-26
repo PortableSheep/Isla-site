@@ -36,8 +36,20 @@ export function NotificationPreferences({
   }, [initialPreferences]);
 
   useEffect(() => {
-    setPushPermission(getPushPermissionState());
-    getCurrentPushSubscription().then((sub) => setIsPushSubscribed(!!sub));
+    const refresh = () => {
+      setPushPermission(getPushPermissionState());
+      getCurrentPushSubscription().then((sub) => setIsPushSubscribed(!!sub));
+    };
+    refresh();
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') refresh();
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    window.addEventListener('focus', refresh);
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('focus', refresh);
+    };
   }, []);
 
   if (!preferences) {
@@ -86,15 +98,21 @@ export function NotificationPreferences({
     setIsPushWorking(true);
     setError(null);
     try {
-      const ok = await subscribeToPush();
-      if (ok) {
+      const result = await subscribeToPush();
+      if (result.ok) {
         setIsPushSubscribed(true);
         setPushPermission('granted');
         setPreferences({ ...preferences, push_notifications_enabled: true });
       } else {
         setPushPermission(getPushPermissionState());
-        if (Notification.permission === 'denied') {
-          setError('Push notifications were blocked. Please allow them in your browser settings.');
+        if (result.reason === 'permission-denied' || Notification.permission === 'denied') {
+          setError(
+            'Push notifications were blocked. Open your device or browser settings, allow notifications for this site, then try Enable again.',
+          );
+        } else if (result.reason === 'no-vapid-key') {
+          setError('Push notifications are not configured on this server.');
+        } else {
+          setError(`Could not enable push notifications${result.message ? `: ${result.message}` : '.'}`);
         }
       }
     } finally {
@@ -249,11 +267,6 @@ export function NotificationPreferences({
           <p className="text-sm text-gray-500">
             Push notifications are not supported in this browser.
           </p>
-        ) : pushPermission === 'denied' ? (
-          <p className="text-sm text-amber-700">
-            Push notifications are blocked by your browser. To enable them, open your browser
-            settings, find this site&apos;s permissions, and allow notifications.
-          </p>
         ) : isPushSubscribed ? (
           <div className="flex items-center justify-between">
             <div>
@@ -272,13 +285,19 @@ export function NotificationPreferences({
             </button>
           </div>
         ) : (
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-4">
             <div>
               <p className="text-sm font-medium text-gray-900">Push Notifications</p>
               <p className="text-sm text-gray-500 mt-1">
                 Allow push notifications so you&apos;re notified even when you&apos;re away from the
                 site.
               </p>
+              {pushPermission === 'denied' && (
+                <p className="text-sm text-amber-700 mt-2">
+                  Notifications are currently blocked. If you just allowed them in your device
+                  or browser settings, tap Enable to try again.
+                </p>
+              )}
             </div>
             <button
               onClick={handleEnablePush}
