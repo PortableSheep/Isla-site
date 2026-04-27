@@ -30,7 +30,7 @@ const COMPRESSION_OPTIONS = {
 };
 
 const ERROR_MESSAGES: Record<string, string> = {
-  file_too_large: 'Image is too large even after compression (20 MB max).',
+  file_too_large: 'Image must be under 20 MB.',
   unsupported_image_type: 'Only PNG, JPEG, WEBP, and GIF are allowed.',
   rate_limited: "You've uploaded a lot — try again in a bit.",
   banned: 'This device is blocked from uploading.',
