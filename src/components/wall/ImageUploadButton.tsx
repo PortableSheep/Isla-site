@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
+import imageCompression from 'browser-image-compression';
 
 export type PendingAttachment = {
   id: string;
@@ -20,10 +21,16 @@ type UploadResponse = {
 };
 
 const ACCEPT = 'image/png,image/jpeg,image/webp,image/gif';
-const MAX_BYTES = 8 * 1024 * 1024;
+const MAX_BYTES = 20 * 1024 * 1024; // 20 MB hard cap (after compression)
+
+const COMPRESSION_OPTIONS = {
+  maxSizeMB: 5,
+  maxWidthOrHeight: 2048,
+  useWebWorker: true,
+};
 
 const ERROR_MESSAGES: Record<string, string> = {
-  file_too_large: 'Image must be under 8 MB.',
+  file_too_large: 'Image is too large even after compression (20 MB max).',
   unsupported_image_type: 'Only PNG, JPEG, WEBP, and GIF are allowed.',
   rate_limited: "You've uploaded a lot — try again in a bit.",
   banned: 'This device is blocked from uploading.',
@@ -45,6 +52,7 @@ export function ImageUploadButton({
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
+  const [compressing, setCompressing] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
   const pick = () => {
@@ -54,14 +62,27 @@ export function ImageUploadButton({
 
   const handleFile = async (file: File) => {
     setErr(null);
-    if (file.size > MAX_BYTES) {
-      setErr(ERROR_MESSAGES.file_too_large);
-      return;
-    }
     setBusy(true);
     try {
+      // Compress all image types except GIF (compression would break animation).
+      let toUpload: File = file;
+      if (file.type !== 'image/gif') {
+        try {
+          setCompressing(true);
+          toUpload = await imageCompression(file, COMPRESSION_OPTIONS);
+        } catch {
+          // Compression failed — fall back to the original file.
+          toUpload = file;
+        } finally {
+          setCompressing(false);
+        }
+      }
+      if (toUpload.size > MAX_BYTES) {
+        setErr(ERROR_MESSAGES.file_too_large);
+        return;
+      }
       const fd = new FormData();
-      fd.append('file', file);
+      fd.append('file', toUpload);
       const res = await fetch('/api/wall/upload', {
         method: 'POST',
         credentials: 'include',
@@ -120,7 +141,7 @@ export function ImageUploadButton({
             }
             aria-label="Add an image from your device"
           >
-            {busy ? '⏳ Uploading…' : '📷 Add image'}
+            {compressing ? '🗜️ Compressing…' : busy ? '⏳ Uploading…' : '📷 Add image'}
           </button>
         ) : (
           <div className="flex items-center gap-2 rounded-md border border-fuchsia-400/30 bg-fuchsia-500/10 px-2 py-1">
