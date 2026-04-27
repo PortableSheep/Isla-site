@@ -20,7 +20,9 @@ type UploadResponse = {
   detail?: string;
 };
 
-const ACCEPT = 'image/png,image/jpeg,image/webp,image/gif';
+// Include HEIC/HEIF so iOS delivers the native file rather than silently failing;
+// we convert them to JPEG during compression before uploading.
+const ACCEPT = 'image/png,image/jpeg,image/webp,image/gif,image/heic,image/heif';
 // Hard reject before attempting compression — avoids reading a 200 MB file into a Web Worker.
 const MAX_BYTES_PRE_COMPRESS = 50 * 1024 * 1024; // 50 MB
 const MAX_BYTES = 20 * 1024 * 1024; // 20 MB hard cap (after compression)
@@ -31,10 +33,12 @@ const COMPRESSION_OPTIONS = {
   useWebWorker: true,
 };
 
+const HEIC_MIME_TYPES = new Set(['image/heic', 'image/heif']);
+
 const ERROR_MESSAGES: Record<string, string> = {
   file_too_large_pre_compress: 'Image is too large to process (50 MB max).',
   file_too_large: 'Image must be under 20 MB.',
-  unsupported_image_type: 'Only PNG, JPEG, WEBP, and GIF are allowed.',
+  unsupported_image_type: 'Only PNG, JPEG, WEBP, and GIF are supported. Try converting your image first.',
   rate_limited: "You've uploaded a lot — try again in a bit.",
   banned: 'This device is blocked from uploading.',
   invalid_content_type: 'Upload failed (bad request).',
@@ -74,11 +78,20 @@ export function ImageUploadButton({
     }
 
     // Phase 1: Compress (non-GIF only; compressing GIFs would break animation).
+    // For HEIC/HEIF (common on iPhone), force output as JPEG so the server
+    // magic-byte check accepts the result.
     let toUpload: File = file;
+    const isHeic =
+      HEIC_MIME_TYPES.has(file.type.toLowerCase()) ||
+      /\.heic$/i.test(file.name) ||
+      /\.heif$/i.test(file.name);
     if (file.type !== 'image/gif') {
       setCompressing(true);
       try {
-        toUpload = await imageCompression(file, COMPRESSION_OPTIONS);
+        toUpload = await imageCompression(file, {
+          ...COMPRESSION_OPTIONS,
+          ...(isHeic ? { fileType: 'image/jpeg' } : {}),
+        });
       } catch {
         // Compression failed — fall back to the original file.
         toUpload = file;
