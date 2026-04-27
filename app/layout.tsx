@@ -4,6 +4,7 @@ import { AuthProvider } from "@/lib/AuthContext";
 import { SkipToMainLink } from "@/components/SkipToMainLink";
 import BuildVersionWatcher from "@/components/BuildVersionWatcher";
 import ServiceWorkerRegistrar from "@/components/ServiceWorkerRegistrar";
+import { SpeedInsights } from '@vercel/speed-insights/next';
 
 export const metadata: Metadata = {
   title: "Isla Zone — A private message wall for families",
@@ -45,6 +46,7 @@ export default function RootLayout({
             {children}
           </main>
         </AuthProvider>
+        <SpeedInsights />
       </body>
     </html>
   );
