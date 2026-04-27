@@ -56,31 +56,35 @@ export function ImageUploadButton({
   const [err, setErr] = useState<string | null>(null);
 
   const pick = () => {
-    if (disabled || busy) return;
+    if (disabled || busy || compressing) return;
     inputRef.current?.click();
   };
 
   const handleFile = async (file: File) => {
     setErr(null);
+
+    // Phase 1: Compress (non-GIF only; compressing GIFs would break animation).
+    let toUpload: File = file;
+    if (file.type !== 'image/gif') {
+      setCompressing(true);
+      try {
+        toUpload = await imageCompression(file, COMPRESSION_OPTIONS);
+      } catch {
+        // Compression failed — fall back to the original file.
+        toUpload = file;
+      } finally {
+        setCompressing(false);
+      }
+    }
+
+    if (toUpload.size > MAX_BYTES) {
+      setErr(ERROR_MESSAGES.file_too_large);
+      return;
+    }
+
+    // Phase 2: Upload.
     setBusy(true);
     try {
-      // Compress all image types except GIF (compression would break animation).
-      let toUpload: File = file;
-      if (file.type !== 'image/gif') {
-        try {
-          setCompressing(true);
-          toUpload = await imageCompression(file, COMPRESSION_OPTIONS);
-        } catch {
-          // Compression failed — fall back to the original file.
-          toUpload = file;
-        } finally {
-          setCompressing(false);
-        }
-      }
-      if (toUpload.size > MAX_BYTES) {
-        setErr(ERROR_MESSAGES.file_too_large);
-        return;
-      }
       const fd = new FormData();
       fd.append('file', toUpload);
       const res = await fetch('/api/wall/upload', {
@@ -133,7 +137,7 @@ export function ImageUploadButton({
           <button
             type="button"
             onClick={pick}
-            disabled={disabled || busy}
+            disabled={disabled || busy || compressing}
             className={
               compact
                 ? 'inline-flex h-9 items-center gap-1 rounded-lg border border-fuchsia-400/40 bg-fuchsia-500/10 px-3 text-xs text-fuchsia-200 transition hover:border-fuchsia-400/70 hover:bg-fuchsia-500/20 disabled:opacity-50'
@@ -155,7 +159,7 @@ export function ImageUploadButton({
             <button
               type="button"
               onClick={remove}
-              disabled={disabled || busy}
+              disabled={disabled || busy || compressing}
               aria-label="Remove attached image"
               className="ml-1 rounded px-1 text-xs text-fuchsia-300 hover:text-white"
             >
