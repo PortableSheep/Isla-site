@@ -4,6 +4,7 @@ import { AuthProvider } from "@/lib/AuthContext";
 import { SkipToMainLink } from "@/components/SkipToMainLink";
 import BuildVersionWatcher from "@/components/BuildVersionWatcher";
 import ServiceWorkerRegistrar from "@/components/ServiceWorkerRegistrar";
+import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from '@vercel/speed-insights/next';
 
 export const metadata: Metadata = {
@@ -46,6 +47,7 @@ export default function RootLayout({
             {children}
           </main>
         </AuthProvider>
+        <Analytics />
         <SpeedInsights />
       </body>
     </html>
