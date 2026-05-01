@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
+import { getSbClient } from '@/lib/supabaseClient';
 import { readAuthorCookieId, getIslaFamilyId } from '@/lib/wallGuest';
 
 export const dynamic = 'force-dynamic';
@@ -18,6 +19,7 @@ type WallPost = {
   created_at: string;
   is_mine: boolean;
   verified: boolean;
+  client_ip?: string | null;
 };
 
 type FeedAttachment = {
@@ -46,6 +48,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'wall_unconfigured' }, { status: 500 });
     }
 
+    const sb = await getSbClient();
+    const { data: userResp } = await sb.auth.getUser();
+    const isModerator = !!userResp.user;
+
     const cookieId = await readAuthorCookieId();
 
     const { searchParams } = new URL(request.url);
@@ -57,9 +63,11 @@ export async function GET(request: NextRequest) {
       ? `moderation_status.eq.approved,author_cookie_id.eq.${cookieId}`
       : `moderation_status.eq.approved`;
 
+    const postSelect = `id, parent_post_id, author_name, author_cookie_id, author_id, content, moderation_status, created_at${isModerator ? ', client_ip' : ''}`;
+
     let query = admin
       .from('posts')
-      .select('id, parent_post_id, author_name, author_cookie_id, author_id, content, moderation_status, created_at')
+      .select(postSelect)
       .is('parent_post_id', null)
       .is('deleted_at', null)
       .eq('hidden', false)
@@ -88,7 +96,7 @@ export async function GET(request: NextRequest) {
     if (postIds.length > 0) {
       const { data: cRows, error: cErr } = await admin
         .from('posts')
-        .select('id, parent_post_id, author_name, author_cookie_id, author_id, content, moderation_status, created_at')
+        .select(postSelect)
         .in('parent_post_id', postIds)
         .is('deleted_at', null)
         .eq('hidden', false)

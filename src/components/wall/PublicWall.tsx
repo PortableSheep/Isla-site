@@ -42,6 +42,7 @@ type Comment = {
   verified?: boolean;
   attachments?: FeedAttachment[];
   _optimistic?: boolean;
+  client_ip?: string | null;
 };
 
 type Post = Comment & {
@@ -49,6 +50,144 @@ type Post = Comment & {
   my_reactions: string[];
   comments: Comment[];
 };
+
+function ModerationModal({
+  target,
+  onClose,
+  onRefresh,
+}: {
+  target: { ip: string; postId: string; isComment: boolean };
+  onClose: () => void;
+  onRefresh: () => void;
+}) {
+  const [names, setNames] = useState<string[] | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    const fetchHistory = async () => {
+      try {
+        const res = await fetch(`/api/admin/ip-names?ip=${encodeURIComponent(target.ip)}`);
+        if (!res.ok) throw new Error(`History failed (${res.status})`);
+        const json = await res.json();
+        if (!cancelled) setNames(json.names);
+      } catch (e) {
+        if (!cancelled) setError(e instanceof Error ? e.message : 'Failed to load history');
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+    fetchHistory();
+    return () => {
+      cancelled = true;
+    };
+  }, [target.ip]);
+
+  const handleDelete = async () => {
+    if (!confirm('Delete this post?')) return;
+    setBusy(true);
+    try {
+      const res = await fetch(`/api/admin/moderation/${target.postId}/delete`, {
+        method: 'POST',
+      });
+      if (!res.ok) throw new Error(`Delete failed (${res.status})`);
+      onRefresh();
+      onClose();
+    } catch (e) {
+      alert(e instanceof Error ? e.message : 'Delete failed');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleBan = async () => {
+    const reason = prompt('Reason for banning this IP?', 'Spam / Bad behavior');
+    if (reason === null) return;
+    setBusy(true);
+    try {
+      const res = await fetch('/api/admin/ip-bans', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cidr: target.ip, reason }),
+      });
+      if (!res.ok) throw new Error(`Ban failed (${res.status})`);
+      alert(`IP ${target.ip} has been banned.`);
+      onClose();
+    } catch (e) {
+      alert(e instanceof Error ? e.message : 'Ban failed');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <BodyPortal>
+      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+        <div className="w-full max-w-md rounded-2xl border border-white/10 bg-slate-900 p-6 shadow-2xl">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-lg font-bold text-white">Moderator Tools</h2>
+            <button
+              onClick={onClose}
+              className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 hover:bg-white/10 hover:text-white"
+            >
+              ×
+            </button>
+          </div>
+
+          <div className="mb-6 space-y-4">
+            <div>
+              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                IP Address
+              </label>
+              <div className="mt-1 font-mono text-sm text-fuchsia-400">{target.ip}</div>
+            </div>
+
+            <div>
+              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                Used Names
+              </label>
+              {loading ? (
+                <div className="mt-2 h-4 w-20 animate-pulse rounded bg-white/5" />
+              ) : error ? (
+                <div className="mt-1 text-xs text-rose-400">{error}</div>
+              ) : (
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {names?.map((n) => (
+                    <span
+                      key={n}
+                      className="rounded-md bg-white/10 px-2 py-0.5 text-xs text-slate-300"
+                    >
+                      {n}
+                    </span>
+                  )) || <span className="text-xs text-slate-500 italic">No history found</span>}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <button
+              onClick={handleDelete}
+              disabled={busy}
+              className="w-full rounded-xl bg-rose-500/10 py-2.5 text-sm font-semibold text-rose-400 transition hover:bg-rose-500/20 disabled:opacity-50"
+            >
+              Delete Post
+            </button>
+            <button
+              onClick={handleBan}
+              disabled={busy}
+              className="w-full rounded-xl bg-slate-800 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700 disabled:opacity-50"
+            >
+              Ban IP
+            </button>
+          </div>
+        </div>
+      </div>
+    </BodyPortal>
+  );
+}
 
 const EMOJIS = ['❤️', '👍', '😂', '😮', '😢', '🎉', '🔥'];
 const NAME_KEY = 'wall_author_name';
@@ -364,6 +503,16 @@ function CommentBlock({
             )}
             <span>·</span>
             <span>{formatTime(c.created_at)}</span>
+            {isModerator && c.client_ip && (
+              <button
+                onClick={() =>
+                  setModerationTarget({ ip: c.client_ip!, postId: c.id, isComment: true })
+                }
+                className="rounded bg-fuchsia-500/10 px-1.5 py-0.5 font-mono text-[10px] text-fuchsia-300 transition hover:bg-fuchsia-500/20"
+              >
+                IP: {c.client_ip}
+              </button>
+            )}
             <Badge status={c.moderation_status} />
           </div>
           <CommentBody comment={c} />
@@ -760,6 +909,14 @@ export function PublicWall() {
   const [feed, setFeed] = useState<Post[] | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [savedName, setSavedName] = useState('');
+
+  const [moderationTarget, setModerationTarget] = useState<{
+    ip: string;
+    postId: string;
+    isComment: boolean;
+  } | null>(null);
+
+  const isModerator = !!user;
 
   // Toast: rich object with optional scroll target.
   type ToastInfo = { message: string; targetId: string | null };
@@ -1424,6 +1581,16 @@ export function PublicWall() {
               )}
               <span>·</span>
               <span>{formatTime(p.created_at)}</span>
+              {isModerator && p.client_ip && (
+                <button
+                  onClick={() =>
+                    setModerationTarget({ ip: p.client_ip!, postId: p.id, isComment: false })
+                  }
+                  className="rounded bg-fuchsia-500/10 px-1.5 py-0.5 font-mono text-[10px] text-fuchsia-300 transition hover:bg-fuchsia-500/20"
+                >
+                  IP: {p.client_ip}
+                </button>
+              )}
               <Badge status={p.moderation_status} />
             </div>
             <PostBody post={p} />
@@ -1509,6 +1676,14 @@ export function PublicWall() {
         )}
     </div>
     </BodyPortal>
+    )}
+
+    {moderationTarget && (
+      <ModerationModal
+        target={moderationTarget}
+        onClose={() => setModerationTarget(null)}
+        onRefresh={() => refresh()}
+      />
     )}
     </>
   );

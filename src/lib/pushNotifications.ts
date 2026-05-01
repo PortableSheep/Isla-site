@@ -4,7 +4,7 @@ export type PushPermissionState = 'granted' | 'denied' | 'default' | 'unsupporte
 
 export function getPushPermissionState(): PushPermissionState {
   if (typeof window === 'undefined') return 'unsupported';
-  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+  if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) {
     return 'unsupported';
   }
   return Notification.permission as PushPermissionState;
