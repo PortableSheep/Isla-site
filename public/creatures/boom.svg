@@ -1,7 +1,23 @@
-<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Boom the goblin knight">
+<svg filter="url(#burton-sketch)" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Boom the goblin knight">
   <title>Boom</title>
   <!-- palette: bone#F5F0E6 ink#1A1623 dusk#4A3A5C teal-fog#5E8A8C lavender#B8A4C9 blush#D4A5A5 -->
-  <defs><style>.boom-body { fill:#5E8A8C; stroke:#1A1623; stroke-width:2.5;
+  <defs>
+    <filter id="burton-sketch" x="-20%" y="-20%" width="140%" height="140%">
+      <!-- Hand-drawn wobbly displacement -->
+      <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="3" result="noise" />
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="3.5" xChannelSelector="R" yChannelSelector="G" result="wobbly" />
+      
+      <!-- Mute colors for a gothic palette -->
+      <feColorMatrix in="wobbly" type="saturate" values="0.35" result="muted" />
+      
+      <!-- Boost contrast slightly -->
+      <feComponentTransfer in="muted" result="final">
+        <feFuncR type="linear" slope="1.1" intercept="-0.05" />
+        <feFuncG type="linear" slope="1.1" intercept="-0.05" />
+        <feFuncB type="linear" slope="1.1" intercept="-0.05" />
+      </feComponentTransfer>
+    </filter>
+<style>.boom-body { fill:#5E8A8C; stroke:#1A1623; stroke-width:2.5;
                stroke-linejoin:round; stroke-linecap:round; }
 .boom-eye { fill:#F5F0E6; stroke:#1A1623; stroke-width:1.5; }
 .boom-pupil { fill:#1A1623; }
@@ -36,9 +52,11 @@
   <path class="helmet" d="M44,80 Q42,36 100,32 Q158,36 156,80 Q158,92 144,94 Q100,98 56,94 Q42,92 44,80 Z"/>
   <path class="ink" stroke="#F5F0E6" stroke-width="1.2" fill="none" opacity="0.6" d="M56,84 Q100,94 144,84"/>
   <path class="ink" stroke="#F5F0E6" stroke-width="1.4" fill="none" d="M128,44 L134,54 L128,60 L136,70 L130,78"/>
+  <circle cx="86" cy="106.5" r="11.5" fill="#1A1623" opacity="0.35" />
   <circle class="boom-eye" cx="86" cy="104" r="7"/>
   <circle class="boom-pupil" cx="86" cy="104.6" r="4.5"/>
   <circle class="hi" cx="84.2" cy="101.8" r="1.4"/>
+  <circle cx="114" cy="106.5" r="11.5" fill="#1A1623" opacity="0.35" />
   <circle class="boom-eye" cx="114" cy="104" r="7"/>
   <circle class="boom-pupil" cx="114" cy="104.6" r="4.5"/>
   <circle class="hi" cx="112.2" cy="101.8" r="1.4"/>

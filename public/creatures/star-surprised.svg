@@ -1,6 +1,22 @@
-<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Star surprised">
+<svg filter="url(#burton-sketch)" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Star surprised">
   <title>Star (surprised)</title>
   <defs>
+    <filter id="burton-sketch" x="-20%" y="-20%" width="140%" height="140%">
+      <!-- Hand-drawn wobbly displacement -->
+      <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="3" result="noise" />
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="3.5" xChannelSelector="R" yChannelSelector="G" result="wobbly" />
+      
+      <!-- Mute colors for a gothic palette -->
+      <feColorMatrix in="wobbly" type="saturate" values="0.35" result="muted" />
+      
+      <!-- Boost contrast slightly -->
+      <feComponentTransfer in="muted" result="final">
+        <feFuncR type="linear" slope="1.1" intercept="-0.05" />
+        <feFuncG type="linear" slope="1.1" intercept="-0.05" />
+        <feFuncB type="linear" slope="1.1" intercept="-0.05" />
+      </feComponentTransfer>
+    </filter>
+
     <style>
       .star-body{fill:#E8B53C;stroke:#1A1623;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
       .star-shadow{fill:#4A3A5C;opacity:.35}
@@ -21,7 +37,9 @@
   <path class="star-foot" d="M80 182Q88 180 94 183Q92 189 84 189Z"/>
   <path class="star-foot" d="M106 183Q112 180 120 182Q116 189 108 189Z"/>
   <path class="star-spike" d="M100 22L100 10M86 24L80 14M114 24L120 14"/>
+  <circle cx="86" cy="102.5" r="13.5" fill="#1A1623" opacity="0.35" />
   <circle class="star-eye" cx="86" cy="100" r="9"/>
+  <circle cx="114" cy="102.5" r="13.5" fill="#1A1623" opacity="0.35" />
   <circle class="star-eye" cx="114" cy="100" r="9"/>
   <circle class="star-pupil" cx="86" cy="100" r="2"/>
   <circle class="star-pupil" cx="114" cy="100" r="2"/>

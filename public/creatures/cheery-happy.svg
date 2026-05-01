@@ -1,6 +1,22 @@
-<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Cheery the celebration imp, happy">
+<svg filter="url(#burton-sketch)" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Cheery the celebration imp, happy">
   <title>Cheery</title>
   <defs>
+    <filter id="burton-sketch" x="-20%" y="-20%" width="140%" height="140%">
+      <!-- Hand-drawn wobbly displacement -->
+      <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="3" result="noise" />
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="3.5" xChannelSelector="R" yChannelSelector="G" result="wobbly" />
+      
+      <!-- Mute colors for a gothic palette -->
+      <feColorMatrix in="wobbly" type="saturate" values="0.35" result="muted" />
+      
+      <!-- Boost contrast slightly -->
+      <feComponentTransfer in="muted" result="final">
+        <feFuncR type="linear" slope="1.1" intercept="-0.05" />
+        <feFuncG type="linear" slope="1.1" intercept="-0.05" />
+        <feFuncB type="linear" slope="1.1" intercept="-0.05" />
+      </feComponentTransfer>
+    </filter>
+
     <style>
       .cheery-body{fill:#4A3A5C;stroke:#1A1623;stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round}
       .cheery-eye{fill:none;stroke:#1A1623;stroke-width:2.5;stroke-linecap:round}

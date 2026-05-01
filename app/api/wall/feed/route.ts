@@ -22,6 +22,9 @@ type WallPost = {
   client_ip?: string | null;
 };
 
+/** The shape of the post as it exists in the database. */
+type DbWallPost = Omit<WallPost, 'is_mine' | 'verified'>;
+
 type FeedAttachment = {
   id: string;
   mime_type: string;
@@ -81,7 +84,7 @@ export async function GET(request: NextRequest) {
     }
 
     const { data: rawTopRows, error: topErr } = await query;
-    const topRows = rawTopRows as any[] | null;
+    const topRows = rawTopRows as DbWallPost[] | null;
 
     if (topErr) {
       return NextResponse.json(
@@ -103,14 +106,14 @@ export async function GET(request: NextRequest) {
         .eq('hidden', false)
         .or(filter)
         .order('created_at', { ascending: true });
-      const cRows = rawCRows as any[] | null;
+      const cRows = rawCRows as DbWallPost[] | null;
       if (cErr) {
         return NextResponse.json(
           { error: 'db_failed', detail: cErr.message },
           { status: 500 }
         );
       }
-      commentRows = ((cRows as any[]) ?? []).map((r) => ({
+      commentRows = (cRows ?? []).map((r) => ({
         ...r,
         is_mine: Boolean(cookieId && r.author_cookie_id === cookieId),
         verified: !!r.author_id,
@@ -118,7 +121,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Reactions on approved top-level posts only
-    const approvedIds = ((topRows as any[]) ?? [])
+    const approvedIds = (topRows ?? [])
       .filter((p) => p.moderation_status === 'approved')
       .map((p) => p.id);
 
@@ -147,12 +150,12 @@ export async function GET(request: NextRequest) {
     // signed_url=null so the UI can hide them the same way it hides text
     // embeds pre-approval.
     const allPostIds = [
-      ...((topRows as any[]) ?? []).map((p) => p.id),
+      ...(topRows ?? []).map((p) => p.id),
       ...commentRows.map((c) => c.id),
     ];
     const approvalById = new Map<string, 'pending' | 'approved' | 'rejected'>();
     const ownerCookieById = new Map<string, string | null>();
-    for (const p of (topRows as any[]) ?? []) {
+    for (const p of topRows ?? []) {
       approvalById.set(p.id, p.moderation_status);
       ownerCookieById.set(p.id, p.author_cookie_id);
     }
