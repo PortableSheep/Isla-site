@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
+import imageCompression from 'browser-image-compression';
 
 export type PendingAttachment = {
   id: string;
@@ -19,12 +20,25 @@ type UploadResponse = {
   detail?: string;
 };
 
-const ACCEPT = 'image/png,image/jpeg,image/webp,image/gif';
-const MAX_BYTES = 8 * 1024 * 1024;
+// Include HEIC/HEIF so iOS delivers the native file rather than silently failing;
+// we convert them to JPEG during compression before uploading.
+const ACCEPT = 'image/png,image/jpeg,image/webp,image/gif,image/heic,image/heif';
+// Hard reject before attempting compression — avoids reading a 200 MB file into a Web Worker.
+const MAX_BYTES_PRE_COMPRESS = 50 * 1024 * 1024; // 50 MB
+const MAX_BYTES = 20 * 1024 * 1024; // 20 MB hard cap (after compression)
+
+const COMPRESSION_OPTIONS = {
+  maxSizeMB: 5,
+  maxWidthOrHeight: 2048,
+  useWebWorker: true,
+};
+
+const HEIC_MIME_TYPES = new Set(['image/heic', 'image/heif']);
 
 const ERROR_MESSAGES: Record<string, string> = {
-  file_too_large: 'Image must be under 8 MB.',
-  unsupported_image_type: 'Only PNG, JPEG, WEBP, and GIF are allowed.',
+  file_too_large_pre_compress: 'Image is too large to process (50 MB max).',
+  file_too_large: 'Image must be under 20 MB.',
+  unsupported_image_type: 'Only PNG, JPEG, WEBP, and GIF are supported. Try converting your image first.',
   rate_limited: "You've uploaded a lot — try again in a bit.",
   banned: 'This device is blocked from uploading.',
   invalid_content_type: 'Upload failed (bad request).',
@@ -45,23 +59,57 @@ export function ImageUploadButton({
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
+  const [compressing, setCompressing] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
   const pick = () => {
-    if (disabled || busy) return;
+    if (disabled || busy || compressing) return;
     inputRef.current?.click();
   };
 
   const handleFile = async (file: File) => {
     setErr(null);
-    if (file.size > MAX_BYTES) {
+
+    // Reject obviously-too-large files before loading them into the Web Worker.
+    if (file.size > MAX_BYTES_PRE_COMPRESS) {
+      setErr(ERROR_MESSAGES.file_too_large_pre_compress);
+      if (inputRef.current) inputRef.current.value = '';
+      return;
+    }
+
+    // Phase 1: Compress (non-GIF only; compressing GIFs would break animation).
+    // For HEIC/HEIF (common on iPhone), force output as JPEG so the server
+    // magic-byte check accepts the result.
+    let toUpload: File = file;
+    const isHeic =
+      HEIC_MIME_TYPES.has(file.type.toLowerCase()) ||
+      /\.heic$/i.test(file.name) ||
+      /\.heif$/i.test(file.name);
+    if (file.type !== 'image/gif') {
+      setCompressing(true);
+      try {
+        toUpload = await imageCompression(file, {
+          ...COMPRESSION_OPTIONS,
+          ...(isHeic ? { fileType: 'image/jpeg' } : {}),
+        });
+      } catch {
+        // Compression failed — fall back to the original file.
+        toUpload = file;
+      } finally {
+        setCompressing(false);
+      }
+    }
+
+    if (toUpload.size > MAX_BYTES) {
       setErr(ERROR_MESSAGES.file_too_large);
       return;
     }
+
+    // Phase 2: Upload.
     setBusy(true);
     try {
       const fd = new FormData();
-      fd.append('file', file);
+      fd.append('file', toUpload);
       const res = await fetch('/api/wall/upload', {
         method: 'POST',
         credentials: 'include',
@@ -112,7 +160,7 @@ export function ImageUploadButton({
           <button
             type="button"
             onClick={pick}
-            disabled={disabled || busy}
+            disabled={disabled || busy || compressing}
             className={
               compact
                 ? 'inline-flex h-9 items-center gap-1 rounded-lg border border-fuchsia-400/40 bg-fuchsia-500/10 px-3 text-xs text-fuchsia-200 transition hover:border-fuchsia-400/70 hover:bg-fuchsia-500/20 disabled:opacity-50'
@@ -120,7 +168,7 @@ export function ImageUploadButton({
             }
             aria-label="Add an image from your device"
           >
-            {busy ? '⏳ Uploading…' : '📷 Add image'}
+            {compressing ? '🗜️ Compressing…' : busy ? '⏳ Uploading…' : '📷 Add image'}
           </button>
         ) : (
           <div className="flex items-center gap-2 rounded-md border border-fuchsia-400/30 bg-fuchsia-500/10 px-2 py-1">
@@ -134,7 +182,7 @@ export function ImageUploadButton({
             <button
               type="button"
               onClick={remove}
-              disabled={disabled || busy}
+              disabled={disabled || busy || compressing}
               aria-label="Remove attached image"
               className="ml-1 rounded px-1 text-xs text-fuchsia-300 hover:text-white"
             >

@@ -16,7 +16,7 @@ import {
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
-const MAX_BYTES = 8 * 1024 * 1024; // 8 MB
+const MAX_BYTES = 20 * 1024 * 1024; // 20 MB
 const STORAGE_BUCKET = 'wall-uploads';
 const PREVIEW_TTL_SECONDS = 600; // 10 minutes
 
