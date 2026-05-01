@@ -80,7 +80,8 @@ export async function GET(request: NextRequest) {
       query = query.lt('created_at', before);
     }
 
-    const { data: topRows, error: topErr } = await query;
+    const { data: rawTopRows, error: topErr } = await query;
+    const topRows = rawTopRows as any[] | null;
 
     if (topErr) {
       return NextResponse.json(
@@ -94,7 +95,7 @@ export async function GET(request: NextRequest) {
     // Comments: approved OR own pending, whose parent is in our returned set.
     let commentRows: Array<WallPost> = [];
     if (postIds.length > 0) {
-      const { data: cRows, error: cErr } = await admin
+      const { data: rawCRows, error: cErr } = await admin
         .from('posts')
         .select(postSelect)
         .in('parent_post_id', postIds)
@@ -102,13 +103,14 @@ export async function GET(request: NextRequest) {
         .eq('hidden', false)
         .or(filter)
         .order('created_at', { ascending: true });
+      const cRows = rawCRows as any[] | null;
       if (cErr) {
         return NextResponse.json(
           { error: 'db_failed', detail: cErr.message },
           { status: 500 }
         );
       }
-      commentRows = (cRows ?? []).map((r) => ({
+      commentRows = ((cRows as any[]) ?? []).map((r) => ({
         ...r,
         is_mine: Boolean(cookieId && r.author_cookie_id === cookieId),
         verified: !!r.author_id,
@@ -116,7 +118,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Reactions on approved top-level posts only
-    const approvedIds = (topRows ?? [])
+    const approvedIds = ((topRows as any[]) ?? [])
       .filter((p) => p.moderation_status === 'approved')
       .map((p) => p.id);
 
@@ -145,12 +147,12 @@ export async function GET(request: NextRequest) {
     // signed_url=null so the UI can hide them the same way it hides text
     // embeds pre-approval.
     const allPostIds = [
-      ...(topRows ?? []).map((p) => p.id),
+      ...((topRows as any[]) ?? []).map((p) => p.id),
       ...commentRows.map((c) => c.id),
     ];
     const approvalById = new Map<string, 'pending' | 'approved' | 'rejected'>();
     const ownerCookieById = new Map<string, string | null>();
-    for (const p of topRows ?? []) {
+    for (const p of (topRows as any[]) ?? []) {
       approvalById.set(p.id, p.moderation_status);
       ownerCookieById.set(p.id, p.author_cookie_id);
     }

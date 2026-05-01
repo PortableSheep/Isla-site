@@ -450,10 +450,14 @@ function CommentBlock({
   post,
   requireName,
   onSubmit,
+  isModerator,
+  onModerationClick,
 }: {
   post: Post;
   requireName: () => Promise<string | null>;
   onSubmit: (parentId: string, name: string, content: string, attachmentIds: string[]) => Promise<void>;
+  isModerator: boolean;
+  onModerationClick: (ip: string, postId: string) => void;
 }) {
   const [content, setContent] = useState('');
   const [busy, setBusy] = useState(false);
@@ -505,9 +509,7 @@ function CommentBlock({
             <span>{formatTime(c.created_at)}</span>
             {isModerator && c.client_ip && (
               <button
-                onClick={() =>
-                  setModerationTarget({ ip: c.client_ip!, postId: c.id, isComment: true })
-                }
+                onClick={() => onModerationClick(c.client_ip!, c.id)}
                 className="rounded bg-fuchsia-500/10 px-1.5 py-0.5 font-mono text-[10px] text-fuchsia-300 transition hover:bg-fuchsia-500/20"
               >
                 IP: {c.client_ip}
@@ -1595,7 +1597,15 @@ export function PublicWall() {
             </div>
             <PostBody post={p} />
             <ReactionBar post={p} onReact={(emoji, removing) => submitReaction(p.id, emoji, removing)} />
-            <CommentBlock post={p} requireName={requireName} onSubmit={submitComment} />
+            <CommentBlock
+              post={p}
+              requireName={requireName}
+              onSubmit={submitComment}
+              isModerator={isModerator}
+              onModerationClick={(ip, postId) =>
+                setModerationTarget({ ip, postId, isComment: true })
+              }
+            />
           </article>
         ))}
         {feed !== null && items.length === 0 && (
