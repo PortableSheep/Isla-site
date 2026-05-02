@@ -144,7 +144,7 @@ export function GifPicker({
         <div className="min-h-0 flex-1 overflow-y-auto p-3">
           {notConfigured ? (
             <div className="rounded-lg border border-amber-400/30 bg-amber-500/10 p-4 text-sm text-amber-100">
-              GIF search isn&apos;t set up yet. Ask Isla&apos;s dad to add{' '}
+              GIF search isn&apos;t set up yet. Ask an administrator to add{' '}
               <code className="rounded bg-black/40 px-1">GIPHY_API_KEY</code>. You can
               still paste a GIF link from{' '}
               <a
@@ -200,7 +200,7 @@ export function GifPicker({
         </div>
 
         <div className="border-t border-white/10 bg-black/40 px-3 py-2 text-[11px] text-slate-500">
-          Powered by GIPHY · Filtered for kids · Dad still reviews every post
+          Powered by GIPHY · Filtered for kids · All posts are reviewed
         </div>
       </div>
     </div>,

@@ -510,7 +510,7 @@ function CommentBlock({
             {isModerator && c.client_ip && (
               <button
                 onClick={() => onModerationClick(c.client_ip!, c.id)}
-                className="rounded bg-fuchsia-500/10 px-1.5 py-0.5 font-mono text-[10px] text-fuchsia-300 transition hover:bg-fuchsia-500/20"
+                className="rounded bg-fuchsia-500/10 px-1 font-mono text-[10px] text-fuchsia-300 transition hover:bg-fuchsia-500/20"
               >
                 IP: {c.client_ip}
               </button>
@@ -663,7 +663,7 @@ function Composer({
           );
           setContent('');
           setAttachment(null);
-          setOkMsg('Thanks! Dad will read this soon and approve it for the wall.');
+          setOkMsg('Thanks! This will be reviewed soon and approved for the wall.');
         } catch (error) {
           setErr(error instanceof Error ? error.message : 'Something went wrong');
         } finally {
@@ -1588,7 +1588,7 @@ export function PublicWall() {
                   onClick={() =>
                     setModerationTarget({ ip: p.client_ip!, postId: p.id, isComment: false })
                   }
-                  className="rounded bg-fuchsia-500/10 px-1.5 py-0.5 font-mono text-[10px] text-fuchsia-300 transition hover:bg-fuchsia-500/20"
+                  className="rounded bg-fuchsia-500/10 px-1 font-mono text-[10px] text-fuchsia-300 transition hover:bg-fuchsia-500/20"
                 >
                   IP: {p.client_ip}
                 </button>
