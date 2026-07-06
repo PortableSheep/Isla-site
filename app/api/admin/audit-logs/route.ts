@@ -1,22 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabaseServer';
 import { getAuditLogs } from '@/lib/auditLog';
+import type { AuditAction, AuditLogFilters, AuditSubjectType } from '@/types/audit';
 
 // Check if user is admin
 async function isAdmin(supabase: import('@supabase/supabase-js').SupabaseClient, userId: string): Promise<boolean> {
   try {
-    const { data, error } = await supabase
-      .from('user_profiles')
-      .select('role')
-      .eq('user_id', userId)
-      .single();
-
+    const { data, error } = await supabase.rpc('is_admin', { uid: userId });
     if (error) {
       console.error('Error checking admin status:', error);
       return false;
     }
-
-    return (data as { role: string } | null)?.role === 'admin';
+    return data === true;
   } catch (error) {
     console.error('Error in isAdmin:', error);
     return false;
@@ -55,20 +50,25 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '50', 10);
     const offset = parseInt(searchParams.get('offset') || '0', 10);
 
-    const filters: any = {
+    const filters: AuditLogFilters = {
       limit,
       offset,
     };
 
-    if (action) filters.action = action.split(',');
+    if (action) {
+      filters.action = action
+        .split(',')
+        .map((entry) => entry.trim())
+        .filter((entry): entry is AuditAction => entry.length > 0);
+    }
     if (actor_id) filters.actor_id = actor_id;
     if (subject_id) filters.subject_id = subject_id;
-    if (subject_type) filters.subject_type = subject_type;
+    if (subject_type) filters.subject_type = subject_type as AuditSubjectType;
     if (family_id) filters.family_id = family_id;
     if (startDate) filters.startDate = new Date(startDate);
     if (endDate) filters.endDate = new Date(endDate);
 
-    const result = await getAuditLogs(filters);
+    const result = await getAuditLogs(filters, supabase);
 
     return NextResponse.json(result);
   } catch (error) {

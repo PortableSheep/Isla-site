@@ -20,7 +20,9 @@
     "test:auth": "playwright test tests/e2e/auth.spec.ts",
     "test:auth:headed": "playwright test tests/e2e/auth.spec.ts --headed",
     "test:auth:debug": "playwright test tests/e2e/auth.spec.ts --debug",
-    "test:auth:ui": "playwright test tests/e2e/auth.spec.ts --ui"
+    "test:auth:ui": "playwright test tests/e2e/auth.spec.ts --ui",
+    "test:local:smoke": "npm run build",
+    "test:local:e2e-smoke": "playwright test tests/e2e/sample.spec.ts --project=chromium"
   },
   "dependencies": {
     "@supabase/auth-helpers-nextjs": "^0.15.0",

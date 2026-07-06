@@ -1,16 +1,26 @@
 export type AuditAction = 
+  | 'moderation_approve'
+  | 'moderation_reject'
+  | 'moderation_delete'
+  | 'appeal_submitted'
+  | 'appeal_approved'
+  | 'appeal_rejected'
+  | 'post_review_requested'
+  | 'post_review_request_approved'
+  | 'post_review_request_rejected'
   | 'post_deleted'
   | 'post_hidden'
   | 'post_unhidden'
-  | 'user_suspended'
-  | 'user_unsuspended'
   | 'post_flagged'
   | 'flag_reviewed'
   | 'flag_dismissed'
   | 'profile_created'
   | 'child_approved'
   | 'child_rejected'
-  | 'appeal_reviewed';
+  | 'appeal_reviewed'
+  | 'user_suspended'
+  | 'user_unsuspended'
+  | 'user_auto_unsuspended';
 
 export type AuditSubjectType = 'post' | 'user' | 'flag' | 'profile' | 'appeal';
 

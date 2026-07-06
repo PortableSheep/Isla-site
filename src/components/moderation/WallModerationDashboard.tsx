@@ -1,7 +1,8 @@
 'use client';
-
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { extractMedia, Linkified, MediaEmbeds } from '@/components/wall/media';
+import { AppealsQueue } from '@/components/moderation/AppealsQueue';
+import { PostReviewRequestsQueue } from '@/components/moderation/PostReviewRequestsQueue';
 
 type ModItem = {
   id: string;
@@ -149,6 +150,8 @@ function ModBody({
 export function WallModerationDashboard() {
   const [tab, setTab] = useState<Status>('pending');
   const [items, setItems] = useState<ModItem[] | null>(null);
+  const [pendingAppealsCount, setPendingAppealsCount] = useState(0);
+  const [pendingReviewRequestCount, setPendingReviewRequestCount] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
 
@@ -204,6 +207,7 @@ export function WallModerationDashboard() {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     load(tab);
   }, [tab, load]);
 
@@ -280,14 +284,14 @@ export function WallModerationDashboard() {
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-4 px-4 py-8">
-      <header className="flex items-end justify-between">
+      <header className="flex items-end justify-between gap-6">
         <div>
           <h1 className="iz-gradient-text text-2xl font-bold">Moderation</h1>
           <p className="text-sm text-slate-400">
             Approve or reject posts and comments, or ban an IP.
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-2">
           {/* Maintenance mode toggle */}
           <div className="flex flex-col items-end gap-1">
             <button
@@ -354,13 +358,21 @@ export function WallModerationDashboard() {
         </div>
       )}
 
-      {items && items.length === 0 && (
+      {items &&
+        items.length === 0 &&
+        (tab !== 'pending' || pendingAppealsCount + pendingReviewRequestCount === 0) && (
         <p className="py-10 text-center text-sm text-slate-400">
           Nothing {tab} right now. 🎉
         </p>
-      )}
+        )}
 
       <ul className="flex flex-col gap-3">
+        {tab === 'pending' ? (
+          <>
+            <PostReviewRequestsQueue onCountChange={setPendingReviewRequestCount} />
+            <AppealsQueue onCountChange={setPendingAppealsCount} />
+          </>
+        ) : null}
         {items?.map((it) => (
           <li
             key={it.id}

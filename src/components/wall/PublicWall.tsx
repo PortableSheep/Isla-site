@@ -1,10 +1,15 @@
 'use client';
 
+import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/AuthContext';
 import { signInWithMagicLink, updateDisplayName } from '@/lib/auth';
+import {
+  WALL_REACTION_OPTIONS,
+  WALL_REACTION_BY_ID,
+} from '@/lib/wallReactions';
 import { CreatureDisplay } from '@/components/CreatureDisplay';
 import { extractMedia, Linkified, MediaEmbeds } from '@/components/wall/media';
 import { GifPicker } from '@/components/wall/GifPicker';
@@ -37,6 +42,7 @@ type Comment = {
   author_name: string | null;
   content: string;
   moderation_status: 'pending' | 'approved' | 'rejected';
+  review_request_status?: 'pending' | 'approved' | 'rejected' | 'escalated' | null;
   created_at: string;
   is_mine: boolean;
   verified?: boolean;
@@ -189,7 +195,6 @@ function ModerationModal({
   );
 }
 
-const EMOJIS = ['❤️', '👍', '😂', '😮', '😢', '🎉', '🔥'];
 const NAME_KEY = 'wall_author_name';
 
 function readSavedName(): string {
@@ -369,71 +374,91 @@ function ReactionBar({
 
   if (post.moderation_status !== 'approved') return null;
 
+  const activeReactions = new Set([
+    ...Object.keys(post.reactions),
+    ...post.my_reactions,
+  ]);
+  const reactionIds = [
+    ...WALL_REACTION_OPTIONS.map((reaction) => reaction.id),
+    ...Array.from(activeReactions).filter(
+      (reactionId) => !WALL_REACTION_BY_ID.has(reactionId)
+    ),
+  ];
+
   return (
-    <div className="flex flex-wrap gap-2 pt-2">
-      {EMOJIS.map((e) => {
-        const serverCount = post.reactions[e] ?? 0;
-        const serverMine = post.my_reactions.includes(e);
-        const ov = overrides[e];
-        const mine = ov ? ov.mine : serverMine;
-        const count = Math.max(0, serverCount + (ov?.delta ?? 0));
-        const animKey = ov?.animKey ?? 0;
-        const pending = inflight.has(e);
+    <div className="pt-2">
+      <div className="flex flex-wrap gap-2">
+        {reactionIds.map((e) => {
+          const serverCount = post.reactions[e] ?? 0;
+          const serverMine = post.my_reactions.includes(e);
+          const ov = overrides[e];
+          const mine = ov ? ov.mine : serverMine;
+          const count = Math.max(0, serverCount + (ov?.delta ?? 0));
+          const animKey = ov?.animKey ?? 0;
+          const pending = inflight.has(e);
+          const reaction = WALL_REACTION_BY_ID.get(e);
+          const symbol = reaction?.symbol ?? e;
+          const label = reaction?.label ?? e;
 
-        const handleClick = () => {
-          if (pending) return;
-          const currentlyMine = mine;
-          const nextMine = !currentlyMine;
-          const delta = nextMine
-            ? serverMine
-              ? 0
-              : 1
-            : serverMine
-              ? -1
-              : 0;
-          setOverrides((prev) => ({
-            ...prev,
-            [e]: {
-              mine: nextMine,
-              delta,
-              animKey: (prev[e]?.animKey ?? 0) + 1,
-            },
-          }));
-          setInflight((prev) => new Set([...prev, e]));
-          Promise.resolve(onReact(e, currentlyMine)).finally(() => {
-            setInflight((prev) => { const s = new Set(prev); s.delete(e); return s; });
-          });
-        };
+          const handleClick = () => {
+            if (pending) return;
+            const currentlyMine = mine;
+            const nextMine = !currentlyMine;
+            const delta = nextMine
+              ? serverMine
+                ? 0
+                : 1
+              : serverMine
+                ? -1
+                : 0;
+            setOverrides((prev) => ({
+              ...prev,
+              [e]: {
+                mine: nextMine,
+                delta,
+                animKey: (prev[e]?.animKey ?? 0) + 1,
+              },
+            }));
+            setInflight((prev) => new Set([...prev, e]));
+            Promise.resolve(onReact(e, currentlyMine)).finally(() => {
+              setInflight((prev) => {
+                const s = new Set(prev);
+                s.delete(e);
+                return s;
+              });
+            });
+          };
 
-        return (
-          <button
-            key={e}
-            type="button"
-            onClick={handleClick}
-            disabled={pending}
-            className={`relative inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-sm transition active:scale-95 disabled:cursor-wait disabled:opacity-60 ${
-              mine
-                ? 'border-fuchsia-400/60 bg-fuchsia-500/15 text-white'
-                : 'border-white/10 bg-white/5 text-slate-200 hover:border-white/25'
-            }`}
-            aria-pressed={mine}
-            aria-label={`React ${e}${count ? `, ${count} total` : ''}`}
-          >
-            <span
-              key={animKey}
-              className={animKey > 0 ? 'iz-reaction-pop inline-block' : 'inline-block'}
+          return (
+            <button
+              key={e}
+              type="button"
+              onClick={handleClick}
+              disabled={pending}
+              className={`relative inline-flex min-h-10 items-center gap-1 rounded-full border px-3 py-1.5 text-sm transition active:scale-95 disabled:cursor-wait disabled:opacity-60 ${
+                mine
+                  ? 'border-fuchsia-400/60 bg-fuchsia-500/15 text-white'
+                  : 'border-white/10 bg-white/5 text-slate-200 hover:border-white/25'
+              }`}
+              aria-pressed={mine}
+              aria-label={`${label}${count ? `, ${count} total` : ''}`}
             >
-              {e}
-            </span>
-            {count > 0 && <span className="text-xs text-slate-400">{count}</span>}
-            {animKey > 0 && nextAnimShouldShowFly(ov) && (
-              <span key={`fly-${animKey}`} aria-hidden className="iz-reaction-fly">
-                {e}
+              <span
+                key={animKey}
+                className={animKey > 0 ? 'iz-reaction-pop inline-block' : 'inline-block'}
+              >
+                {symbol}
               </span>
-            )}
-          </button>
-        );
-      })}
+              {count > 0 && <span className="text-xs text-slate-400">{count}</span>}
+              {animKey > 0 && nextAnimShouldShowFly(ov) && (
+                <span key={`fly-${animKey}`} aria-hidden className="iz-reaction-fly">
+                  {symbol}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -602,11 +627,17 @@ function CommentBlock({
 
 function Composer({
   savedName,
+  isSignedIn,
+  registrationNoticeDismissed,
+  onDismissRegistrationNotice,
   onOpenSettings,
   requireName,
   onSubmit,
 }: {
   savedName: string;
+  isSignedIn: boolean;
+  registrationNoticeDismissed: boolean;
+  onDismissRegistrationNotice: () => void;
   onOpenSettings: () => void;
   requireName: () => Promise<string | null>;
   onSubmit: (name: string, content: string, attachmentIds: string[]) => Promise<void>;
@@ -686,6 +717,49 @@ function Composer({
           </button>
         ) : null}
       </div>
+      {!isSignedIn && savedName && !registrationNoticeDismissed ? (
+        <div className="rounded-xl border border-fuchsia-400/20 bg-fuchsia-500/10 px-3 py-2 text-xs text-slate-200">
+          <div className="flex items-start justify-between gap-2">
+            <p className="font-medium text-fuchsia-100">Keep this name on all your devices</p>
+            <button
+              type="button"
+              onClick={onDismissRegistrationNotice}
+              className="inline-flex h-7 items-center rounded-md border border-white/15 px-2 text-[11px] text-slate-300 transition hover:border-white/25 hover:text-white"
+              aria-label="Hide name registration notice"
+            >
+              Hide
+            </button>
+          </div>
+          <p className="mt-1 text-slate-300">
+            You&apos;re currently posting as a guest. Create an account or email yourself a sign-in link to keep{' '}
+            <span className="font-semibold text-white">{savedName}</span>.
+          </p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            <Link
+              href={`/auth/signup?displayName=${encodeURIComponent(savedName)}`}
+              className="iz-btn-primary inline-flex h-9 items-center rounded-lg px-3 text-xs"
+            >
+              Create account
+            </Link>
+            <button
+              type="button"
+              onClick={onOpenSettings}
+              className="inline-flex h-9 items-center rounded-lg border border-white/15 bg-white/5 px-3 text-xs text-slate-200 transition hover:border-white/25 hover:text-white"
+            >
+              Email sign-in link
+            </button>
+          </div>
+        </div>
+      ) : null}
+      {!isSignedIn && savedName && registrationNoticeDismissed ? (
+        <button
+          type="button"
+          onClick={onOpenSettings}
+          className="inline-flex w-fit items-center gap-1 rounded-lg border border-fuchsia-400/25 bg-fuchsia-500/10 px-3 py-1.5 text-xs text-fuchsia-100 transition hover:border-fuchsia-400/50 hover:bg-fuchsia-500/15"
+        >
+          Keep this name across devices
+        </button>
+      ) : null}
       <textarea
         ref={textareaRef}
         value={content}
@@ -808,7 +882,7 @@ function NameDialog({
           {firstTime ? 'What should we call you?' : 'Change your display name'}
         </h3>
         <p className="text-xs text-slate-400">
-          Your name shows up on posts and comments. Saved on this device only.
+          Your display name shows up on posts and comments. Guests can reuse the same display name, but signing in lets you keep yours across devices.
         </p>
         <input
           autoFocus
@@ -839,55 +913,74 @@ function NameDialog({
 
         {!alreadySignedIn && (
           <div className="border-t border-white/10 pt-3">
-            {!showMagicLink ? (
-              <button
-                type="button"
-                onClick={() => setShowMagicLink(true)}
-                className="text-xs text-fuchsia-300 underline-offset-2 hover:underline"
-              >
-                ✨ Want to keep this name on your other devices?
-              </button>
-            ) : (
-              <div className="space-y-2">
-                <p className="text-xs text-slate-400">
-                  We&apos;ll email you a one-tap sign-in link. After you click it, this
-                  name follows you to any browser or device.
+            <div className="space-y-3 rounded-xl border border-fuchsia-400/20 bg-fuchsia-500/5 p-3">
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-fuchsia-100">
+                  Keep this name everywhere
                 </p>
-                <div className="flex gap-2">
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(ev) => setEmail(ev.target.value)}
-                    placeholder="you@example.com"
-                    autoComplete="email"
-                    inputMode="email"
-                    disabled={linkState.kind === 'sending' || linkState.kind === 'sent'}
-                    className="flex-1 rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:border-fuchsia-400 focus:outline-none disabled:opacity-60"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleSendLink}
-                    disabled={linkState.kind === 'sending' || linkState.kind === 'sent'}
-                    className="iz-btn-primary rounded-lg px-3 py-2 text-xs disabled:opacity-50"
-                  >
-                    {linkState.kind === 'sending' ? 'Sending…' : 'Send link'}
-                  </button>
-                </div>
-                {linkState.kind === 'sent' && (
-                  <p className="text-xs text-emerald-300">
-                    ✉️ Check your email for the sign-in link!
-                  </p>
-                )}
-                {linkState.kind === 'error' && (
-                  <p className="text-xs text-rose-300">{linkState.message}</p>
-                )}
+                <p className="text-xs text-slate-400">
+                  Create an account or use a sign-in link and this display name will follow you to every browser and device.
+                </p>
               </div>
-            )}
+
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <Link
+                  href={value.trim() ? `/auth/signup?displayName=${encodeURIComponent(value.trim())}` : '/auth/signup'}
+                  className="iz-btn-primary inline-flex h-10 items-center justify-center rounded-lg px-4 text-sm"
+                >
+                  Create account
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => setShowMagicLink((prev) => !prev)}
+                  className="inline-flex h-10 items-center justify-center rounded-lg border border-white/10 px-4 text-sm text-slate-200 transition hover:border-white/20 hover:text-white"
+                >
+                  {showMagicLink ? 'Hide email link' : 'Email me a sign-in link'}
+                </button>
+              </div>
+
+              {showMagicLink ? (
+                <div className="space-y-2">
+                  <p className="text-xs text-slate-400">
+                    We&apos;ll email you a one-tap sign-in link. After you click it, this
+                    display name follows you anywhere you sign in.
+                  </p>
+                  <div className="flex gap-2">
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(ev) => setEmail(ev.target.value)}
+                      placeholder="you@example.com"
+                      autoComplete="email"
+                      inputMode="email"
+                      disabled={linkState.kind === 'sending' || linkState.kind === 'sent'}
+                      className="flex-1 rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:border-fuchsia-400 focus:outline-none disabled:opacity-60"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleSendLink}
+                      disabled={linkState.kind === 'sending' || linkState.kind === 'sent'}
+                      className="iz-btn-primary rounded-lg px-3 py-2 text-xs disabled:opacity-50"
+                    >
+                      {linkState.kind === 'sending' ? 'Sending…' : 'Send link'}
+                    </button>
+                  </div>
+                  {linkState.kind === 'sent' && (
+                    <p className="text-xs text-emerald-300">
+                      ✉️ Check your email for the sign-in link!
+                    </p>
+                  )}
+                  {linkState.kind === 'error' && (
+                    <p className="text-xs text-rose-300">{linkState.message}</p>
+                  )}
+                </div>
+              ) : null}
+            </div>
           </div>
         )}
         {alreadySignedIn && (
           <p className="border-t border-white/10 pt-3 text-xs text-fuchsia-300">
-            ✨ Signed in — this name follows you across devices.
+            ✨ Signed in — this display name follows you anywhere you use your account.
           </p>
         )}
       </form>
@@ -911,12 +1004,14 @@ export function PublicWall() {
   const [feed, setFeed] = useState<Post[] | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [savedName, setSavedName] = useState('');
+  const [registrationNoticeDismissed, setRegistrationNoticeDismissed] = useState(false);
 
   const [moderationTarget, setModerationTarget] = useState<{
     ip: string;
     postId: string;
     isComment: boolean;
   } | null>(null);
+  const [reviewRequestBusy, setReviewRequestBusy] = useState<Set<string>>(new Set());
 
   const isModerator = !!user;
 
@@ -983,6 +1078,19 @@ export function PublicWall() {
       void updateDisplayName(initial).catch(() => {});
     }
   }, [user]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const key = `iz-hide-name-cta:${savedName.toLowerCase()}`;
+    setRegistrationNoticeDismissed(window.localStorage.getItem(key) === 'true');
+  }, [savedName]);
+
+  const dismissRegistrationNotice = useCallback(() => {
+    if (!savedName || typeof window === 'undefined') return;
+    const key = `iz-hide-name-cta:${savedName.toLowerCase()}`;
+    window.localStorage.setItem(key, 'true');
+    setRegistrationNoticeDismissed(true);
+  }, [savedName]);
 
   // Keep loadMoreCursor pointing at the oldest non-optimistic post in the feed.
   useEffect(() => {
@@ -1402,8 +1510,6 @@ export function PublicWall() {
           // remove the optimistic row
           setFeed((prev) => prev?.filter((p) => p.id !== tempId) ?? null);
           if (res.status === 429) throw new Error('You\u2019re posting a bit too fast — try again in a bit.');
-          if (res.status === 409 && body?.error === 'name_taken')
-            throw new Error('That name is being used by someone else right now. Try a different one!');
           if (res.status === 403 && body?.error === 'banned')
             throw new Error('This device has been banned from posting.');
           throw new Error(body?.detail || body?.error || `Failed (${res.status})`);
@@ -1430,8 +1536,6 @@ export function PublicWall() {
       });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
-        if (res.status === 409 && body?.error === 'name_taken')
-          throw new Error('That name is being used by someone else right now. Try a different one!');
         throw new Error(body?.detail || body?.error || `Failed (${res.status})`);
       }
       scheduleReload();
@@ -1449,6 +1553,43 @@ export function PublicWall() {
       });
       if (!res.ok) return;
       scheduleReload();
+    },
+    [scheduleReload]
+  );
+
+  const submitPostReviewRequest = useCallback(
+    async (postId: string) => {
+      const message = window.prompt(
+        'Optional note for moderators (why this should be reviewed):',
+        ''
+      );
+      if (message === null) return;
+
+      setReviewRequestBusy((prev) => {
+        const next = new Set(prev);
+        next.add(postId);
+        return next;
+      });
+
+      try {
+        const res = await fetch('/api/wall/post-review-request', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ post_id: postId, message }),
+        });
+        if (!res.ok) {
+          const body = await res.json().catch(() => null);
+          throw new Error(body?.detail || body?.error || `Failed (${res.status})`);
+        }
+      } finally {
+        setReviewRequestBusy((prev) => {
+          const next = new Set(prev);
+          next.delete(postId);
+          return next;
+        });
+        scheduleReload();
+      }
     },
     [scheduleReload]
   );
@@ -1544,6 +1685,9 @@ export function PublicWall() {
 
       <Composer
         savedName={savedName}
+        isSignedIn={verified}
+        registrationNoticeDismissed={registrationNoticeDismissed}
+        onDismissRegistrationNotice={dismissRegistrationNotice}
         onOpenSettings={openSettings}
         requireName={requireName}
         onSubmit={submitPost}
@@ -1594,8 +1738,35 @@ export function PublicWall() {
                 </button>
               )}
               <Badge status={p.moderation_status} />
+              {p.is_mine && p.review_request_status === 'pending' && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-amber-300">
+                  Review requested
+                </span>
+              )}
             </div>
             <PostBody post={p} />
+            {p.is_mine && p.moderation_status === 'rejected' && (
+              <div className="mt-2">
+                <button
+                  type="button"
+                  disabled={reviewRequestBusy.has(p.id) || p.review_request_status === 'pending'}
+                  onClick={() =>
+                    void submitPostReviewRequest(p.id).catch((err) =>
+                      alert(
+                        err instanceof Error ? err.message : 'Failed to submit review request'
+                      )
+                    )
+                  }
+                  className="rounded-lg border border-amber-400/40 bg-amber-500/10 px-3 py-1.5 text-xs font-medium text-amber-200 transition hover:bg-amber-500/20 disabled:cursor-wait disabled:opacity-60"
+                >
+                  {p.review_request_status === 'pending'
+                    ? 'Review request pending'
+                    : reviewRequestBusy.has(p.id)
+                    ? 'Submitting…'
+                    : 'Request moderator review'}
+                </button>
+              </div>
+            )}
             <ReactionBar post={p} onReact={(emoji, removing) => submitReaction(p.id, emoji, removing)} />
             <CommentBlock
               post={p}

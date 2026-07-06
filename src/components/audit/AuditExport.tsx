@@ -44,11 +44,11 @@ export function AuditExport({ filters = {} }: AuditExportProps) {
       <button
         onClick={handleExport}
         disabled={isExporting}
-        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded font-medium text-sm"
+        className="rounded border border-sky-400/30 bg-sky-500/15 px-4 py-2 text-sm font-medium text-sky-100 hover:bg-sky-500/25 disabled:cursor-not-allowed disabled:border-white/10 disabled:bg-white/5 disabled:text-slate-500"
       >
         {isExporting ? 'Exporting...' : '📥 Export to CSV'}
       </button>
-      {error && <span className="text-red-600 text-sm">{error}</span>}
+      {error && <span className="text-sm text-rose-300">{error}</span>}
     </div>
   );
 }

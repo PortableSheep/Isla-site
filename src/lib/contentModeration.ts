@@ -1,12 +1,18 @@
 /**
  * OpenAI Moderation API wrapper.
  *
- * Checks user-submitted text for harmful content (hate, harassment, sexual,
- * violence, self-harm). Free endpoint — no billing impact.
+ * Checks user-submitted text for harmful content and returns reason tags
+ * used by wall moderation.
  *
  * Designed to fail open: if the API is unavailable or the request times out
  * the result is { flagged: false } so posts are never blocked due to infra issues.
  */
+
+import {
+  type AiModerationThresholds,
+  normalizeAiCategory,
+  thresholdsFromSettings,
+} from '@/lib/moderationThresholds';
 
 export type ModerationResult = {
   flagged: boolean;
@@ -15,20 +21,39 @@ export type ModerationResult = {
   error?: string;
 };
 
+type ModerateContentOptions = {
+  thresholds?: AiModerationThresholds;
+};
+
 const OPENAI_MODERATION_URL = 'https://api.openai.com/v1/moderations';
 const TIMEOUT_MS = 3000;
 
-export async function moderateContent(text: string): Promise<ModerationResult> {
+const FALLBACK_THRESHOLDS = thresholdsFromSettings(
+  Object.create(null) as Record<string, string | undefined>
+);
+
+type ModerationApiResponse = {
+  results?: Array<{
+    flagged?: boolean;
+    categories?: Record<string, boolean>;
+    category_scores?: Record<string, number>;
+  }>;
+};
+
+export async function moderateContent(
+  text: string,
+  options?: ModerateContentOptions
+): Promise<ModerationResult> {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
     return { flagged: false, reasons: [], error: 'no_api_key' };
   }
 
+  const thresholds = options?.thresholds ?? FALLBACK_THRESHOLDS;
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
   try {
-    console.log('[content-moderation] checking content, length=%d', text.length);
     const res = await fetch(OPENAI_MODERATION_URL, {
       method: 'POST',
       headers: {
@@ -40,39 +65,47 @@ export async function moderateContent(text: string): Promise<ModerationResult> {
     });
 
     if (!res.ok) {
-      console.warn('[content-moderation] API error status=%d', res.status);
       return { flagged: false, reasons: [], error: `api_status_${res.status}` };
     }
 
-    const data = (await res.json()) as {
-      results?: Array<{ flagged: boolean; categories: Record<string, boolean> }>;
-    };
-
+    const data = (await res.json()) as ModerationApiResponse;
     const result = data.results?.[0];
     if (!result) {
-      console.warn('[content-moderation] no result in response');
       return { flagged: false, reasons: [], error: 'no_result' };
     }
 
-    if (!result.flagged) {
-      console.log('[content-moderation] clean');
+    const categoriesByThreshold: string[] = [];
+    if (result.category_scores) {
+      for (const [category, score] of Object.entries(result.category_scores)) {
+        if (!Number.isFinite(score)) continue;
+        const normalized = normalizeAiCategory(category);
+        const threshold =
+          thresholds.categoryThresholds[normalized] ?? thresholds.defaultThreshold;
+        if (score >= threshold) {
+          categoriesByThreshold.push(category);
+        }
+      }
+    }
+
+    const categories =
+      categoriesByThreshold.length > 0
+        ? categoriesByThreshold
+        : Object.entries(result.categories ?? {})
+            .filter(([, active]) => active)
+            .map(([category]) => category);
+
+    if (categories.length === 0 && !result.flagged) {
       return { flagged: false, reasons: [] };
     }
 
     const reasons: string[] = ['ai_flagged'];
-    for (const [category, active] of Object.entries(result.categories)) {
-      if (active) {
-        // Normalise category names: "hate/threatening" → "ai_flagged:hate_threatening"
-        const tag = 'ai_flagged:' + category.replace(/\//g, '_').replace(/[^a-z0-9_]/g, '');
-        reasons.push(tag);
-      }
+    for (const category of categories) {
+      reasons.push(`ai_flagged:${normalizeAiCategory(category)}`);
     }
 
-    console.log('[content-moderation] FLAGGED reasons=%s', reasons.join(', '));
     return { flagged: true, reasons };
   } catch (err) {
     const isTimeout = err instanceof Error && err.name === 'AbortError';
-    console.warn('[content-moderation] %s', isTimeout ? 'timeout' : 'fetch_error');
     return {
       flagged: false,
       reasons: [],

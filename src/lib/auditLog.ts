@@ -1,4 +1,5 @@
 import { getSbClient } from './supabaseClient';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { 
   AuditLogInput, 
   AuditLogFilters, 
@@ -54,9 +55,9 @@ export async function logAction(
  */
 export async function getAuditLogs(
   filters: AuditLogFilters = {},
-  adminCheck = true
+  client?: SupabaseClient
 ): Promise<AuditLogResponse>  {
-  const supabase = await getSbClient();
+  const supabase = client ?? (await getSbClient());
   try {
     const {
       action,
@@ -176,11 +177,12 @@ export async function getUserActivity(userId: string): Promise<AuditLog[]>  {
  * Export audit logs to CSV format
  */
 export async function exportAuditLogs(
-  filters: AuditLogFilters = {}
+  filters: AuditLogFilters = {},
+  client?: SupabaseClient
 ): Promise<string>  {
-  const supabase = await getSbClient();
+  const supabase = client ?? (await getSbClient());
   try {
-    const { logs } = await getAuditLogs({ ...filters, limit: 10000 });
+    const { logs } = await getAuditLogs({ ...filters, limit: 10000 }, supabase);
 
     const headers = [
       'Timestamp',

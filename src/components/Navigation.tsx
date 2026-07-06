@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useAuth } from '@/lib/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -11,6 +12,7 @@ export function Navigation() {
   const { user, signOut } = useAuth();
   const router = useRouter();
   const [isAdmin, setIsAdmin] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [pendingCount, setPendingCount] = useState<number | null>(null);
 
   useEffect(() => {
@@ -58,68 +60,84 @@ export function Navigation() {
     };
   }, [isAdmin]);
 
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setMobileMenuOpen(false);
+      }
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [mobileMenuOpen]);
+
   const handleLogout = async () => {
     try {
       await signOut();
+      setMobileMenuOpen(false);
       router.push('/');
     } catch (error) {
       console.error('Logout failed:', error);
     }
   };
 
+  const adminLinks = [
+    {
+      href: '/admin/moderation',
+      label: 'Moderate',
+      badge: pendingCount && pendingCount > 0 ? (pendingCount > 99 ? '99+' : String(pendingCount)) : null,
+      ariaLabel:
+        pendingCount && pendingCount > 0 ? `Moderate (${pendingCount} pending)` : 'Moderate',
+    },
+    { href: '/admin/bans', label: 'Bans' },
+    { href: '/admin/audit-logs', label: 'Audit' },
+    { href: '/admin/settings', label: 'Settings' },
+    { href: '/admin/analytics', label: 'Analytics' },
+  ];
+
   return (
     <nav
       className="sticky top-0 z-40 border-b border-white/5 bg-slate-950/70 backdrop-blur-xl"
       aria-label="Main navigation"
+      style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
     >
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+      <div
+        className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:gap-4 sm:px-6 lg:px-8"
+        style={{
+          paddingLeft: 'max(1rem, env(safe-area-inset-left, 0px))',
+          paddingRight: 'max(1rem, env(safe-area-inset-right, 0px))',
+        }}
+      >
         <div className="flex items-center gap-6">
-          <a
+          <Link
             href="/"
             className="iz-gradient-text rounded text-lg font-bold focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-400"
             aria-label="Isla Zone home"
           >
             Isla Zone
-          </a>
+          </Link>
           {user && isAdmin && (
             <div className="hidden items-center gap-1 md:flex">
-              <a
-                href="/admin/moderation"
-                className="relative rounded-lg px-3 py-1.5 text-sm text-slate-300 transition-colors hover:bg-white/5 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-400"
-                aria-label={
-                  pendingCount && pendingCount > 0
-                    ? `Moderate (${pendingCount} pending)`
-                    : 'Moderate'
-                }
-              >
-                Moderate
-                {pendingCount && pendingCount > 0 ? (
-                  <span
-                    className="ml-1.5 inline-flex min-w-[1.25rem] items-center justify-center rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-semibold leading-none text-white"
-                    aria-hidden="true"
-                  >
-                    {pendingCount > 99 ? '99+' : pendingCount}
-                  </span>
-                ) : null}
-              </a>
-              <a
-                href="/admin/bans"
-                className="rounded-lg px-3 py-1.5 text-sm text-slate-300 transition-colors hover:bg-white/5 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-400"
-              >
-                Bans
-              </a>
-              <a
-                href="/admin/audit-logs"
-                className="rounded-lg px-3 py-1.5 text-sm text-slate-300 transition-colors hover:bg-white/5 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-400"
-              >
-                Audit
-              </a>
-              <a
-                href="/admin/analytics"
-                className="rounded-lg px-3 py-1.5 text-sm text-slate-300 transition-colors hover:bg-white/5 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-400"
-              >
-                Analytics
-              </a>
+              {adminLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="relative rounded-lg px-3 py-1.5 text-sm text-slate-300 transition-colors hover:bg-white/5 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-400"
+                  aria-label={link.ariaLabel}
+                >
+                  {link.label}
+                  {link.badge ? (
+                    <span
+                      className="ml-1.5 inline-flex min-w-[1.25rem] items-center justify-center rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-semibold leading-none text-white"
+                      aria-hidden="true"
+                    >
+                      {link.badge}
+                    </span>
+                  ) : null}
+                </Link>
+              ))}
             </div>
           )}
         </div>
@@ -129,9 +147,24 @@ export function Navigation() {
             <span className="hidden text-sm text-slate-400 sm:inline">
               {user.email}
             </span>
+            {isAdmin ? (
+              <button
+                type="button"
+                onClick={() => setMobileMenuOpen((open) => !open)}
+                className="inline-flex h-11 items-center justify-center rounded-lg border border-white/10 px-4 text-sm font-medium text-slate-200 transition hover:border-white/20 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-400 md:hidden"
+                aria-expanded={mobileMenuOpen}
+                aria-controls="mobile-admin-menu"
+                aria-label={mobileMenuOpen ? 'Close admin menu' : 'Open admin menu'}
+              >
+                {mobileMenuOpen ? 'Close' : 'Menu'}
+              </button>
+            ) : null}
             <button
+              type="button"
               onClick={handleLogout}
-              className="iz-btn-ghost rounded-lg px-4 py-1.5 text-sm font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-400"
+              className={`iz-btn-ghost rounded-lg px-4 py-1.5 text-sm font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-400 ${
+                isAdmin ? 'hidden md:inline-flex' : ''
+              }`}
               aria-label="Log out"
             >
               Logout
@@ -139,6 +172,48 @@ export function Navigation() {
           </div>
         )}
       </div>
+      {user && isAdmin && mobileMenuOpen ? (
+        <div
+          id="mobile-admin-menu"
+          className="border-t border-white/10 bg-slate-950/95 px-4 py-3 md:hidden"
+          style={{
+            paddingLeft: 'max(1rem, env(safe-area-inset-left, 0px))',
+            paddingRight: 'max(1rem, env(safe-area-inset-right, 0px))',
+          }}
+        >
+          <div className="mx-auto flex max-w-7xl flex-col gap-2">
+            <p className="text-xs font-medium uppercase tracking-[0.2em] text-slate-500">
+              Admin shortcuts
+            </p>
+            {adminLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex min-h-11 items-center justify-between rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-100 transition hover:border-white/20 hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-400"
+                aria-label={link.ariaLabel}
+              >
+                <span>{link.label}</span>
+                {link.badge ? (
+                  <span className="inline-flex min-w-[1.5rem] items-center justify-center rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-semibold leading-none text-white">
+                    {link.badge}
+                  </span>
+                ) : null}
+              </Link>
+            ))}
+            <div className="rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-slate-400">
+              {user.email}
+            </div>
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="iz-btn-ghost inline-flex min-h-11 items-center justify-center rounded-xl px-4 py-3 text-sm font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-400"
+            >
+              Logout
+            </button>
+          </div>
+        </div>
+      ) : null}
     </nav>
   );
 }

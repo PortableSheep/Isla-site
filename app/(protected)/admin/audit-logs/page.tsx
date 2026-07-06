@@ -1,12 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { AuditLog, AuditLogFilters } from '@/types/audit';
 import { AuditLogTable, AuditFilters, AuditExport } from '@/components/audit';
 
 export default function AuditLogsPage() {
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
   const [hasMore, setHasMore] = useState(false);
@@ -14,9 +15,10 @@ export default function AuditLogsPage() {
 
   const pageSize = 50;
 
-  const fetchLogs = async (offset: number) => {
+  const fetchLogs = useCallback(async (offset: number) => {
     try {
       setIsLoading(true);
+      setFetchError(null);
       const queryParams = new URLSearchParams();
 
       if (filters.action) {
@@ -56,7 +58,9 @@ export default function AuditLogsPage() {
       const response = await fetch(`/api/admin/audit-logs?${queryParams}`);
 
       if (!response.ok) {
-        throw new Error('Failed to fetch audit logs');
+        const body = await response.json().catch(() => null);
+        const detail = typeof body?.error === 'string' ? body.error : `HTTP ${response.status}`;
+        throw new Error(`Failed to fetch audit logs (${detail})`);
       }
 
       const data = await response.json();
@@ -66,14 +70,16 @@ export default function AuditLogsPage() {
       setCurrentPage(offset / pageSize);
     } catch (error) {
       console.error('Error fetching logs:', error);
+      setFetchError(error instanceof Error ? error.message : 'Failed to fetch audit logs');
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [filters]);
 
   useEffect(() => {
-    fetchLogs(0);
-  }, [filters]);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    void fetchLogs(0);
+  }, [fetchLogs]);
 
   const handlePreviousPage = () => {
     const newOffset = Math.max(0, currentPage - 1) * pageSize;
@@ -85,42 +91,49 @@ export default function AuditLogsPage() {
     fetchLogs(newOffset);
   };
 
+  const handleFiltersChange = useCallback((newFilters: AuditLogFilters) => {
+    setFilters(newFilters);
+    setCurrentPage(0);
+  }, []);
+
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Audit Logs</h1>
+    <div className="container mx-auto space-y-6 p-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-3xl font-bold text-slate-100">Audit Logs</h1>
         <AuditExport filters={filters} />
       </div>
 
-      <AuditFilters onFiltersChange={(newFilters) => {
-        setFilters(newFilters);
-        setCurrentPage(0);
-      }} />
+      <AuditFilters onFiltersChange={handleFiltersChange} />
 
-      <div className="bg-white p-4 rounded-lg border">
-        <div className="mb-4 text-sm text-gray-600">
+      <div className="rounded-xl border border-white/10 bg-slate-900/40 p-4">
+        {fetchError ? (
+          <div className="mb-3 rounded border border-rose-400/25 bg-rose-500/10 px-3 py-2 text-sm text-rose-200">
+            {fetchError}
+          </div>
+        ) : null}
+        <div className="mb-4 text-sm text-slate-400">
           Showing {Math.min(logs.length, pageSize)} of {totalCount} entries
         </div>
 
         <AuditLogTable logs={logs} isLoading={isLoading} />
 
-        <div className="mt-4 flex justify-between items-center">
+        <div className="mt-4 flex items-center justify-between">
           <button
             onClick={handlePreviousPage}
             disabled={currentPage === 0}
-            className="px-4 py-2 bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 disabled:text-gray-400 rounded font-medium"
+            className="rounded border border-white/15 bg-white/5 px-4 py-2 font-medium text-slate-200 hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
           >
             ← Previous
           </button>
 
-          <span className="text-sm text-gray-600">
+          <span className="text-sm text-slate-400">
             Page {currentPage + 1} of {Math.ceil(totalCount / pageSize)}
           </span>
 
           <button
             onClick={handleNextPage}
             disabled={!hasMore}
-            className="px-4 py-2 bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 disabled:text-gray-400 rounded font-medium"
+            className="rounded border border-white/15 bg-white/5 px-4 py-2 font-medium text-slate-200 hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-40"
           >
             Next →
           </button>

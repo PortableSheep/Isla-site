@@ -1,10 +1,15 @@
-'use client';
-
 import Link from 'next/link';
 import { AuthForm } from '@/components/AuthForm';
 import { CreatureDisplay } from '@/components/CreatureDisplay';
 
-export default function SignUpPage() {
+export default async function SignUpPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ displayName?: string }>;
+}) {
+  const { displayName } = await searchParams;
+  const initialDisplayName = displayName ?? '';
+
   return (
     <div className="w-full">
       <div className="text-center mb-8">
@@ -15,12 +20,12 @@ export default function SignUpPage() {
           Sign up for Isla&apos;s wall
         </h1>
         <p className="mt-3 text-slate-400">
-          Create an account to post, comment, and react on Isla&apos;s wall.
+          Create an account to post, comment, react, and keep your wall display name on every device.
         </p>
       </div>
 
       <div className="iz-card p-8">
-        <AuthForm type="signup" />
+        <AuthForm type="signup" initialDisplayName={initialDisplayName} />
       </div>
 
       <p className="mt-6 text-center text-sm text-slate-400">
@@ -28,6 +33,11 @@ export default function SignUpPage() {
         <Link href="/auth/login" className="text-fuchsia-300 hover:text-fuchsia-200 font-medium transition-colors">
           Sign in
         </Link>
+      </p>
+
+      <p className="mt-4 text-center text-xs text-slate-500">
+        Sign up once, then the name you choose here stays with your account
+        across devices and browser sessions.
       </p>
 
       <p className="mt-4 text-center text-xs text-slate-500">

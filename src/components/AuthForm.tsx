@@ -8,11 +8,13 @@ import { supabase } from '@/lib/supabase';
 
 interface AuthFormProps {
   type: 'signup' | 'login';
+  initialDisplayName?: string;
   onSuccess?: () => void;
 }
 
-export function AuthForm({ type, onSuccess }: AuthFormProps) {
+export function AuthForm({ type, initialDisplayName = '', onSuccess }: AuthFormProps) {
   const router = useRouter();
+  const [displayName, setDisplayName] = useState(initialDisplayName);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -57,7 +59,7 @@ export function AuthForm({ type, onSuccess }: AuthFormProps) {
           return;
         }
         setLoading(true);
-        await signUp(email, password);
+        await signUp(email, password, displayName);
         const msg = 'Account created! Please check your email to confirm your account.';
         setSuccess(msg);
         announceToScreenReader(msg, 'polite');
@@ -128,6 +130,28 @@ export function AuthForm({ type, onSuccess }: AuthFormProps) {
             aria-atomic="true"
           >
             {success}
+          </div>
+        )}
+
+        {type === 'signup' && (
+          <div>
+            <label htmlFor="auth-display-name" className="block text-sm font-medium text-slate-200 mb-2">
+              Display Name <span className="text-slate-500">(optional)</span>
+            </label>
+            <input
+              id="auth-display-name"
+              type="text"
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              placeholder="Use the name you want on Isla's wall"
+              maxLength={40}
+              className="iz-input"
+              disabled={loading}
+              aria-describedby={error ? errorId : undefined}
+            />
+            <p className="mt-2 text-xs text-slate-500">
+              We&apos;ll keep this display name with your account so it follows you to other devices.
+            </p>
           </div>
         )}
 

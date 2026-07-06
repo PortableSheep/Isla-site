@@ -3,11 +3,14 @@
 import { useEffect, useState, useCallback } from 'react';
 import { SuspensionAppeal } from '@/types/suspension';
 
-export function AppealsQueue() {
+interface AppealsQueueProps {
+  onCountChange?: (count: number) => void;
+}
+
+export function AppealsQueue({ onCountChange }: AppealsQueueProps) {
   const [appeals, setAppeals] = useState<SuspensionAppeal[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [expandedId, setExpandedId] = useState<string | null>(null);
   const [reviewResponse, setReviewResponse] = useState<Record<string, string>>({});
 
   const fetchAppeals = useCallback(async () => {
@@ -15,17 +18,27 @@ export function AppealsQueue() {
     try {
       const response = await fetch('/api/admin/appeals');
       if (!response.ok) {
-        throw new Error('Failed to fetch appeals');
+        const body = await response.json().catch(() => null);
+        const detail =
+          typeof body?.error === 'string'
+            ? body.error
+            : typeof body?.detail === 'string'
+            ? body.detail
+            : `Failed (${response.status})`;
+        throw new Error(detail);
       }
 
       const data = await response.json();
-      setAppeals(data.appeals || []);
+      const nextAppeals = data.appeals || [];
+      setAppeals(nextAppeals);
+      onCountChange?.(nextAppeals.length);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'An error occurred';
       setError(message);
+      onCountChange?.(0);
       console.error('Error fetching appeals:', err);
     }
-  }, []);
+  }, [onCountChange]);
 
   useEffect(() => {
     const loadData = async () => {
@@ -55,11 +68,22 @@ export function AppealsQueue() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to approve appeal');
+        const body = await response.json().catch(() => null);
+        const detail =
+          typeof body?.error === 'string'
+            ? body.error
+            : typeof body?.detail === 'string'
+            ? body.detail
+            : `Failed (${response.status})`;
+        throw new Error(detail);
       }
 
       // Remove from list
-      setAppeals(appeals.filter((a) => a.id !== appealId));
+      setAppeals((prev) => {
+        const next = prev.filter((a) => a.id !== appealId);
+        onCountChange?.(next.length);
+        return next;
+      });
     } catch (err) {
       console.error('Error approving appeal:', err);
       alert('Failed to approve appeal');
@@ -86,11 +110,22 @@ export function AppealsQueue() {
       });
 
       if (!res.ok) {
-        throw new Error('Failed to reject appeal');
+        const body = await res.json().catch(() => null);
+        const detail =
+          typeof body?.error === 'string'
+            ? body.error
+            : typeof body?.detail === 'string'
+            ? body.detail
+            : `Failed (${res.status})`;
+        throw new Error(detail);
       }
 
       // Remove from list
-      setAppeals(appeals.filter((a) => a.id !== appealId));
+      setAppeals((prev) => {
+        const next = prev.filter((a) => a.id !== appealId);
+        onCountChange?.(next.length);
+        return next;
+      });
       setReviewResponse((prev) => {
         const next = { ...prev };
         delete next[appealId];
@@ -103,117 +138,81 @@ export function AppealsQueue() {
   };
 
   if (isLoading) {
-    return (
-      <div className="text-center py-12">
-        <div className="text-gray-400">Loading appeals...</div>
-      </div>
-    );
+    return null;
   }
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-        <p className="text-red-800">{error}</p>
-      </div>
+      <li className="overflow-hidden rounded-2xl border border-rose-400/30 bg-rose-500/10 p-4 text-sm text-rose-200">
+        {error}
+      </li>
     );
   }
 
   if (appeals.length === 0) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-gray-400">No pending appeals to review</p>
-      </div>
-    );
+    return null;
   }
 
   return (
-    <div className="space-y-4">
+    <>
       {appeals.map((appeal) => (
-        <div
+        <li
           key={appeal.id}
-          className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden"
+          className="overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur"
         >
-          <div
-            className="p-4 cursor-pointer hover:bg-gray-50 transition"
-            onClick={() =>
-              setExpandedId(expandedId === appeal.id ? null : appeal.id)
-            }
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <h3 className="font-semibold text-gray-900">
-                  Appeal from {appeal.user_id.slice(0, 8)}...
-                </h3>
-                <p className="text-sm text-gray-500 mt-1">
-                  Submitted {new Date(appeal.created_at).toLocaleDateString()}
-                </p>
-              </div>
-
-              <div className="ml-4">
-                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
-                  Pending
-                </span>
-              </div>
+          <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400">
+            <span className="rounded-full bg-white/10 px-2 py-0.5 font-semibold uppercase text-slate-200">
+              appeal
+            </span>
+            <span className="font-medium text-slate-100">
+              User {appeal.user_id.slice(0, 8)}...
+            </span>
+            <span>·</span>
+            <span>{new Date(appeal.created_at).toLocaleDateString()}</span>
+            <span className="rounded-full border border-amber-400/25 bg-amber-500/15 px-2 py-0.5 text-[11px] font-medium text-amber-300">
+              pending
+            </span>
+          </div>
+          <div className="mt-3">
+            <div className="rounded border border-white/10 bg-black/20 p-3">
+              <p className="text-sm whitespace-pre-wrap break-words text-slate-200">
+                {appeal.appeal_text}
+              </p>
             </div>
           </div>
-
-          {expandedId === appeal.id && (
-            <div className="border-t border-gray-200 bg-gray-50 p-4">
-              <div className="mb-4">
-                <h4 className="font-semibold text-gray-900 mb-2">Appeal Text:</h4>
-                <div className="bg-white rounded p-3 border border-gray-200">
-                  <p className="text-gray-700 text-sm whitespace-pre-wrap break-words">
-                    {appeal.appeal_text}
-                  </p>
-                </div>
-              </div>
-
-              {expandedId === appeal.id &&
-                !reviewResponse[appeal.id] &&
-                (
-                  <div className="mb-4">
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Rejection Reason (if rejecting):
-                    </label>
-                    <textarea
-                      value={reviewResponse[appeal.id] || ''}
-                      onChange={(e) =>
-                        setReviewResponse((prev) => ({
-                          ...prev,
-                          [appeal.id]: e.target.value,
-                        }))
-                      }
-                      placeholder="Provide a reason if you reject this appeal..."
-                      maxLength={500}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                      rows={3}
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      {(reviewResponse[appeal.id] || '').length} / 500 characters
-                    </p>
-                  </div>
-                )}
-
-              <div className="flex gap-3">
-                <button
-                  onClick={() => handleApprove(appeal.id)}
-                  className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition"
-                >
-                  Approve Appeal
-                </button>
-
-                <button
-                  onClick={() => handleReject(appeal.id)}
-                  disabled={!reviewResponse[appeal.id] || reviewResponse[appeal.id].trim().length === 0}
-                  className="flex-1 bg-red-600 hover:bg-red-700 disabled:bg-gray-400 text-white font-semibold py-2 px-4 rounded-lg transition"
-                >
-                  Reject Appeal
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
+          <textarea
+            value={reviewResponse[appeal.id] || ''}
+            onChange={(e) =>
+              setReviewResponse((prev) => ({
+                ...prev,
+                [appeal.id]: e.target.value,
+              }))
+            }
+            placeholder="Rejection reason required"
+            maxLength={500}
+            className="mt-3 w-full resize-none rounded border border-white/15 bg-black/20 px-3 py-2 text-xs text-slate-100"
+            rows={2}
+          />
+          <p className="mt-1 text-xs text-slate-500">
+            {(reviewResponse[appeal.id] || '').length} / 500 characters
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button
+              onClick={() => handleApprove(appeal.id)}
+              className="rounded-lg bg-emerald-500/20 px-3 py-1.5 text-sm text-emerald-200 hover:bg-emerald-500/30"
+            >
+              Approve Appeal
+            </button>
+            <button
+              onClick={() => handleReject(appeal.id)}
+              disabled={!reviewResponse[appeal.id] || reviewResponse[appeal.id].trim().length === 0}
+              className="rounded-lg bg-rose-500/20 px-3 py-1.5 text-sm text-rose-200 hover:bg-rose-500/30 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              Reject Appeal
+            </button>
+          </div>
+        </li>
       ))}
-    </div>
+    </>
   );
 }

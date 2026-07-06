@@ -1,11 +1,13 @@
 import { getSbClient } from './supabaseClient';
 
-export async function signUp(email: string, password: string) {
+export async function signUp(email: string, password: string, displayName?: string) {
   const supabase = await getSbClient();
+  const normalizedDisplayName = displayName?.trim().slice(0, 40);
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
+      data: normalizedDisplayName ? { display_name: normalizedDisplayName } : undefined,
       emailRedirectTo: `${typeof window !== 'undefined' ? window.location.origin : ''}/auth/reset-password-confirm`,
     },
   });

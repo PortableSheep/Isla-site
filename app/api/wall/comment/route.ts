@@ -12,6 +12,7 @@ import { scoreSpam } from '@/lib/spamScore';
 import { moderateContent } from '@/lib/contentModeration';
 import { checkUrls } from '@/lib/urlSafety';
 import { linkAttachmentsToPost } from '@/lib/wallAttachments';
+import { AI_THRESHOLD_SETTING_KEYS, thresholdsFromRows } from '@/lib/moderationThresholds';
 
 export const dynamic = 'force-dynamic';
 
@@ -106,34 +107,18 @@ export async function POST(request: NextRequest) {
     }
 
     const { score, reasons } = scoreSpam(content);
+    const { data: moderationSettings } = await admin
+      .from('site_settings')
+      .select('key, value')
+      .in('key', AI_THRESHOLD_SETTING_KEYS);
+    const thresholds = thresholdsFromRows(moderationSettings);
 
     // AI moderation (3 s timeout, fail open) + URL safety check.
     const [aiResult, urlResult] = await Promise.all([
-      moderateContent(content),
+      moderateContent(content, { thresholds }),
       Promise.resolve(checkUrls(content)),
     ]);
     const allReasons = [...reasons, ...aiResult.reasons, ...urlResult.reasons];
-
-    // Name-in-use check: reject if this name has been used by a different cookie
-    // AND a different IP in the last 24 hours. Prevents impersonation while
-    // allowing the same person to reclaim their name if their cookie was cleared
-    // (e.g. browser switch) but they're on the same network.
-    if (authorName !== 'Anonymous') {
-      const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-      let nameCheckQuery = admin
-        .from('posts')
-        .select('id')
-        .ilike('author_name', authorName)
-        .neq('author_cookie_id', guest.cookieId)
-        .gte('created_at', since);
-      if (guest.ip) {
-        nameCheckQuery = nameCheckQuery.neq('client_ip', guest.ip);
-      }
-      const { data: nameTaken } = await nameCheckQuery.limit(1).maybeSingle();
-      if (nameTaken) {
-        return NextResponse.json({ error: 'name_taken' }, { status: 409 });
-      }
-    }
 
     const { data: inserted, error } = await admin
       .from('posts')

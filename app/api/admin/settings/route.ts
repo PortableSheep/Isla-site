@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
+import { AI_THRESHOLD_SETTING_KEYS } from '@/lib/moderationThresholds';
 
 export const dynamic = 'force-dynamic';
 
@@ -47,15 +48,49 @@ export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => null);
   const key = typeof body?.key === 'string' ? body.key.trim() : '';
   const value = typeof body?.value === 'string' ? body.value : '';
-  if (!key) return NextResponse.json({ error: 'invalid_key' }, { status: 400 });
+
+  const updatesFromMap =
+    body && typeof body === 'object' && body.updates && typeof body.updates === 'object'
+      ? Object.entries(body.updates as Record<string, unknown>)
+          .filter(([mapKey, mapValue]) => typeof mapKey === 'string' && typeof mapValue === 'string')
+          .map(([mapKey, mapValue]) => ({ key: mapKey.trim(), value: mapValue as string }))
+          .filter((entry) => entry.key.length > 0)
+      : [];
+
+  const updates = updatesFromMap.length > 0 ? updatesFromMap : key ? [{ key, value }] : [];
+  if (updates.length === 0) {
+    return NextResponse.json({ error: 'invalid_key' }, { status: 400 });
+  }
+
+  for (const entry of updates) {
+    if (!AI_THRESHOLD_SETTING_KEYS.includes(entry.key)) continue;
+    const parsed = Number(entry.value);
+    if (!Number.isFinite(parsed) || parsed < 0 || parsed > 1) {
+      return NextResponse.json(
+        { error: 'invalid_threshold', key: entry.key, detail: 'threshold must be between 0 and 1' },
+        { status: 400 }
+      );
+    }
+  }
 
   const db = getSupabaseAdmin();
   if (!db) return NextResponse.json({ error: 'server_misconfigured' }, { status: 500 });
 
   const { error } = await db
     .from('site_settings')
-    .upsert({ key, value, updated_at: new Date().toISOString() }, { onConflict: 'key' });
+    .upsert(
+      updates.map((entry) => ({
+        key: entry.key,
+        value: entry.value,
+        updated_at: new Date().toISOString(),
+      })),
+      { onConflict: 'key' }
+    );
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  return NextResponse.json({ success: true, key, value });
+  return NextResponse.json({
+    success: true,
+    updated: updates.length,
+    settings: Object.fromEntries(updates.map((entry) => [entry.key, entry.value])),
+  });
 }

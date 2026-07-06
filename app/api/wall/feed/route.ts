@@ -16,6 +16,7 @@ type WallPost = {
   author_id: string | null;
   content: string;
   moderation_status: 'pending' | 'approved' | 'rejected';
+  review_request_status?: 'pending' | 'approved' | 'rejected' | 'escalated' | null;
   created_at: string;
   is_mine: boolean;
   verified: boolean;
@@ -94,6 +95,7 @@ export async function GET(request: NextRequest) {
     }
 
     const postIds = (topRows ?? []).map((p) => p.id);
+    const allPostIdsForRequests = new Set<string>(postIds);
 
     // Comments: approved OR own pending, whose parent is in our returned set.
     let commentRows: Array<WallPost> = [];
@@ -118,6 +120,31 @@ export async function GET(request: NextRequest) {
         is_mine: Boolean(cookieId && r.author_cookie_id === cookieId),
         verified: !!r.author_id,
       })) as WallPost[];
+      for (const comment of commentRows) {
+        allPostIdsForRequests.add(comment.id);
+      }
+    }
+
+    const reviewStatusByPost = new Map<
+      string,
+      'pending' | 'approved' | 'rejected' | 'escalated' | null
+    >();
+    if ((cookieId || userResp.user?.id) && allPostIdsForRequests.size > 0) {
+      let reviewQuery = admin
+        .from('post_review_requests')
+        .select('post_id, status, created_at')
+        .in('post_id', Array.from(allPostIdsForRequests))
+        .order('created_at', { ascending: false });
+      if (userResp.user?.id) {
+        reviewQuery = reviewQuery.eq('requester_user_id', userResp.user.id);
+      } else if (cookieId) {
+        reviewQuery = reviewQuery.eq('requester_cookie_id', cookieId);
+      }
+      const { data: reviewRows } = await reviewQuery;
+      for (const row of reviewRows ?? []) {
+        if (reviewStatusByPost.has(row.post_id)) continue;
+        reviewStatusByPost.set(row.post_id, row.status);
+      }
     }
 
     // Reactions on approved top-level posts only
@@ -236,6 +263,7 @@ export async function GET(request: NextRequest) {
         ...p,
         is_mine: Boolean(cookieId && p.author_cookie_id === cookieId),
         verified: !!p.author_id,
+        review_request_status: reviewStatusByPost.get(p.id) ?? null,
       } as WallPost;
       return {
         ...strip(withMine),
@@ -246,6 +274,7 @@ export async function GET(request: NextRequest) {
           .filter((c) => c.parent_post_id === p.id)
           .map((c) => ({
             ...strip(c),
+            review_request_status: reviewStatusByPost.get(c.id) ?? null,
             attachments: attachmentsByPost.get(c.id) ?? [],
           })),
       };

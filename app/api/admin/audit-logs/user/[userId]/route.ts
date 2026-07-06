@@ -5,18 +5,12 @@ import { getUserActivity } from '@/lib/auditLog';
 // Check if user is admin
 async function isAdmin(supabase: import('@supabase/supabase-js').SupabaseClient, userId: string): Promise<boolean> {
   try {
-    const { data, error } = await supabase
-      .from('user_profiles')
-      .select('role')
-      .eq('user_id', userId)
-      .single();
-
+    const { data, error } = await supabase.rpc('is_admin', { uid: userId });
     if (error) {
       console.error('Error checking admin status:', error);
       return false;
     }
-
-    return (data as { role: string } | null)?.role === 'admin';
+    return data === true;
   } catch (error) {
     console.error('Error in isAdmin:', error);
     return false;

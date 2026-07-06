@@ -6,10 +6,9 @@ import {
   isIpBanned,
   checkRateLimit,
 } from '@/lib/wallGuest';
+import { WALL_REACTION_IDS } from '@/lib/wallReactions';
 
 export const dynamic = 'force-dynamic';
-
-const ALLOWED_EMOJI = new Set(['❤️', '👍', '😂', '😮', '😢', '🎉', '🔥']);
 
 export async function POST(request: NextRequest) {
   try {
@@ -28,7 +27,7 @@ export async function POST(request: NextRequest) {
     if (!/^[0-9a-f-]{36}$/i.test(postId)) {
       return NextResponse.json({ error: 'invalid_post' }, { status: 400 });
     }
-    if (!ALLOWED_EMOJI.has(emoji)) {
+    if (!WALL_REACTION_IDS.has(emoji)) {
       return NextResponse.json({ error: 'invalid_emoji' }, { status: 400 });
     }
 

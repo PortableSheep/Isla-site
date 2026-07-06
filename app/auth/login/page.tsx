@@ -15,7 +15,7 @@ export default function LoginPage() {
           Welcome back
         </h1>
         <p className="mt-3 text-slate-400">
-          Sign in to connect with your family on Isla Zone
+          Sign in to connect with your family on Isla Zone and keep your wall name in sync.
         </p>
       </div>
 

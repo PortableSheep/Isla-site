@@ -56,5 +56,9 @@ export default function ModerationPage() {
     );
   }
 
-  return <WallModerationDashboard />;
+  return (
+    <div className="mx-auto flex w-full max-w-5xl flex-col gap-4 px-4 py-6">
+      <WallModerationDashboard />
+    </div>
+  );
 }

@@ -1,33 +1,36 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AuditAction, AuditSubjectType } from '@/types/audit';
+import type { AuditLogFilters } from '@/types/audit';
 
 interface AuditFiltersProps {
-  onFiltersChange: (filters: any) => void;
+  onFiltersChange: (filters: AuditLogFilters) => void;
 }
 
 const ACTIONS: AuditAction[] = [
+  'moderation_approve',
+  'moderation_reject',
+  'moderation_delete',
+  'appeal_submitted',
+  'appeal_approved',
+  'appeal_rejected',
+  'post_review_requested',
+  'post_review_request_approved',
+  'post_review_request_rejected',
   'post_deleted',
   'post_hidden',
-  'post_unhidden',
-  'user_suspended',
-  'user_unsuspended',
   'post_flagged',
   'flag_reviewed',
-  'flag_dismissed',
-  'profile_created',
-  'child_approved',
-  'child_rejected',
-  'appeal_reviewed',
+  'user_suspended',
+  'user_unsuspended',
+  'user_auto_unsuspended',
 ];
 
 const SUBJECT_TYPES: AuditSubjectType[] = [
   'post',
   'user',
   'flag',
-  'profile',
-  'appeal',
 ];
 
 export function AuditFilters({ onFiltersChange }: AuditFiltersProps) {
@@ -37,8 +40,8 @@ export function AuditFilters({ onFiltersChange }: AuditFiltersProps) {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
 
-  const handleFilterChange = () => {
-    const filters: any = {};
+  useEffect(() => {
+    const filters: AuditLogFilters = {};
 
     if (action) filters.action = action;
     if (subjectType) filters.subject_type = subjectType;
@@ -47,7 +50,7 @@ export function AuditFilters({ onFiltersChange }: AuditFiltersProps) {
     if (endDate) filters.endDate = new Date(endDate);
 
     onFiltersChange(filters);
-  };
+  }, [action, subjectType, actorId, startDate, endDate, onFiltersChange]);
 
   const handleReset = () => {
     setAction('');
@@ -55,23 +58,19 @@ export function AuditFilters({ onFiltersChange }: AuditFiltersProps) {
     setActorId('');
     setStartDate('');
     setEndDate('');
-    onFiltersChange({});
   };
 
   return (
-    <div className="bg-white p-4 rounded-lg border space-y-4">
-      <h3 className="font-semibold text-lg">Filters</h3>
+    <div className="space-y-4 rounded-xl border border-white/10 bg-slate-900/40 p-4">
+      <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-300">Filters</h3>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <div>
-          <label className="block text-sm font-medium mb-1">Action Type</label>
+          <label className="mb-1 block text-sm font-medium text-slate-300">Action type</label>
           <select
             value={action}
-            onChange={(e) => {
-              setAction(e.target.value as AuditAction);
-              handleFilterChange();
-            }}
-            className="w-full p-2 border rounded text-sm"
+            onChange={(e) => setAction(e.target.value as AuditAction)}
+            className="w-full rounded border border-white/15 bg-black/20 p-2 text-sm text-slate-100"
           >
             <option value="">All Actions</option>
             {ACTIONS.map((act) => (
@@ -83,14 +82,11 @@ export function AuditFilters({ onFiltersChange }: AuditFiltersProps) {
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">Subject Type</label>
+          <label className="mb-1 block text-sm font-medium text-slate-300">Subject type</label>
           <select
             value={subjectType}
-            onChange={(e) => {
-              setSubjectType(e.target.value as AuditSubjectType);
-              handleFilterChange();
-            }}
-            className="w-full p-2 border rounded text-sm"
+            onChange={(e) => setSubjectType(e.target.value as AuditSubjectType)}
+            className="w-full rounded border border-white/15 bg-black/20 p-2 text-sm text-slate-100"
           >
             <option value="">All Types</option>
             {SUBJECT_TYPES.map((type) => (
@@ -102,47 +98,40 @@ export function AuditFilters({ onFiltersChange }: AuditFiltersProps) {
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">Actor ID</label>
+          <label className="mb-1 block text-sm font-medium text-slate-300">Actor ID</label>
           <input
             type="text"
             value={actorId}
             onChange={(e) => setActorId(e.target.value)}
-            onBlur={handleFilterChange}
             placeholder="Filter by actor ID"
-            className="w-full p-2 border rounded text-sm"
+            className="w-full rounded border border-white/15 bg-black/20 p-2 text-sm text-slate-100 placeholder:text-slate-500"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">Start Date</label>
+          <label className="mb-1 block text-sm font-medium text-slate-300">Start date</label>
           <input
             type="date"
             value={startDate}
-            onChange={(e) => {
-              setStartDate(e.target.value);
-              handleFilterChange();
-            }}
-            className="w-full p-2 border rounded text-sm"
+            onChange={(e) => setStartDate(e.target.value)}
+            className="w-full rounded border border-white/15 bg-black/20 p-2 text-sm text-slate-100"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">End Date</label>
+          <label className="mb-1 block text-sm font-medium text-slate-300">End date</label>
           <input
             type="date"
             value={endDate}
-            onChange={(e) => {
-              setEndDate(e.target.value);
-              handleFilterChange();
-            }}
-            className="w-full p-2 border rounded text-sm"
+            onChange={(e) => setEndDate(e.target.value)}
+            className="w-full rounded border border-white/15 bg-black/20 p-2 text-sm text-slate-100"
           />
         </div>
 
         <div className="flex items-end gap-2">
           <button
             onClick={handleReset}
-            className="w-full p-2 bg-gray-200 hover:bg-gray-300 rounded text-sm font-medium"
+            className="w-full rounded border border-white/15 bg-white/5 p-2 text-sm font-medium text-slate-200 hover:bg-white/10"
           >
             Reset Filters
           </button>
