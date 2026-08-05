@@ -196,6 +196,7 @@ function ModerationModal({
 }
 
 const NAME_KEY = 'wall_author_name';
+const POST_MAX_LENGTH = 2000;
 
 function readSavedName(): string {
   if (typeof window === 'undefined') return '';
@@ -766,9 +767,20 @@ function Composer({
         onChange={(e) => setContent(e.target.value)}
         placeholder="Say hi, paste a GIF / meme / YouTube link, or tell Isla a joke…"
         rows={4}
-        maxLength={2000}
+        maxLength={POST_MAX_LENGTH}
+        aria-describedby="composer-char-count"
         className="w-full resize-y rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:border-fuchsia-400 focus:outline-none"
       />
+      {content.length > POST_MAX_LENGTH * 0.85 && (
+        <p
+          id="composer-char-count"
+          className={`-mt-2 text-right text-[11px] ${
+            content.length >= POST_MAX_LENGTH ? 'text-rose-300' : 'text-slate-500'
+          }`}
+        >
+          {content.length}/{POST_MAX_LENGTH}
+        </p>
+      )}
       <MediaHelperBar onPickGif={() => setGifOpen(true)} onInsert={insertAtCursor} />
       <ImageUploadButton
         attachment={attachment}
@@ -866,7 +878,7 @@ function NameDialog({
       aria-labelledby="name-dialog-title"
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm"
       onKeyDown={(e) => {
-        if (e.key === 'Escape' && !firstTime) onCancel();
+        if (e.key === 'Escape') onCancel();
       }}
     >
       <form
@@ -882,7 +894,9 @@ function NameDialog({
           {firstTime ? 'What should we call you?' : 'Change your display name'}
         </h3>
         <p className="text-xs text-slate-400">
-          Your display name shows up on posts and comments. Guests can reuse the same display name, but signing in lets you keep yours across devices.
+          {firstTime
+            ? 'Pick a name so Isla knows who said hi — you can always change it later.'
+            : 'Your display name shows up on posts and comments. Guests can reuse the same display name, but signing in lets you keep yours across devices.'}
         </p>
         <input
           autoFocus
@@ -893,15 +907,13 @@ function NameDialog({
           className="w-full rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:border-fuchsia-400 focus:outline-none"
         />
         <div className="flex justify-end gap-2">
-          {!firstTime && (
-            <button
-              type="button"
-              onClick={onCancel}
-              className="rounded-lg border border-white/10 px-4 py-1.5 text-sm text-slate-300 hover:border-white/25"
-            >
-              Cancel
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={onCancel}
+            className="rounded-lg border border-white/10 px-4 py-1.5 text-sm text-slate-300 hover:border-white/25"
+          >
+            {firstTime ? 'Not now' : 'Cancel'}
+          </button>
           <button
             type="submit"
             disabled={!value.trim()}
@@ -1066,11 +1078,10 @@ export function PublicWall() {
     }
     setHideToasts(localStorage.getItem('iz-wall-hide-toasts') === 'true');
     if (!initial) {
-      // Prompt for a display name immediately so visitors aren't shown as
-      // "Someone" in presence and don't get surprised by a modal the first
-      // time they try to post.
-      setDialogFirstTime(true);
-      setDialogOpen(true);
+      // Don't block the view with a modal before a guest has even seen the
+      // wall — let them read and get a feel for it first. The name prompt
+      // still appears (via requireName) the moment they try to post,
+      // comment, or react, which is the only time we actually need it.
     } else if (user && !metaName) {
       // Just-signed-in user whose magic link didn't carry a name (or who
       // chose their name after sending the link) — backfill metadata so
@@ -1694,14 +1705,40 @@ export function PublicWall() {
       />
 
       {loadError && (
-        <div className="rounded-xl border border-rose-400/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
-          {loadError}
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-rose-400/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+          <span>Couldn&apos;t load the wall — {loadError}</span>
+          <button
+            type="button"
+            onClick={() => void refresh()}
+            className="inline-flex h-8 items-center rounded-lg border border-rose-400/40 bg-rose-500/10 px-3 text-xs font-medium text-rose-100 transition hover:border-rose-400/70 hover:bg-rose-500/20"
+          >
+            Try again
+          </button>
         </div>
       )}
 
       {feed === null && !loadError && (
-        <div className="flex justify-center py-10">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/10 border-t-fuchsia-400" />
+        <div aria-hidden className="flex flex-col gap-5">
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              className="animate-pulse rounded-2xl border border-white/10 bg-white/5 p-3 sm:p-4"
+              style={{ animationDelay: `${i * 120}ms` }}
+            >
+              <div className="flex items-center gap-2">
+                <div className="h-3 w-24 rounded bg-white/10" />
+                <div className="h-3 w-14 rounded bg-white/5" />
+              </div>
+              <div className="mt-3 space-y-2">
+                <div className="h-3 w-full rounded bg-white/10" />
+                <div className="h-3 w-4/5 rounded bg-white/10" />
+              </div>
+              <div className="mt-4 flex gap-2">
+                <div className="h-7 w-14 rounded-full bg-white/5" />
+                <div className="h-7 w-14 rounded-full bg-white/5" />
+              </div>
+            </div>
+          ))}
         </div>
       )}
 
@@ -1839,19 +1876,25 @@ export function PublicWall() {
               </button>
             </div>
             <ul className="m-0 list-none pl-2">
-              {presenceUsers.map((u, i) => (
-                <li key={`${u.name}-${i}`} className="flex items-center gap-1.5 py-0.5 text-xs text-slate-300">
-                  <span className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-emerald-400" />
-                  <span className="max-w-[180px] truncate">
-                    {u.name}
-                    {u.verified && (
-                      <span aria-label="verified" title="Signed in" className="ml-1">
-                        ✨
-                      </span>
-                    )}
-                  </span>
-                </li>
-              ))}
+              {presenceUsers.map((u, i) => {
+                const isSelf =
+                  (!!user?.id && !!u.userId && u.userId === user.id) ||
+                  (!!savedName && u.name.trim().toLowerCase() === savedName.trim().toLowerCase());
+                return (
+                  <li key={`${u.name}-${i}`} className="flex items-center gap-1.5 py-0.5 text-xs text-slate-300">
+                    <span className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-emerald-400" />
+                    <span className="max-w-[180px] truncate">
+                      {u.name}
+                      {u.verified && (
+                        <span aria-label="verified" title="Signed in" className="ml-1">
+                          ✨
+                        </span>
+                      )}
+                      {isSelf && <span className="ml-1 text-slate-500">(you)</span>}
+                    </span>
+                  </li>
+                );
+              })}
             </ul>
           </div>
         )}
