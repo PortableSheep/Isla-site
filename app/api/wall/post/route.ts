@@ -18,6 +18,40 @@ import { AI_THRESHOLD_SETTING_KEYS, thresholdsFromRows } from '@/lib/moderationT
 export const dynamic = 'force-dynamic';
 
 const MAX_CONTENT = 2000;
+const GUEST_POST_LIMIT = 10;
+const APPROVED_POST_BURST_LIMIT = 120;
+const APPROVED_POST_HOURLY_LIMIT = 1000;
+
+async function isTrustedPoster(userId: string | null, cookieId: string): Promise<boolean> {
+  const admin = getSupabaseAdmin();
+  if (!admin) return false;
+
+  const profileQuery = userId
+    ? admin
+        .from('user_profiles')
+        .select('status')
+        .eq('user_id', userId)
+        .maybeSingle()
+    : Promise.resolve({ data: null, error: null });
+
+  const [profileResult, trustedCookieResult] = await Promise.all([
+    profileQuery,
+    admin.rpc('is_trusted_author', { p_cookie: cookieId }),
+  ]);
+
+  if (profileResult.error) {
+    console.error('[wall/post] approved profile lookup failed', profileResult.error);
+  }
+  if (trustedCookieResult.error) {
+    console.error('[wall/post] trusted cookie lookup failed', trustedCookieResult.error);
+  }
+
+  return (
+    profileResult.data?.status === 'active' ||
+    profileResult.data?.status === 'approved' ||
+    Boolean(trustedCookieResult.data)
+  );
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -61,11 +95,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'banned' }, { status: 403 });
     }
 
-    const cookieOk = await checkRateLimit('post', `cookie:${guest.cookieId}`, 10, 3600);
-    const ipOk = guest.ip
-      ? await checkRateLimit('post', `ip:${guest.ip}`, 10, 3600)
-      : true;
-    if (!cookieOk || !ipOk) {
+    const isTrusted = await isTrustedPoster(authUserId, guest.cookieId);
+    const rateKey = authUserId ? `user:${authUserId}` : `cookie:${guest.cookieId}`;
+    const rateChecks = isTrusted
+      ? [
+          checkRateLimit('post_burst', rateKey, APPROVED_POST_BURST_LIMIT, 60),
+          checkRateLimit('post', rateKey, APPROVED_POST_HOURLY_LIMIT, 3600),
+        ]
+      : [
+          checkRateLimit('post', `cookie:${guest.cookieId}`, GUEST_POST_LIMIT, 3600),
+          guest.ip
+            ? checkRateLimit('post', `ip:${guest.ip}`, GUEST_POST_LIMIT, 3600)
+            : Promise.resolve(true),
+        ];
+    const rateChecksPassed = await Promise.all(rateChecks);
+    if (rateChecksPassed.some((allowed) => !allowed)) {
       return NextResponse.json({ error: 'rate_limited' }, { status: 429 });
     }
 
