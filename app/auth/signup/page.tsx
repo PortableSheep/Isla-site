@@ -5,10 +5,11 @@ import { CreatureDisplay } from '@/components/CreatureDisplay';
 export default async function SignUpPage({
   searchParams,
 }: {
-  searchParams: Promise<{ displayName?: string }>;
+  searchParams: Promise<{ displayName?: string | string[] }>;
 }) {
   const { displayName } = await searchParams;
-  const initialDisplayName = displayName ?? '';
+  const initialDisplayName =
+    (Array.isArray(displayName) ? displayName[0] : displayName)?.trim().slice(0, 40) ?? '';
 
   return (
     <div className="w-full">
