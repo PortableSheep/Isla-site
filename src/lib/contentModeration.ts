@@ -115,3 +115,78 @@ export async function moderateContent(
     clearTimeout(timer);
   }
 }
+
+/**
+ * Moderates a voice note transcript using OpenAI Moderation API.
+ */
+export async function moderateVoiceTranscript(
+  transcript: string,
+  options?: ModerateContentOptions
+): Promise<ModerationResult> {
+  if (!transcript || !transcript.trim()) {
+    return { flagged: false, reasons: [] };
+  }
+  const result = await moderateContent(transcript, options);
+  if (result.flagged) {
+    result.reasons.push('ai_flagged_voice_note');
+  }
+  return result;
+}
+
+/**
+ * Moderates an image attachment using vision moderation / safety check.
+ */
+export async function moderateImageAttachment(
+  imageUrl: string
+): Promise<ModerationResult> {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey || !imageUrl) {
+    // Fail-open default
+    return { flagged: false, reasons: [] };
+  }
+
+  try {
+    // Call OpenAI Vision moderation or safety prompt
+    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [
+          {
+            role: 'user',
+            content: [
+              {
+                type: 'text',
+                text: 'Is this image safe for a family app? Reply with JSON: {"safe": true/false, "reason": "description"}',
+              },
+              {
+                type: 'image_url',
+                image_url: { url: imageUrl },
+              },
+            ],
+          },
+        ],
+        max_tokens: 100,
+      }),
+    });
+
+    if (!res.ok) {
+      return { flagged: false, reasons: [] };
+    }
+
+    const data = await res.json();
+    const contentText = data.choices?.[0]?.message?.content || '';
+    if (contentText.includes('"safe": false') || contentText.includes('"safe":false')) {
+      return { flagged: true, reasons: ['ai_flagged_image'] };
+    }
+
+    return { flagged: false, reasons: [] };
+  } catch {
+    return { flagged: false, reasons: [] };
+  }
+}
+

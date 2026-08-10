@@ -214,14 +214,53 @@ export function AuthForm({ type, initialDisplayName = '', onSuccess }: AuthFormP
         <button
           type="submit"
           disabled={loading}
-          className="iz-btn-primary w-full h-12 rounded-xl focus:outline-none focus:ring-2 focus:ring-fuchsia-400 focus:ring-offset-2 focus:ring-offset-slate-950"
+          className="iz-btn-primary w-full h-12 rounded-xl focus:outline-none focus:ring-2 focus:ring-fuchsia-400 focus:ring-offset-2 focus:ring-offset-slate-950 font-bold"
           aria-busy={loading}
         >
           {loading ? 'Please wait…' : type === 'signup' ? 'Create Account' : 'Sign In'}
         </button>
 
+        {/* 1-Tap Mobile Social Auth Options */}
+        <div className="pt-2 border-t border-slate-800 space-y-2">
+          <p className="text-center text-xs font-semibold uppercase tracking-wider text-slate-400">
+            Or 1-Tap Mobile Sign In
+          </p>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={async () => {
+                try {
+                  setLoading(true);
+                  await supabase.auth.signInWithOAuth({ provider: 'google' });
+                } catch (e) {
+                  setError('Google sign-in unavailable');
+                  setLoading(false);
+                }
+              }}
+              className="flex items-center justify-center space-x-2 py-2.5 px-3 bg-white hover:bg-slate-100 text-slate-800 font-bold text-xs rounded-xl shadow active:scale-95 transition-all"
+            >
+              <span>Google</span>
+            </button>
+            <button
+              type="button"
+              onClick={async () => {
+                try {
+                  setLoading(true);
+                  await supabase.auth.signInWithOAuth({ provider: 'apple' });
+                } catch (e) {
+                  setError('Apple sign-in unavailable');
+                  setLoading(false);
+                }
+              }}
+              className="flex items-center justify-center space-x-2 py-2.5 px-3 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl border border-slate-700 shadow active:scale-95 transition-all"
+            >
+              <span>Apple ID</span>
+            </button>
+          </div>
+        </div>
+
         {type === 'login' && (
-          <p className="text-center text-sm">
+          <p className="text-center text-sm pt-1">
             <a
               href="/auth/reset-password"
               className="text-slate-400 hover:text-slate-200 transition-colors"

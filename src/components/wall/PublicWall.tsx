@@ -15,6 +15,10 @@ import { extractMedia, Linkified, MediaEmbeds } from '@/components/wall/media';
 import { GifPicker } from '@/components/wall/GifPicker';
 import NotificationBell from '@/components/NotificationBell';
 import { WallCornerAuthLink } from '@/components/WallCornerAuthLink';
+import { VirtualPetWidget } from '@/components/mobile/VirtualPetWidget';
+import { MobileCommentDrawer, type CommentItem } from '@/components/mobile/MobileCommentDrawer';
+import { FamilyQRInviteModal } from '@/components/mobile/FamilyQRInviteModal';
+import { QuickCameraUpload } from '@/components/mobile/QuickCameraUpload';
 import {
   ImageUploadButton,
   type PendingAttachment,
@@ -477,12 +481,14 @@ function CommentBlock({
   onSubmit,
   isModerator,
   onModerationClick,
+  onOpenDrawer,
 }: {
   post: Post;
   requireName: () => Promise<string | null>;
   onSubmit: (parentId: string, name: string, content: string, attachmentIds: string[]) => Promise<void>;
   isModerator: boolean;
   onModerationClick: (ip: string, postId: string) => void;
+  onOpenDrawer?: () => void;
 }) {
   const [content, setContent] = useState('');
   const [busy, setBusy] = useState(false);
@@ -512,6 +518,19 @@ function CommentBlock({
 
   return (
     <div className="mt-4 space-y-2 border-t border-white/5 pt-3">
+      <div className="flex items-center justify-between pb-1">
+        <span className="text-xs font-semibold text-slate-400">Comments ({post.comments.length})</span>
+        {onOpenDrawer && (
+          <button
+            type="button"
+            onClick={onOpenDrawer}
+            className="text-xs font-bold text-fuchsia-300 hover:text-fuchsia-200 bg-fuchsia-500/10 px-2.5 py-1 rounded-full border border-fuchsia-500/20 active:scale-95 transition-all flex items-center space-x-1"
+          >
+            <span>💬 Mobile Thread View</span>
+          </button>
+        )}
+      </div>
+
       {hiddenCount > 0 && !expanded && (
         <button
           type="button"
@@ -1050,6 +1069,8 @@ export function PublicWall() {
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogFirstTime, setDialogFirstTime] = useState(false);
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+  const [activeDrawerPost, setActiveDrawerPost] = useState<Post | null>(null);
   const pendingResolver = useRef<((name: string | null) => void) | null>(null);
 
   useEffect(() => {
@@ -1663,10 +1684,24 @@ export function PublicWall() {
           className="fixed right-3 z-50 flex items-center gap-2"
           style={{ top: 'calc(env(safe-area-inset-top, 0px) + 0.75rem)' }}
         >
+          <button
+            type="button"
+            onClick={() => setIsInviteModalOpen(true)}
+            className="flex h-9 items-center gap-1.5 rounded-full border border-pink-400/40 bg-slate-900/80 px-3 text-xs font-bold text-pink-300 backdrop-blur-md transition hover:border-pink-300 hover:bg-slate-900/90 active:scale-95 shadow-sm"
+            title="Invite Family"
+          >
+            <span>Invite 💖</span>
+          </button>
           <WallCornerAuthLink />
           <NotificationBell />
         </div>
       </BodyPortal>
+
+      {/* Virtual Pet Companion Widget */}
+      <VirtualPetWidget
+        isAuthenticated={verified}
+        onOpenAuthModal={() => setDialogOpen(true)}
+      />
 
       <header className="relative text-center">
         <div className="pointer-events-none absolute -top-2 left-0 hidden md:block">
@@ -1776,6 +1811,7 @@ export function PublicWall() {
               onModerationClick={(ip, postId) =>
                 setModerationTarget({ ip, postId, isComment: true })
               }
+              onOpenDrawer={() => setActiveDrawerPost(p)}
             />
           </article>
         ))}
@@ -1864,6 +1900,39 @@ export function PublicWall() {
         target={moderationTarget}
         onClose={() => setModerationTarget(null)}
         onRefresh={() => refresh()}
+      />
+    )}
+
+    {/* Mobile Family QR Pass Modal */}
+    <FamilyQRInviteModal
+      isOpen={isInviteModalOpen}
+      onClose={() => setIsInviteModalOpen(false)}
+    />
+
+    {/* Mobile Bottom-Sheet Comment Drawer */}
+    {activeDrawerPost && (
+      <MobileCommentDrawer
+        isOpen={!!activeDrawerPost}
+        onClose={() => setActiveDrawerPost(null)}
+        postTitle={`Post by ${activeDrawerPost.author_name || 'Family Member'}`}
+        comments={activeDrawerPost.comments.map(c => ({
+          id: c.id,
+          author_name: c.author_name,
+          content: c.content,
+          created_at: c.created_at,
+          is_mine: c.is_mine,
+          verified: c.verified
+        }))}
+        onAddComment={async (content, replyToId, voiceUrl) => {
+          try {
+            const name = await requireName();
+            if (!name) return;
+            const fullContent = voiceUrl ? `${content}\n[Voice Note Attached]` : content;
+            await submitComment(activeDrawerPost.id, name, fullContent, []);
+          } catch (err) {
+            alert(err instanceof Error ? err.message : 'Failed to post comment');
+          }
+        }}
       />
     )}
     </>
