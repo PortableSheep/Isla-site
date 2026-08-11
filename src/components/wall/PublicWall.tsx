@@ -517,18 +517,24 @@ function CommentBlock({
   if (post.moderation_status !== 'approved' && !post.is_mine) return null;
 
   return (
-    <div className="mt-4 space-y-2 border-t border-white/5 pt-3">
-      <div className="flex items-center justify-between pb-1">
-        <button
-          type="button"
-          onClick={onOpenDrawer}
-          className="text-xs font-medium text-slate-400 hover:text-fuchsia-300 transition-colors flex items-center space-x-1"
-        >
-          <span>💬 {post.comments.length === 0 ? 'Add a comment...' : `${post.comments.length} ${post.comments.length === 1 ? 'comment' : 'comments'} (tap to view thread)`}</span>
-        </button>
-      </div>
+    <div className="mt-4 space-y-2 rounded-2xl border border-white/10 bg-slate-950/60 p-3.5 shadow-inner">
+      {/* Thread drawer button ONLY shown when there are 3+ comments */}
+      {post.comments.length > 2 && onOpenDrawer && (
+        <div className="flex items-center justify-between pb-2 border-b border-white/5 mb-2">
+          <span className="text-xs font-semibold text-slate-400">
+            {post.comments.length} Comments
+          </span>
+          <button
+            type="button"
+            onClick={onOpenDrawer}
+            className="text-xs font-bold text-fuchsia-300 hover:text-fuchsia-200 bg-fuchsia-500/10 px-2.5 py-1 rounded-full border border-fuchsia-500/20 active:scale-95 transition-all flex items-center space-x-1"
+          >
+            <span>View full thread →</span>
+          </button>
+        </div>
+      )}
 
-      {hiddenCount > 0 && !expanded && (
+      {hiddenCount > 0 && !expanded && post.comments.length <= 2 && (
         <button
           type="button"
           onClick={() => setExpanded(true)}
@@ -1736,12 +1742,12 @@ export function PublicWall() {
           <article
             key={p.id}
             id={`post-${p.id}`}
-            className={`rounded-2xl border p-3 backdrop-blur sm:p-4 ${
+            className={`rounded-3xl border p-4 sm:p-5 backdrop-blur-md shadow-xl transition-all ${
               newPostIds.has(p.id) ? 'iz-post-arrive' : ''
             } ${
               p.is_mine && p.moderation_status !== 'approved'
-                ? 'border-amber-400/30 bg-amber-500/5'
-                : 'border-white/10 bg-white/5'
+                ? 'border-amber-400/40 bg-amber-500/10 ring-1 ring-amber-400/20'
+                : 'border-white/15 bg-slate-900/80 hover:border-white/25'
             }`}
           >
             <div className="flex flex-wrap items-center gap-2 text-sm text-slate-400">
