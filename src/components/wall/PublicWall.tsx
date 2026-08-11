@@ -15,10 +15,11 @@ import { extractMedia, Linkified, MediaEmbeds } from '@/components/wall/media';
 import { GifPicker } from '@/components/wall/GifPicker';
 import NotificationBell from '@/components/NotificationBell';
 import { WallCornerAuthLink } from '@/components/WallCornerAuthLink';
-import { VirtualPetWidget } from '@/components/mobile/VirtualPetWidget';
-import { MobileCommentDrawer, type CommentItem } from '@/components/mobile/MobileCommentDrawer';
-import { FamilyQRInviteModal } from '@/components/mobile/FamilyQRInviteModal';
 import { QuickCameraUpload } from '@/components/mobile/QuickCameraUpload';
+import { VoiceSnippetRecorder } from '@/components/mobile/VoiceSnippetRecorder';
+import { FamilyQRInviteModal } from '@/components/mobile/FamilyQRInviteModal';
+import { MobileCommentDrawer } from '@/components/mobile/MobileCommentDrawer';
+import { VirtualPetWidget } from '@/components/mobile/VirtualPetWidget';
 import {
   ImageUploadButton,
   type PendingAttachment,
@@ -481,14 +482,12 @@ function CommentBlock({
   onSubmit,
   isModerator,
   onModerationClick,
-  onOpenDrawer,
 }: {
   post: Post;
   requireName: () => Promise<string | null>;
   onSubmit: (parentId: string, name: string, content: string, attachmentIds: string[]) => Promise<void>;
   isModerator: boolean;
   onModerationClick: (ip: string, postId: string) => void;
-  onOpenDrawer?: () => void;
 }) {
   const [content, setContent] = useState('');
   const [busy, setBusy] = useState(false);
@@ -517,24 +516,8 @@ function CommentBlock({
   if (post.moderation_status !== 'approved' && !post.is_mine) return null;
 
   return (
-    <div className="mt-4 space-y-2 rounded-2xl border border-white/10 bg-slate-950/60 p-3.5 shadow-inner">
-      {/* Thread drawer button ONLY shown when there are 3+ comments */}
-      {post.comments.length > 2 && onOpenDrawer && (
-        <div className="flex items-center justify-between pb-2 border-b border-white/5 mb-2">
-          <span className="text-xs font-semibold text-slate-400">
-            {post.comments.length} Comments
-          </span>
-          <button
-            type="button"
-            onClick={onOpenDrawer}
-            className="text-xs font-bold text-fuchsia-300 hover:text-fuchsia-200 bg-fuchsia-500/10 px-2.5 py-1 rounded-full border border-fuchsia-500/20 active:scale-95 transition-all flex items-center space-x-1"
-          >
-            <span>View full thread →</span>
-          </button>
-        </div>
-      )}
-
-      {hiddenCount > 0 && !expanded && post.comments.length <= 2 && (
+    <div className="mt-4 space-y-2 border-t border-white/5 pt-3">
+      {hiddenCount > 0 && !expanded && (
         <button
           type="button"
           onClick={() => setExpanded(true)}
@@ -792,11 +775,18 @@ function Composer({
         className="w-full resize-y rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:border-fuchsia-400 focus:outline-none"
       />
       <MediaHelperBar onPickGif={() => setGifOpen(true)} onInsert={insertAtCursor} />
-      <ImageUploadButton
-        attachment={attachment}
-        onChange={setAttachment}
-        disabled={busy}
-      />
+      <div className="flex flex-wrap items-center gap-2">
+        <ImageUploadButton
+          attachment={attachment}
+          onChange={setAttachment}
+          disabled={busy}
+        />
+        <QuickCameraUpload
+          onPhotoCaptured={() => {
+            // Mobile camera photo captured
+          }}
+        />
+      </div>
       <GifPicker
         open={gifOpen}
         onClose={() => setGifOpen(false)}
@@ -1072,8 +1062,6 @@ export function PublicWall() {
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogFirstTime, setDialogFirstTime] = useState(false);
-  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
-  const [activeDrawerPost, setActiveDrawerPost] = useState<Post | null>(null);
   const pendingResolver = useRef<((name: string | null) => void) | null>(null);
 
   useEffect(() => {
@@ -1687,32 +1675,24 @@ export function PublicWall() {
           className="fixed right-3 z-50 flex items-center gap-2"
           style={{ top: 'calc(env(safe-area-inset-top, 0px) + 0.75rem)' }}
         >
-          <button
-            type="button"
-            onClick={() => setIsInviteModalOpen(true)}
-            className="flex h-9 items-center gap-1.5 rounded-full border border-pink-400/40 bg-slate-900/80 px-3 text-xs font-bold text-pink-300 backdrop-blur-md transition hover:border-pink-300 hover:bg-slate-900/90 active:scale-95 shadow-sm"
-            title="Invite Family"
-          >
-            <span>Invite 💖</span>
-          </button>
           <WallCornerAuthLink />
           <NotificationBell />
         </div>
       </BodyPortal>
 
-      <header className="relative text-center space-y-2">
+      <header className="relative text-center">
+        <div className="pointer-events-none absolute -top-2 left-0 hidden md:block">
+          <CreatureDisplay creatureId="sparkle" state="happy" animation="bounce" size="medium" />
+        </div>
+        <div className="pointer-events-none absolute -top-2 right-0 hidden md:block">
+          <CreatureDisplay creatureId="glimmer" state="happy" animation="gentle_bounce" size="medium" />
+        </div>
         <h1 className="iz-gradient-text text-4xl font-bold tracking-tight md:text-5xl">
           Isla&apos;s Wall
         </h1>
-        <p className="text-sm text-slate-300">
+        <p className="mt-2 text-sm text-slate-300">
           Notes, doodles, YouTube links, and hellos from anyone who wants to say hi.
         </p>
-
-        {/* Integrated Dark-Glassmorphic Virtual Family Companion */}
-        <VirtualPetWidget
-          isAuthenticated={verified}
-          onOpenAuthModal={() => setDialogOpen(true)}
-        />
       </header>
 
       <Composer
@@ -1742,12 +1722,12 @@ export function PublicWall() {
           <article
             key={p.id}
             id={`post-${p.id}`}
-            className={`rounded-3xl border p-4 sm:p-5 backdrop-blur-md shadow-xl transition-all ${
+            className={`rounded-2xl border p-3 backdrop-blur sm:p-4 ${
               newPostIds.has(p.id) ? 'iz-post-arrive' : ''
             } ${
               p.is_mine && p.moderation_status !== 'approved'
-                ? 'border-amber-400/40 bg-amber-500/10 ring-1 ring-amber-400/20'
-                : 'border-white/15 bg-slate-900/80 hover:border-white/25'
+                ? 'border-amber-400/30 bg-amber-500/5'
+                : 'border-white/10 bg-white/5'
             }`}
           >
             <div className="flex flex-wrap items-center gap-2 text-sm text-slate-400">
@@ -1808,7 +1788,6 @@ export function PublicWall() {
               onModerationClick={(ip, postId) =>
                 setModerationTarget({ ip, postId, isComment: true })
               }
-              onOpenDrawer={() => setActiveDrawerPost(p)}
             />
           </article>
         ))}
@@ -1839,6 +1818,7 @@ export function PublicWall() {
     </div>
 
     {/* Who's online badge — fixed top-left, compact count pill with tap-to-expand popover */}
+    {presenceUsers.length > 0 && (
     <BodyPortal>
     <div
       className="fixed left-4 z-50"
@@ -1849,11 +1829,11 @@ export function PublicWall() {
           type="button"
           onClick={() => setShowOnlineList((o) => !o)}
           aria-expanded={showOnlineList}
-          aria-label={`${Math.max(1, presenceUsers.length)} people online — tap to see who`}
-          className="flex h-9 items-center gap-1.5 rounded-full border border-emerald-500/30 bg-slate-900/80 px-3 text-xs font-bold text-slate-200 backdrop-blur-md transition hover:border-emerald-400/50 hover:bg-slate-900/90 shadow-md active:scale-95"
+          aria-label={`${presenceUsers.length} people online — tap to see who`}
+          className="flex h-9 items-center gap-1.5 rounded-full border border-white/10 bg-slate-900/60 px-3 text-xs font-medium text-slate-300 backdrop-blur-md transition hover:border-fuchsia-400/40 hover:bg-slate-900/80 hover:text-fuchsia-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-400"
         >
-          <span className="h-2.5 w-2.5 flex-shrink-0 animate-pulse rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.9)]" />
-          <span>{Math.max(1, presenceUsers.length)}</span>
+          <span className="h-2 w-2 flex-shrink-0 animate-pulse rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.7)]" />
+          <span>{presenceUsers.length}</span>
         </button>
         {showOnlineList && (
           <div className="absolute left-0 top-11 w-max min-w-[160px] rounded-xl border border-white/10 bg-slate-900/95 px-3 py-2 shadow-xl backdrop-blur-md">
@@ -1889,45 +1869,13 @@ export function PublicWall() {
         )}
     </div>
     </BodyPortal>
+    )}
 
     {moderationTarget && (
       <ModerationModal
         target={moderationTarget}
         onClose={() => setModerationTarget(null)}
         onRefresh={() => refresh()}
-      />
-    )}
-
-    {/* Mobile Family QR Pass Modal */}
-    <FamilyQRInviteModal
-      isOpen={isInviteModalOpen}
-      onClose={() => setIsInviteModalOpen(false)}
-    />
-
-    {/* Mobile Bottom-Sheet Comment Drawer */}
-    {activeDrawerPost && (
-      <MobileCommentDrawer
-        isOpen={!!activeDrawerPost}
-        onClose={() => setActiveDrawerPost(null)}
-        postTitle={`Post by ${activeDrawerPost.author_name || 'Family Member'}`}
-        comments={activeDrawerPost.comments.map(c => ({
-          id: c.id,
-          author_name: c.author_name,
-          content: c.content,
-          created_at: c.created_at,
-          is_mine: c.is_mine,
-          verified: c.verified
-        }))}
-        onAddComment={async (content, replyToId, voiceUrl) => {
-          try {
-            const name = await requireName();
-            if (!name) return;
-            const fullContent = voiceUrl ? `${content}\n[Voice Note Attached]` : content;
-            await submitComment(activeDrawerPost.id, name, fullContent, []);
-          } catch (err) {
-            alert(err instanceof Error ? err.message : 'Failed to post comment');
-          }
-        }}
       />
     )}
     </>
