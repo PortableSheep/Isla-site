@@ -118,8 +118,8 @@ export const VirtualPetWidget: React.FC<VirtualPetWidgetProps> = ({
         onClick={handleTapPet}
         className="relative flex items-center space-x-2.5 px-3 py-1.5 rounded-full bg-slate-900/80 border border-white/10 backdrop-blur-md shadow-lg cursor-pointer hover:border-fuchsia-400/40 active:scale-98 transition-all"
       >
-        {/* Animated Creature Avatar */}
-        <div className="relative flex-shrink-0">
+        {/* Animated Creature Avatar with High-Contrast Light Glow Backdrop */}
+        <div className="relative flex-shrink-0 p-1.5 rounded-full bg-gradient-to-tr from-amber-100 via-white to-purple-100 dark:from-slate-800 dark:via-purple-950 dark:to-slate-800 border border-amber-300/60 shadow-md ring-2 ring-purple-500/30">
           <CreatureDisplay 
             creatureId={selectedPet}
             state={petState}
@@ -174,9 +174,11 @@ export const VirtualPetWidget: React.FC<VirtualPetWidgetProps> = ({
               <X className="w-5 h-5" />
             </button>
 
-            {/* Pet Feature Display */}
+            {/* Pet Feature Display with High-Contrast Glow Backdrop */}
             <div className="flex flex-col items-center pt-2">
-              <CreatureDisplay creatureId={selectedPet} state={petState} animation={petAnimation} size="medium" />
+              <div className="p-3 rounded-full bg-gradient-to-tr from-amber-100 via-white to-purple-100 dark:from-slate-800 dark:via-purple-950 dark:to-slate-800 border-2 border-amber-300/60 shadow-lg ring-2 ring-purple-500/30">
+                <CreatureDisplay creatureId={selectedPet} state={petState} animation={petAnimation} size="medium" />
+              </div>
               <h3 className="text-base font-bold text-slate-100 mt-2">
                 {currentPetObj.name} <span className="text-xs text-purple-400 font-normal">({currentPetObj.title})</span>
               </h3>

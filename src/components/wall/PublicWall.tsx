@@ -1839,7 +1839,6 @@ export function PublicWall() {
     </div>
 
     {/* Who's online badge — fixed top-left, compact count pill with tap-to-expand popover */}
-    {presenceUsers.length > 0 && (
     <BodyPortal>
     <div
       className="fixed left-4 z-50"
@@ -1850,11 +1849,11 @@ export function PublicWall() {
           type="button"
           onClick={() => setShowOnlineList((o) => !o)}
           aria-expanded={showOnlineList}
-          aria-label={`${presenceUsers.length} people online — tap to see who`}
-          className="flex h-9 items-center gap-1.5 rounded-full border border-white/10 bg-slate-900/60 px-3 text-xs font-medium text-slate-300 backdrop-blur-md transition hover:border-fuchsia-400/40 hover:bg-slate-900/80 hover:text-fuchsia-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-400"
+          aria-label={`${Math.max(1, presenceUsers.length)} people online — tap to see who`}
+          className="flex h-9 items-center gap-1.5 rounded-full border border-emerald-500/30 bg-slate-900/80 px-3 text-xs font-bold text-slate-200 backdrop-blur-md transition hover:border-emerald-400/50 hover:bg-slate-900/90 shadow-md active:scale-95"
         >
-          <span className="h-2 w-2 flex-shrink-0 animate-pulse rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.7)]" />
-          <span>{presenceUsers.length}</span>
+          <span className="h-2.5 w-2.5 flex-shrink-0 animate-pulse rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.9)]" />
+          <span>{Math.max(1, presenceUsers.length)}</span>
         </button>
         {showOnlineList && (
           <div className="absolute left-0 top-11 w-max min-w-[160px] rounded-xl border border-white/10 bg-slate-900/95 px-3 py-2 shadow-xl backdrop-blur-md">
@@ -1890,7 +1889,6 @@ export function PublicWall() {
         )}
     </div>
     </BodyPortal>
-    )}
 
     {moderationTarget && (
       <ModerationModal
