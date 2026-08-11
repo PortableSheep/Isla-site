@@ -519,16 +519,13 @@ function CommentBlock({
   return (
     <div className="mt-4 space-y-2 border-t border-white/5 pt-3">
       <div className="flex items-center justify-between pb-1">
-        <span className="text-xs font-semibold text-slate-400">Comments ({post.comments.length})</span>
-        {onOpenDrawer && (
-          <button
-            type="button"
-            onClick={onOpenDrawer}
-            className="text-xs font-bold text-fuchsia-300 hover:text-fuchsia-200 bg-fuchsia-500/10 px-2.5 py-1 rounded-full border border-fuchsia-500/20 active:scale-95 transition-all flex items-center space-x-1"
-          >
-            <span>💬 Mobile Thread View</span>
-          </button>
-        )}
+        <button
+          type="button"
+          onClick={onOpenDrawer}
+          className="text-xs font-medium text-slate-400 hover:text-fuchsia-300 transition-colors flex items-center space-x-1"
+        >
+          <span>💬 {post.comments.length === 0 ? 'Add a comment...' : `${post.comments.length} ${post.comments.length === 1 ? 'comment' : 'comments'} (tap to view thread)`}</span>
+        </button>
       </div>
 
       {hiddenCount > 0 && !expanded && (
@@ -1697,25 +1694,19 @@ export function PublicWall() {
         </div>
       </BodyPortal>
 
-      {/* Virtual Pet Companion Widget */}
-      <VirtualPetWidget
-        isAuthenticated={verified}
-        onOpenAuthModal={() => setDialogOpen(true)}
-      />
-
-      <header className="relative text-center">
-        <div className="pointer-events-none absolute -top-2 left-0 hidden md:block">
-          <CreatureDisplay creatureId="sparkle" state="happy" animation="bounce" size="medium" />
-        </div>
-        <div className="pointer-events-none absolute -top-2 right-0 hidden md:block">
-          <CreatureDisplay creatureId="glimmer" state="happy" animation="gentle_bounce" size="medium" />
-        </div>
+      <header className="relative text-center space-y-2">
         <h1 className="iz-gradient-text text-4xl font-bold tracking-tight md:text-5xl">
           Isla&apos;s Wall
         </h1>
-        <p className="mt-2 text-sm text-slate-300">
+        <p className="text-sm text-slate-300">
           Notes, doodles, YouTube links, and hellos from anyone who wants to say hi.
         </p>
+
+        {/* Integrated Dark-Glassmorphic Virtual Family Companion */}
+        <VirtualPetWidget
+          isAuthenticated={verified}
+          onOpenAuthModal={() => setDialogOpen(true)}
+        />
       </header>
 
       <Composer

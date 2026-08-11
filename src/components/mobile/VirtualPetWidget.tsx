@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { CreatureDisplay } from '@/components/CreatureDisplay';
 import { type CreatureState, type AnimationType } from '@/lib/creatures';
-import { Heart, Sparkles, Trophy, ChevronDown, ChevronUp, Flame, Gift } from 'lucide-react';
+import { Heart, Sparkles, Trophy, ChevronDown, ChevronUp, Flame, Gift, X } from 'lucide-react';
 
 interface VirtualPetWidgetProps {
   isAuthenticated?: boolean;
@@ -12,29 +12,27 @@ interface VirtualPetWidgetProps {
 }
 
 const PET_OPTIONS = [
-  { id: 'boom', name: 'Boom', title: 'Goblin Knight ⚔️', color: 'from-red-500 to-amber-500' },
-  { id: 'zing', name: 'Zing', title: 'Lightning Speedster ⚡', color: 'from-amber-400 to-red-500' },
-  { id: 'guardian', name: 'Guardian', title: 'Shield Sentinel 🛡️', color: 'from-indigo-600 to-blue-500' },
-  { id: 'echo', name: 'Echo', title: 'Sonic Ranger 🎧', color: 'from-violet-600 to-indigo-500' },
-  { id: 'glimmer', name: 'Glimmer', title: 'The Guide 🌟', color: 'from-purple-500 to-pink-500' },
-  { id: 'sparkle', name: 'Sparkle', title: 'The Spark 🎉', color: 'from-pink-500 to-amber-400' },
-  { id: 'pixel', name: 'Pixel', title: 'The Guardian 📘', color: 'from-blue-500 to-indigo-500' },
-  { id: 'drift', name: 'Drift', title: 'The Dreamer ☁️', color: 'from-teal-400 to-emerald-500' }
+  { id: 'boom', name: 'Boom', title: 'Goblin Knight ⚔️' },
+  { id: 'zing', name: 'Zing', title: 'Lightning ⚡' },
+  { id: 'guardian', name: 'Guardian', title: 'Sentinel 🛡️' },
+  { id: 'echo', name: 'Echo', title: 'Sonic Ranger 🎧' },
+  { id: 'glimmer', name: 'Glimmer', title: 'The Guide 🌟' },
+  { id: 'sparkle', name: 'Sparkle', title: 'The Spark 🎉' },
+  { id: 'pixel', name: 'Pixel', title: 'Guardian 📘' },
+  { id: 'drift', name: 'Drift', title: 'Dreamer ☁️' }
 ];
 
 const SPEECH_MESSAGES = [
-  "Yay! Family time is the best! 💖",
-  "Did someone say new photos? 📸",
-  "I'm feeling so happy today! ✨",
-  "Keep the family streak going! 🔥",
-  "Give me a tap for a dance! 💃",
-  "Isla site is looking awesome today! 🌟"
+  "Yay! Family time! 💖",
+  "Did someone post photos? 📸",
+  "I'm feeling happy! ✨",
+  "Keep the streak going! 🔥",
+  "Tap me for a dance! 💃"
 ];
 
 export const VirtualPetWidget: React.FC<VirtualPetWidgetProps> = ({
   isAuthenticated = false,
-  onOpenAuthModal,
-  onPostTrigger
+  onOpenAuthModal
 }) => {
   const [selectedPet, setSelectedPet] = useState<string>('glimmer');
   const [petState, setPetState] = useState<CreatureState>('happy');
@@ -42,11 +40,9 @@ export const VirtualPetWidget: React.FC<VirtualPetWidgetProps> = ({
   const [happiness, setHappiness] = useState<number>(75);
   const [level, setLevel] = useState<number>(2);
   const [streak, setStreak] = useState<number>(3);
-  const [speechBubble, setSpeechBubble] = useState<string | null>("Tap me to play!");
-  const [isExpanded, setIsExpanded] = useState<boolean>(false);
-  const [isTreatAnimating, setIsTreatAnimating] = useState<boolean>(false);
+  const [speechBubble, setSpeechBubble] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
-  // Load saved state from localStorage
   useEffect(() => {
     try {
       const savedPet = localStorage.getItem('isla_family_pet');
@@ -56,26 +52,20 @@ export const VirtualPetWidget: React.FC<VirtualPetWidgetProps> = ({
       if (savedHappiness) setHappiness(Math.min(100, parseInt(savedHappiness, 10)));
       if (savedLevel) setLevel(parseInt(savedLevel, 10));
     } catch {
-      // Fallback to default
+      // Fallback
     }
   }, []);
 
-  // Trigger haptic feedback if available
   const triggerHaptic = useCallback(() => {
     if (typeof window !== 'undefined' && 'navigator' in window && navigator.vibrate) {
-      try {
-        navigator.vibrate(30);
-      } catch {
-        // ignore
-      }
+      try { navigator.vibrate(25); } catch {}
     }
   }, []);
 
-  // Handle tapping pet
   const handleTapPet = () => {
     triggerHaptic();
-    const states: CreatureState[] = ['excited', 'dancing', 'winking', 'celebrating', 'surprised'];
-    const animations: AnimationType[] = ['bounce', 'wiggle', 'spin', 'dance', 'celebrate'];
+    const states: CreatureState[] = ['excited', 'dancing', 'winking', 'celebrating'];
+    const animations: AnimationType[] = ['bounce', 'wiggle', 'spin', 'dance'];
     
     const randomState = states[Math.floor(Math.random() * states.length)];
     const randomAnim = animations[Math.floor(Math.random() * animations.length)];
@@ -85,139 +75,143 @@ export const VirtualPetWidget: React.FC<VirtualPetWidgetProps> = ({
     setPetAnimation(randomAnim);
     setSpeechBubble(randomMessage);
 
-    // Boost happiness
     setHappiness(prev => {
       const next = Math.min(100, prev + 5);
       try { localStorage.setItem('isla_pet_happiness', next.toString()); } catch {}
       return next;
     });
 
-    // Reset back to happy state after animation
     setTimeout(() => {
       setPetState('happy');
       setPetAnimation('gentle_bounce');
+      setSpeechBubble(null);
     }, 2500);
   };
 
-  // Handle giving a treat
-  const handleGiveTreat = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleGiveTreat = () => {
     triggerHaptic();
-    setIsTreatAnimating(true);
     setPetState('celebrating');
     setPetAnimation('celebrate');
-    setSpeechBubble("YUMMY! Thank you! 🍎✨");
-
+    setSpeechBubble("YUMMY! 🍎✨");
     setHappiness(100);
     try { localStorage.setItem('isla_pet_happiness', '100'); } catch {}
 
     setTimeout(() => {
-      setIsTreatAnimating(false);
       setPetState('happy');
       setPetAnimation('gentle_bounce');
+      setSpeechBubble(null);
     }, 2000);
   };
 
-  // Change pet character
   const handleChangePet = (petId: string) => {
     setSelectedPet(petId);
     try { localStorage.setItem('isla_family_pet', petId); } catch {}
     handleTapPet();
   };
 
-  const currentPetObj = PET_OPTIONS.find(p => p.id === selectedPet) || PET_OPTIONS[0];
+  const currentPetObj = PET_OPTIONS.find(p => p.id === selectedPet) || PET_OPTIONS[4];
 
   return (
-    <div className="w-full max-w-2xl mx-auto px-2 py-1 select-none">
+    <div className="w-full flex items-center justify-center py-1">
+      {/* Sleek, Dark Glassmorphic Compact Pet Pill */}
       <div 
-        className="relative overflow-hidden rounded-2xl bg-white/85 dark:bg-slate-900/85 backdrop-blur-md border border-purple-200/60 dark:border-purple-900/50 shadow-md transition-all duration-300"
+        onClick={handleTapPet}
+        className="relative flex items-center space-x-2.5 px-3 py-1.5 rounded-full bg-slate-900/80 border border-white/10 backdrop-blur-md shadow-lg cursor-pointer hover:border-fuchsia-400/40 active:scale-98 transition-all"
       >
-        {/* Top Summary Bar */}
-        <div 
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-purple-50/50 dark:hover:bg-purple-950/20 active:scale-[0.99] transition-transform"
-        >
-          {/* Left: Pet Avatar & Speech Bubble */}
-          <div className="flex items-center space-x-2 min-w-0">
-            <div 
-              onClick={(e) => { e.stopPropagation(); handleTapPet(); }} 
-              className="relative flex-shrink-0 cursor-pointer p-1 rounded-full hover:bg-purple-100 dark:hover:bg-purple-900/40 transition-colors"
-              title="Tap your family pet!"
-            >
-              <CreatureDisplay 
-                creatureId={selectedPet}
-                state={petState}
-                animation={petAnimation}
-                size="small"
-              />
-              {/* Level Badge */}
-              <span className="absolute -bottom-1 -right-1 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-[10px] font-black px-1.5 py-0.5 rounded-full shadow-sm">
-                Lv.{level}
-              </span>
-            </div>
-
-            <div className="flex flex-col min-w-0">
-              <div className="flex items-center space-x-1.5">
-                <span className="font-bold text-sm text-slate-800 dark:text-slate-100 truncate">
-                  {currentPetObj.name}
-                </span>
-                <span className="inline-flex items-center px-1.5 py-0.2 text-[10px] font-medium bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300 rounded-full">
-                  <Flame className="w-2.5 h-2.5 mr-0.5 text-amber-500 fill-amber-500" />
-                  {streak}d streak
-                </span>
-              </div>
-              
-              {/* Speech bubble or happiness indicator */}
-              <p className="text-xs text-purple-600 dark:text-purple-300 truncate italic">
-                {speechBubble || currentPetObj.title}
-              </p>
-            </div>
-          </div>
-
-          {/* Right: Happiness Bar & Expand Toggle */}
-          <div className="flex items-center space-x-2 flex-shrink-0 ml-2">
-            {/* Happiness Bar */}
-            <div className="flex flex-col items-end">
-              <div className="flex items-center space-x-1 text-[11px] font-medium text-slate-600 dark:text-slate-300">
-                <Heart className="w-3 h-3 text-pink-500 fill-pink-500 animate-pulse" />
-                <span>{happiness}%</span>
-              </div>
-              <div className="w-16 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden mt-0.5">
-                <div 
-                  className="h-full bg-gradient-to-r from-pink-500 via-purple-500 to-amber-400 transition-all duration-500"
-                  style={{ width: `${happiness}%` }}
-                />
-              </div>
-            </div>
-
-            {/* Expand arrow */}
-            <button className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
-              {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-            </button>
-          </div>
+        {/* Animated Creature Avatar */}
+        <div className="relative flex-shrink-0">
+          <CreatureDisplay 
+            creatureId={selectedPet}
+            state={petState}
+            animation={petAnimation}
+            size="small"
+          />
+          <span className="absolute -bottom-1 -right-1 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-[9px] font-black px-1.5 py-0.2 rounded-full shadow">
+            Lv.{level}
+          </span>
         </div>
 
-        {/* Expanded Controls Drawer */}
-        {isExpanded && (
-          <div className="px-3 py-3 border-t border-purple-100 dark:border-purple-900/40 bg-purple-50/40 dark:bg-purple-950/20 space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
+        {/* Pet Name & Speech / Streak */}
+        <div className="flex flex-col min-w-0 pr-1">
+          <div className="flex items-center space-x-1.5">
+            <span className="font-bold text-xs text-slate-100 truncate">
+              {currentPetObj.name}
+            </span>
+            <span className="inline-flex items-center text-[10px] font-medium text-amber-400">
+              <Flame className="w-2.5 h-2.5 mr-0.5 fill-amber-400" />
+              {streak}d
+            </span>
+          </div>
+
+          <span className="text-[10px] text-fuchsia-300 truncate">
+            {speechBubble || `${happiness}% happy`}
+          </span>
+        </div>
+
+        {/* Happiness Mini Ring */}
+        <div className="flex items-center space-x-1 border-l border-white/10 pl-2">
+          <Heart className="w-3.5 h-3.5 text-pink-400 fill-pink-400 animate-pulse" />
+          <button 
+            type="button"
+            onClick={(e) => { e.stopPropagation(); setIsModalOpen(true); }}
+            className="p-1 text-slate-400 hover:text-white"
+            title="Pet Sanctuary"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+          </button>
+        </div>
+      </div>
+
+      {/* Pet Sanctuary Modal (Clean overlay when expanded) */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="relative w-full max-w-sm bg-slate-900 rounded-3xl p-5 border border-purple-500/30 shadow-2xl space-y-4 text-center">
+            
+            <button 
+              onClick={() => setIsModalOpen(false)}
+              className="absolute top-4 right-4 p-1 text-slate-400 hover:text-white rounded-full"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {/* Pet Feature Display */}
+            <div className="flex flex-col items-center pt-2">
+              <CreatureDisplay creatureId={selectedPet} state={petState} animation={petAnimation} size="medium" />
+              <h3 className="text-base font-bold text-slate-100 mt-2">
+                {currentPetObj.name} <span className="text-xs text-purple-400 font-normal">({currentPetObj.title})</span>
+              </h3>
+              <p className="text-xs text-slate-400 mt-0.5">Level {level} Family Companion</p>
+            </div>
+
+            {/* Happiness & Stats */}
+            <div className="bg-slate-800/60 p-3 rounded-2xl border border-white/5 space-y-2">
+              <div className="flex items-center justify-between text-xs text-slate-300">
+                <span>Happiness</span>
+                <span className="font-bold text-pink-400">{happiness}%</span>
+              </div>
+              <div className="w-full h-2 bg-slate-700 rounded-full overflow-hidden">
+                <div className="h-full bg-gradient-to-r from-pink-500 to-purple-500 transition-all duration-500" style={{ width: `${happiness}%` }} />
+              </div>
+            </div>
+
             {/* Pet Selector Cards */}
             <div>
-              <label className="text-[11px] font-semibold tracking-wider text-slate-500 dark:text-slate-400 uppercase">
-                Choose Family Companion
+              <label className="text-[10px] font-bold tracking-wider text-slate-400 uppercase block mb-2">
+                Switch Mascot
               </label>
-              <div className="grid grid-cols-4 sm:grid-cols-4 gap-2 mt-1.5 max-h-52 overflow-y-auto pr-1">
+              <div className="grid grid-cols-4 gap-2">
                 {PET_OPTIONS.map(pet => (
                   <button
                     key={pet.id}
                     onClick={() => handleChangePet(pet.id)}
                     className={`flex flex-col items-center p-2 rounded-xl border text-center transition-all ${
                       selectedPet === pet.id
-                        ? 'border-purple-500 bg-white dark:bg-slate-800 shadow-sm ring-2 ring-purple-400/30'
-                        : 'border-transparent bg-white/50 dark:bg-slate-800/40 hover:bg-white dark:hover:bg-slate-800'
+                        ? 'border-purple-500 bg-purple-500/20 ring-1 ring-purple-400'
+                        : 'border-white/5 bg-slate-800/40 hover:bg-slate-800'
                     }`}
                   >
                     <CreatureDisplay creatureId={pet.id} state="happy" size="small" />
-                    <span className="text-[11px] font-bold text-slate-700 dark:text-slate-200 mt-1">
+                    <span className="text-[10px] font-bold text-slate-200 mt-1 truncate w-full">
                       {pet.name}
                     </span>
                   </button>
@@ -226,11 +220,10 @@ export const VirtualPetWidget: React.FC<VirtualPetWidgetProps> = ({
             </div>
 
             {/* Action Buttons */}
-            <div className="flex items-center justify-between gap-2 pt-1">
+            <div className="flex items-center gap-2 pt-1">
               <button
                 onClick={handleGiveTreat}
-                disabled={isTreatAnimating}
-                className="flex-1 flex items-center justify-center space-x-1.5 py-2 px-3 bg-pink-500 hover:bg-pink-600 active:scale-95 text-white text-xs font-bold rounded-xl shadow-sm transition-all"
+                className="flex-1 py-2.5 px-3 bg-pink-600 hover:bg-pink-700 text-white text-xs font-bold rounded-xl shadow active:scale-95 transition-all flex items-center justify-center space-x-1"
               >
                 <Gift className="w-3.5 h-3.5" />
                 <span>Give Snack 🍎</span>
@@ -238,33 +231,31 @@ export const VirtualPetWidget: React.FC<VirtualPetWidgetProps> = ({
 
               <button
                 onClick={handleTapPet}
-                className="flex-1 flex items-center justify-center space-x-1.5 py-2 px-3 bg-purple-600 hover:bg-purple-700 active:scale-95 text-white text-xs font-bold rounded-xl shadow-sm transition-all"
+                className="flex-1 py-2.5 px-3 bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold rounded-xl shadow active:scale-95 transition-all flex items-center justify-center space-x-1"
               >
                 <Sparkles className="w-3.5 h-3.5" />
                 <span>Play Dance 🎵</span>
               </button>
             </div>
 
-            {/* Guest Pet Adoption Conversion Banner */}
+            {/* Guest Nudge */}
             {!isAuthenticated && (
-              <div className="mt-2 p-2.5 bg-gradient-to-r from-amber-500/10 via-purple-500/10 to-pink-500/10 border border-amber-300/40 dark:border-amber-700/40 rounded-xl flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <Trophy className="w-4 h-4 text-amber-500 flex-shrink-0" />
-                  <span className="text-xs text-slate-700 dark:text-slate-200">
-                    Save <strong>{currentPetObj.name}</strong> to your account!
-                  </span>
-                </div>
+              <div className="p-2.5 bg-amber-500/10 border border-amber-500/30 rounded-xl flex items-center justify-between">
+                <span className="text-xs text-amber-200 text-left">
+                  Save <strong>{currentPetObj.name}</strong> to your account!
+                </span>
                 <button
-                  onClick={onOpenAuthModal}
-                  className="px-2.5 py-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-bold rounded-lg shadow hover:opacity-90 active:scale-95 transition-all flex-shrink-0"
+                  onClick={() => { setIsModalOpen(false); onOpenAuthModal?.(); }}
+                  className="px-2 py-1 bg-amber-500 text-slate-950 font-bold text-xs rounded-lg hover:bg-amber-400"
                 >
-                  Sign Up (1-Tap)
+                  Sign Up
                 </button>
               </div>
             )}
+
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };
